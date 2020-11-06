@@ -1,0 +1,3 @@
+workers=4
+path=/path/to/data/
+force=True

@@ -1,0 +1,330 @@
+
+@media (min-width: 100em)
+{
+    .patMenu{
+		font-family: monospace;
+		font-size: 18px;
+        background-color:  #fff2e6;
+        border: 2px solid;
+        grid-column: 1;
+        grid-row: 2;
+        border-radius: 0px 0.5em 0.5em;
+        border-color: #ffd7b3;
+        padding: 10px;
+    }
+
+	ul{
+		list-style: none;
+        white-space: nowrap;
+	}
+
+	li{
+		display: inline-block;
+        padding: 5px;
+        margin: 5px;
+		list-style-type: none;
+		text-decoration: none;
+		/*width: 80px;*/
+		/*float: left;*/
+	}
+
+    .header{
+        background-color:  #e6e6e6;
+        border: 2px solid;
+        grid-column: 1 / span 2;
+        grid-row: 1;
+        text-align: center;
+        border-radius: 0px 0.5em 0.5em;
+        border-color:  #bfbfbf;
+    }
+
+    .content{
+        background-color:  #fff5e6;
+        border: 2px solid;
+        grid-column: 2;
+        grid-row: 2;
+        border-radius: 0px 0.5em 0.5em;
+        border-color:  #ffe0b3;
+        padding: 10px;
+
+    }
+
+    .patDescription > table {
+        text-align: left;
+    }
+
+    .patDescription > td,th {
+        padding-left: 2em;
+        padding-right: 2em;
+        padding-bottom: 2px;
+        padding-top: 2px;
+    }
+
+    .footer{
+        background-color:  #e6e6e6;
+        border: 2px solid;
+        border-color:  #bfbfbf;
+        border-radius: 0px 0.5em 0.5em;
+        grid-column: 1 / span 2;
+        grid-row: 3
+
+    }
+
+    .content > div{
+        border: 1px solid;
+        border-radius: 0px 0.5em 0.5em;
+        border-color:  #bfbfbf;
+        padding: 10px;
+        margin: 10px;
+        text-align: center;
+
+    }
+
+    .patModellViewer > div{
+        margin: 10px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .patModellViewer > canvas {
+        display: inline;
+    }
+
+    .gridContainer{
+        display: grid;
+        grid-template-columns: 1fr 7fr;
+        grid-template-rows: 80px 1fr 60px;
+        grid-gap: 10px;
+        padding: 5px;
+    }
+
+    img{
+        width: 100%; 
+        max-width: 800px;
+        height: auto;
+    }
+
+    #imgBig{
+        max-width: 1400px;
+    }
+}
+
+@media (max-width: 100em)
+{
+
+    .gridContainer{
+        display: grid;
+        grid-template-columns: 1fr;
+        /*grid-template-rows: 80px 1fr 60px;*/
+        grid-gap: 10px;
+        padding: 5px;
+    }
+
+	ul{
+		list-style: none;
+	}
+
+	li{
+		display: inline;
+		margin: 10px;
+		list-style-type: none;
+		text-decoration: none;
+		width: 80px;
+	}
+
+    .footer{
+        background-color:  #e6e6e6;
+        border: 2px solid;
+        border-color:  #bfbfbf;
+        border-radius: 0px 0.5em 0.5em;
+        grid-column: 1;
+        grid-row: 4
+
+    }
+
+    .patMenu{
+		font-family: monospace;
+		font-size: 16px;
+        background-color:  #fff2e6;
+        border: 2px solid;
+        grid-column: 1;
+        grid-row: 2;
+        border-radius: 0px 0.5em 0.5em;
+        border-color: #ffd7b3;
+        padding: 10px;
+    }
+
+    .header{
+        background-color:  #e6e6e6;
+        border: 2px solid;
+        grid-column: 1;
+        grid-row: 1;
+        text-align: center;
+        border-radius: 0px 0.5em 0.5em;
+        border-color:  #bfbfbf;
+    }
+
+    .content{
+        background-color:  #fff5e6;
+        border: 2px solid;
+        grid-column: 1;
+        grid-row: 3;
+        border-radius: 0px 0.5em 0.5em;
+        border-color:  #ffe0b3;
+        padding: 10px;
+
+    }
+
+    .patDescription > table {
+        text-align: left;
+    }
+
+    .patDescription > td,th {
+        padding-left: 2em;
+        padding-right: 2em;
+        padding-bottom: 2px;
+        padding-top: 2px;
+    }
+
+    .content > div{
+        border: 1px solid;
+        border-radius: 0px 0.5em 0.5em;
+        border-color:  #bfbfbf;
+        padding: 10px;
+        margin: 10px;
+        text-align: center;
+
+    }
+
+    .patModellViewer > div{
+        margin: 10px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .patModellViewer > canvas {
+        display: inline;
+    }
+
+    img{
+        width: 100%; 
+        max-width: 800px;
+        height: auto;
+    }
+
+    #imgBig{
+        width: 100%; 
+        max-width: 1400px;
+    }
+}
+
+
+/* index.html */
+.indexGridContainer{
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: 10px;
+    padding: 5px;
+}
+
+.indexHeader{
+    background-color:  #e6e6e6;
+    border: 2px solid;
+    grid-column: 1;
+    grid-row: 1;
+    text-align: center;
+    border-radius: 0px 0.5em 0.5em;
+    border-color:  #bfbfbf;
+}
+
+.indexContent{
+    text-align: center;
+    background-color:  #fff5e6;
+    border: 2px solid;
+    grid-column: 1;
+    grid-row: 2;
+    border-radius: 0px 0.5em 0.5em;
+    border-color:  #ffe0b3;
+    padding: 10px;
+}
+
+.indexContent > table{
+    margin: 0 auto;
+}
+
+
+
+.indexFooter{
+    background-color:  #e6e6e6;
+    border: 2px solid;
+    border-color:  #bfbfbf;
+    border-radius: 0px 0.5em 0.5em;
+    grid-column: 1;
+    grid-row: 3;
+    text-align: left;
+}
+
+@media (max-width: 70em){
+    #indexDescription{
+        font-size: 18px;
+        text-align: center;
+        margin-left: 2em;
+        margin-right: 2em;
+        margin-bottom: 1em;
+    }
+}
+
+@media (min-width: 70em){
+    #indexDescription{
+        font-size: 18px;
+        text-align: center;
+        margin-left: 9em;
+        margin-right: 9em;
+        margin-bottom: 2em;
+    }
+}
+
+#indexDescription > p{
+    text-align: left;
+}
+
+#indexDescription > img{
+    width: 100%;
+    height: auto;
+    max-width: 25em;
+    margin: 1em;
+}
+
+#indexDescription > table{
+    margin: 0 auto;
+    font-family: monospace;
+    font-size: 16px;
+}
+
+#indexDescription > td{
+    margin: 10px;
+}
+
+#members{
+    text-align: left;
+}
+
+.header a{
+    color: black;
+}
+
+.header a:link{
+    color: black;
+    padding: .1em;
+}
+
+a{
+	text-decoration: none;
+    padding: .1em;
+}
+a:hover {
+    background-color: lightgrey;
+    color: black;
+}
+
+

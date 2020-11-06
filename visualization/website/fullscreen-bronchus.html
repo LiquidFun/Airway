@@ -1,0 +1,49 @@
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+        <style>
+		html, body
+		{
+			width : 100%;
+			height : 100%;
+			margin : 0px;
+			padding : 0px;
+		}
+		
+		canvas
+		{
+			display : block;		
+		}
+	</style>
+
+    <script type="text/javascript" src="../js/three.min.js"></script>
+    <script type="text/javascript" src="../js/jsmodeler.js"></script>
+    <script type="text/javascript" src="../js/jsmodeler.ext.three.js"></script>
+    <script type="text/javascript" src="../js/online3dembedder.js"></script>
+	<script type="text/javascript">
+		function OnResize ()
+		{
+			var canvas = document.getElementById ('fullscreen');
+			canvas.width = document.body.clientWidth;
+			canvas.height = document.body.clientHeight;
+		}
+		
+		function OnLoad ()
+		{
+			OnResize ();
+			LoadOnline3DModels ();
+		}
+	
+		window.addEventListener ('load', OnLoad, true);
+		window.addEventListener ('resize', OnResize, true);
+	</script>
+	<title>Online 3D Viewer</title>
+
+</head>
+
+<body>
+	<canvas id="fullscreen" class="3dviewer" sourcefiles="bronchus.obj" width="200" height="200"></canvas>
+</body>
+
+</html>
