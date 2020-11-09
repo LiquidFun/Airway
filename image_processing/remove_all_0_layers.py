@@ -1,5 +1,6 @@
 import os
-import sys 
+import sys
+from pathlib import Path
 
 import numpy as np
 
@@ -7,12 +8,12 @@ project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 #patient_data_path = os.path.join(project_dir, "data/3124983")
 
-if len(sys.argv) >= 3:
+try:
     patient_data_path = sys.argv[1]
     processed_data_path = sys.argv[2]
-else:
-    processed_data_path = os.path.join(os.path.join(project_dir, "data/{}"
-        .format(patient_id)))
+except IndexError:
+    print("ERROR: No patieant data path supplied")
+
 
 def print_model_description(model):
     total_sum = np.sum(model)

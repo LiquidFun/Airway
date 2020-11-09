@@ -11,8 +11,10 @@ import sys
 import os
 import argparse
 from pathlib import Path
+from typing import Dict, Any, List
 
 import subprocess
+import yaml
 from concurrent.futures import ProcessPoolExecutor
 
 
@@ -22,15 +24,13 @@ assert currVersion < reqVersion, "ERROR: Your python is too old. Minimum: 3.6"
 
 
 def stage(path: str, worker: int, forced: bool, prev_stage: str, stage_id, script_path, *args):
-    """ stage()
-    
-    stage() is the meta function for calculating most stages in parallel.
+    """stage is the meta function for calculating most stages in parallel.
 
     TODO: more documentation
     
     args: all remaining arguments are passed to the script
     """
-    print(f"Processing {stage_id}... ")
+    print(f"Processing {stage_id}...")
 
     raw_path = Path(path) / prev_stage
     out_path = Path(path) / stage_id
@@ -53,13 +53,7 @@ def stage(path: str, worker: int, forced: bool, prev_stage: str, stage_id, scrip
             raw_pat_path = raw_path / curr_path.name
             out_pat_path.mkdir(exist_ok=True, mode=0o777)
 
-            subprocess_args.append([
-                "python3",
-                script_path,
-                raw_pat_path,
-                out_pat_path,
-                *args
-            ])
+            subprocess_args.append(["python3", script_path, raw_pat_path, out_pat_path, *args])
         concurrent_executor(subprocess_args, worker)
 
 
@@ -68,19 +62,18 @@ def subprocess_executor(argument):
 
 
 def concurrent_executor(subprocess_args, worker):
-    count = 0
     with ProcessPoolExecutor(max_workers=worker) as executor:
-        for retVal in executor.map(subprocess_executor, subprocess_args):
-            count += 1
-            print("---- Output for process {}: ----\nSTDOUT:\n{}\n\nSTDERR:\n{}\n\n"
-                  .format(count, retVal.stdout, retVal.stderr))
+        for count, retVal in enumerate(executor.map(subprocess_executor, subprocess_args)):
+            print(f"---- Output for process {count}: ----)")
+            print(f"STDOUT:\n{retVal.stdout}\n")
+            print(f"STDERR:\n{retVal.stderr}\n")
 
             if len(retVal.stderr) > 0:
                 stage = str(Path(subprocess_args[0][3]).parents[0].name)
-                if stage in errors:
-                    errors[stage].append(count)
-                else:
-                    errors[stage] = [count]
+                errors[stage] = errors.get(stage, []).append(count)
+                if stage not in errors:
+                    errors[stage] = []
+                errors[stage].append(count)
 
 
 def show_error_statistics():
@@ -89,46 +82,64 @@ def show_error_statistics():
         err_count = 0
         for key, val in errors.items():
             err_count += len(val)
-            print("\n{}:{:>3} errors".format(key, len(val)))
-        print("\n++++ Overall errors: {} ++++\n".format(err_count))
+            print("\n{key}:{len(val):>3} errors")
+        print(f"\n++++ Overall errors: {err_count} ++++\n")
     else:
-        print("\n++++ No errors occured ++++\n")
+        print("\n++++ No errors occurred ++++\n")
 
 
 def main():
     base_path = Path(sys.argv[0]).parents[0]
 
-    defaults = {"path": None, "workers": 4, "force": False}
-    config_path = Path(base_path) / "config"
-    if Path(config_path).exists():
-        with open(config_path, 'r') as config:
-            for line in config:
-                if '=' in line:
-                    l = line.strip().split('=')
-                    rest = ''.join(l[1:])
-                    defaults[l[0]] = rest
-                    if l[0] == "force":
-                        defaults[l[0]] = rest.lower() == "true"
+    defaults = {"path": None, "workers": 4, "force": False, "debug": False, "all": False}
+    defaults_path = base_path / "defaults.yaml"
+    if defaults_path.exists():
+        with open(defaults_path) as config_file:
+            defaults.update(yaml.load(config_file, yaml.FullLoader))
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--path", default=defaults["path"], help="working path")
+    parser.add_argument("-p", "--path", default=defaults["path"], help="airway data path")
     parser.add_argument("-s", "--stages", type=int, action='append', help="list of stages to calculate")
-    parser.add_argument("-w", "--worker", type=int, default=defaults["workers"], help="number of parallel workers")
+    parser.add_argument("-a", "--all", default=defaults['all'], type=bool, action='store_true',
+                        help="generates all stages (may take a long time)")
+    parser.add_argument("-w", "--workers", type=int, default=defaults["workers"], help="number of parallel workers")
     parser.add_argument("-f", "--force", help="force overwriting of previous stages",
                         default=defaults["force"], action="store_true")
+    parser.add_argument("-1", "--single", help="will do a single run of a single patient instead of all patients",
+                        type=bool, default=defaults['debug'], action="store_true")
     args = parser.parse_args()
 
-    assert args.path is not None, "ERROR: Working path required"
+    assert args.path is not None, "ERROR: Working path required."
     path = args.path
 
-    if args.stages is None:
-        print("ERROR: No stages given, doing nothing.")
-        sys.exit(1)
-    else:
-        stages = set(args.stages)
-
+    assert args.stages is not None, "ERROR: No stages given, doing nothing."
+    stages = set(args.stages)
     workers = args.worker
     forced = args.force
+
+    stage_configs_path = Path("stage_configs.yaml")
+    assert stage_configs_path.exists(), "ERROR: Stage configs path does not exist!"
+    with open(stage_configs_path) as stage_configs_file:
+        stage_configs: Dict = yaml.load(stage_configs_file, yaml.FullLoader)
+        keyword_to_stages: Dict[str, List[str]] = {}
+        for stage_name, stage_config in stage_configs:
+            if stage_name != "default":
+                assert 'stage-' in stage_name, f"ERROR: Cannot handle stage name {stage_name}"
+
+                # Add keyword to generate one or more stages
+                keyword_to_stages[stage_name.split('-')[1]] = [stage_name]
+                for group in stage_config['groups']:
+                    if group not in keyword_to_stages:
+                        keyword_to_stages[group] = []
+                    keyword_to_stages[group].append(stage_name)
+
+                # Update with defaults without overwriting
+                for key, val in stage_configs['defaults'].items():
+                    if key not in stage_config:
+                        stage_config[key] = val
+
+        for curr_stage in args.stages:
+            stage(defaults, stage_config)
 
     if 1 in stages:
         # stage01(path, worker, forced, predStage, stageID, scriptPath)
@@ -153,42 +164,28 @@ def main():
         stage(path, workers, forced, "stage-06", "stage-07",
               str(base_path) + "/tree_extraction/separate_lobes.py")
     if 10 in stages:  # analysis
-        retVal = subprocess.run([
-            'python3',
-            str(base_path) + '/analysis/analyze_tree.py',
-            path
-        ],
+        retVal = subprocess.run(
+            ['python3', Path(base_path) / 'analysis/analyze_tree.py', path],
             capture_output=True,
             encoding='utf-8'
         )
         print("STDOUT:\n{}\n\nSTDERR:\n{}\n\n".format(retVal.stdout, retVal.stderr))
-        retVal = subprocess.run([
-            'python3',
-            str(base_path) + '/visualization/plot_dist_to_first_split.py',
-            path,
-            "False"
-        ],
+        retVal = subprocess.run(
+            ['python3', Path(base_path) / 'visualization/plot_dist_to_first_split.py', path, "False"],
             capture_output=True,
             encoding='utf-8'
         )
         print("STDOUT:\n{}\n\nSTDERR:\n{}\n\n".format(retVal.stdout, retVal.stderr))
-        retVal = subprocess.run([
-            'python3',
-            str(base_path) + '/analysis/plot_connected_lobes_status.py',
-            path,
-            "False"
-        ],
+        retVal = subprocess.run(
+            ['python3', Path(base_path) / 'analysis/plot_connected_lobes_status.py', path, "False"],
             capture_output=True,
             encoding='utf-8'
         )
         print("STDOUT:\n{}\n\nSTDERR:\n{}\n\n".format(retVal.stdout, retVal.stderr))
 
     if 11 in stages:  # analysis
-        retVal = subprocess.run([
-            'python3',
-            str(base_path) + '/analysis/metadata.py',
-            path
-        ],
+        retVal = subprocess.run(
+            ['python3', Path(base_path) / 'analysis/metadata.py', path],
             capture_output=True,
             encoding='utf-8'
         )
