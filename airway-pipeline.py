@@ -198,8 +198,8 @@ def subprocess_executor(argument):
 def concurrent_executor(subprocess_args, worker):
     global errors
     with ProcessPoolExecutor(max_workers=worker) as executor:
-        for count, retVal in enumerate(executor.map(subprocess_executor, subprocess_args)):
-            print(f"---- Output for process {count}: ----)")
+        for count, retVal in enumerate(executor.map(subprocess_executor, subprocess_args), start=1):
+            print(f"---- Output for process #{count} ----")
             print(f"STDOUT:\n{retVal.stdout}\n")
             print(f"STDERR:\n{retVal.stderr}\n")
 

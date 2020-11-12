@@ -1,11 +1,11 @@
+""" Converts images to booleans, then saves them as numpy array
+"""
+
 import os
 import sys
 
 import numpy as np
 import pydicom
-
-# Converts images to booleans, then saves them as numpy array
-project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Process arguments supplied
 try:
@@ -22,8 +22,8 @@ dir_names_to_id = {
     "RightLowerLobe": 4,
     "RightMiddleLobe": 5,
     "RightUpperLobe": 6,
-    #"Vein": 7,
-    #"Artery": 8,
+    # "Vein": 7,
+    # "Artery": 8,
 }
 
 

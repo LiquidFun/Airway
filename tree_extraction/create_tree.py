@@ -17,31 +17,31 @@ import os
 import queue
 import sys
 import math
+from pathlib import Path
 
 import numpy as np
 
 from helper_functions import adjacent
 
 try:
-    DATA_FOLDER = sys.argv[1]
-    TARGET_FOLDER = sys.argv[2]
+    output_data_path = Path(sys.argv[1])
+    input_data_path = Path(sys.argv[2])
 except IndexError:
     print("ERROR: No data or target folder found, aborting")
     sys.exit(1)
 
-PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DISTANCE_TO_COORDS_FILE = os.path.join(DATA_FOLDER, "map_distance_to_coords.npy")
-MAP_COORD_TO_PREVIOUS_FILE = os.path.join(DATA_FOLDER, 'map_coord_to_previous.txt')
-MAP_COORD_TO_NEXT_COUNT_FILE = os.path.join(DATA_FOLDER, 'map_coord_to_next_count.txt')
-MAP_COORD_TO_NEXT_COUNT_FILE = os.path.join(DATA_FOLDER, 'map_coord_to_next_count.txt')
+DISTANCE_TO_COORDS_FILE = input_data_path / "map_distance_to_coords.npy"
+MAP_COORD_TO_PREVIOUS_FILE = input_data_path / "map_coord_to_previous.txt"
+MAP_COORD_TO_NEXT_COUNT_FILE = input_data_path / "map_coord_to_next_count.txt"
 
-if not os.path.exists(TARGET_FOLDER):
-    os.makedirs(TARGET_FOLDER)
+if not os.path.exists(output_data_path):
+    os.makedirs(output_data_path)
 
-FINAL_COORDS_FILE = os.path.join(TARGET_FOLDER, "final_coords")
-FINAL_EDGES_FILE = os.path.join(TARGET_FOLDER, "final_edges")
-EDGE_ATTRIBUTES_FILE = os.path.join(TARGET_FOLDER, "edge_attributes")
-COORD_ATTRIBUTES_FILE = os.path.join(TARGET_FOLDER, "coord_attributes")
+FINAL_COORDS_FILE = output_data_path / "final_coords"
+FINAL_EDGES_FILE = output_data_path / "final_edges"
+EDGE_ATTRIBUTES_FILE = output_data_path / "edge_attributes"
+COORD_ATTRIBUTES_FILE = output_data_path / "coord_attributes"
+
 
 def parse_coord(coord, split_on):
     text = coord.replace('[', '').replace(']', '').strip().split(split_on)
@@ -49,6 +49,7 @@ def parse_coord(coord, split_on):
         return int(text[0])
     else:
         return tuple([int(a) for a in text if a != ''])
+
 
 coord_to_previous = {}
 coord_to_next_count = {}
@@ -71,11 +72,14 @@ all_groups = []
 # Maps group to average coordinate of the group
 group_to_avg_coord = {}
 
+
 def distance(coord1, coord2):
     return np.linalg.norm(coord1-coord2)
 
+
 def calc_diameter(area):
     return math.sqrt(4*area/math.pi)
+
 
 DISTANCE_TO_COORDS = np.load(DISTANCE_TO_COORDS_FILE, allow_pickle=True)
 
