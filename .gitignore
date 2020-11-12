@@ -1,5 +1,7 @@
-config
+defaults.yaml
 __pycache__
 *.obj
 *.csv
 *.pyc
+.idea
+venv

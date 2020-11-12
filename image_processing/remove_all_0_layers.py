@@ -1,31 +1,28 @@
-import os
-import sys 
+import sys
+from pathlib import Path
 
 import numpy as np
 
-project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+try:
+    output_data_path = Path(sys.argv[1])
+    input_data_path = Path(sys.argv[2])
+except IndexError:
+    print("ERROR: No patient data path supplied")
+    sys.exit(1)
 
-#patient_data_path = os.path.join(project_dir, "data/3124983")
-
-if len(sys.argv) >= 3:
-    patient_data_path = sys.argv[1]
-    processed_data_path = sys.argv[2]
-else:
-    processed_data_path = os.path.join(os.path.join(project_dir, "data/{}"
-        .format(patient_id)))
 
 def print_model_description(model):
     total_sum = np.sum(model)
-    print("Total sum: {}".format(total_sum))
-    print("Total pixels in model: {:,}".format(np.product(np.array(model.shape))))
+    print(f"Total sum: {total_sum:,}")
+    print(f"Total pixels in model: {np.product(np.array(model.shape)):,}")
     return total_sum
 
-model = np.load(os.path.join(patient_data_path, "model.npy"))
 
-#print(model)
+model = np.load(input_data_path / "model.npy")
 
 print("{} images loaded".format(len(model)))
 
+print("Printing sum as validation as only 0-layers are being removed the sum should not change.")
 print("Before reduction:")
 old_total_sum = print_model_description(model)
 
@@ -37,7 +34,7 @@ old_total_sum = print_model_description(model)
 print("\nReducing model: ", end='')
 print(model.shape, end=' ')
 
-for axis in [0,1,2]:
+for axis in [0, 1, 2]:
     sums = np.sum(np.sum(model, axis=axis), axis=(axis+1) % 2)
     # print(sums)
 
@@ -61,7 +58,6 @@ print("\n\nAfter reduction:")
 curr_total_sum = print_model_description(model)
 
 if curr_total_sum == old_total_sum:
-    #np.save(os.path.join(patient_data_path, "reduced_model"), model)
-    np.save(os.path.join(processed_data_path, "reduced_model"), model)
+    np.save(output_data_path / "reduced_model", model)
 else:
     raise Exception("It seems like the script removed actual data from the model; this should not happen!")

@@ -1,0 +1,96 @@
+# --- Default --- #
+defaults:
+  inputs: [] # Names of stages which paths will be supplied to the script
+  groups: [] # Names of groups which can be used instead of a stage number to generate multiple stages
+  args: [] # Args which will be passed after target and input directories
+  per_patient: True # Whether script should be called for every patient, or once for all patients
+
+
+# --- Tree Generation --- #
+stage-01:
+  script: image_processing/save_images_as_npy.py
+  inputs: [raw_airway]
+  groups: [tree]
+stage-02:
+  script: image_processing/remove_all_0_layers.py
+  inputs: [stage-01]
+  groups: [tree]
+stage-03:
+  script: tree_extraction/bfs_distance_method.py
+  inputs: [stage-02]
+  groups: [tree]
+stage-04:
+  script: tree_extraction/create_tree.py
+  inputs: [stage-03]
+  groups: [tree]
+stage-05:
+  script: tree_extraction/compose_tree.py
+  inputs: [stage-04, stage-02]
+  groups: [tree]
+stage-06:
+  script: tree_extraction/post_processing.py
+  inputs: [stage-05]
+  groups: [tree]
+stage-07:
+  script: tree_extraction/separate_lobes.py
+  inputs: [stage-06]
+  groups: [tree]
+
+
+# --- Analysis --- #
+stage-30:
+  script: visualization/plot_dist_to_first_split.py
+  inputs: [stage-07]
+  groups: [analysis]
+  per_patient: False
+  args: [False]
+stage-31:
+  script: analysis/analyze_tree.py
+  inputs: [stage-07]
+  per_patient: False
+  groups: [analysis]
+stage-32:
+  script: analysis/plot_connected_lobes_status.py
+  inputs: [stage-07]
+  groups: [analysis]
+  per_patient: False
+  args: [False]
+stage-33:
+  script: analysis/metadata.py
+  inputs: [raw_airway]
+  groups: [analysis]
+  per_patient: False
+
+
+# --- 3D Objects --- #
+stage-60:
+  script: obj_generation/gen_obj.py
+  inputs: [stage-02]
+  groups: [3d, obj]
+stage-61:
+  script: obj_generation/gen_split_obj.py
+  inputs: [stage-07]
+  groups: [3d, obj]
+
+
+# --- Visualisation --- #
+stage-70:
+  script: image_processing/generate_bronchus_coords.py
+  inputs: [stage-02]
+  groups: [vis]
+stage-71:
+  script: visualization/generate_2d_tree.py
+  inputs: [stage-07]
+  groups: [vis]
+stage-72:
+  script: visualization/plot_splits.py
+  inputs: [stage-06]
+  groups: [vis]
+  args: False
+
+
+# --- Website --- #
+stage-90:
+  script: visualization/generate_2d_tree.py
+  inputs: [stage-72]
+  groups: [website]
