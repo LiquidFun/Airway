@@ -1,9 +1,10 @@
 # --- Default --- #
-default:
+defaults:
   inputs: [] # Names of stages which paths will be supplied to the script
   groups: [] # Names of groups which can be used instead of a stage number to generate multiple stages
   args: [] # Args which will be passed after target and input directories
   per_patient: True # Whether script should be called for every patient, or once for all patients
+
 
 # --- Tree Generation --- #
 stage-01:
@@ -34,6 +35,7 @@ stage-07:
   script: tree_extraction/separate_lobes.py
   inputs: [stage-06]
   groups: [tree]
+
 
 # --- Analysis --- #
 stage-30:
@@ -70,6 +72,7 @@ stage-61:
   inputs: [stage-07]
   groups: [3d, obj]
 
+
 # --- Visualisation --- #
 stage-70:
   script: image_processing/generate_bronchus_coords.py
@@ -84,6 +87,7 @@ stage-72:
   inputs: [stage-06]
   groups: [vis]
   args: False
+
 
 # --- Website --- #
 stage-90:

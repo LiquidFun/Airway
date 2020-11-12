@@ -3,31 +3,33 @@ import sys
 
 import numpy as np
 import pydicom
-from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 # Converts images to booleans, then saves them as numpy array
 project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Process arguments supplied
 try:
-    raw_data_path = sys.argv[1]
-    processed_data_path = sys.argv[2]
+    output_data_path = sys.argv[1]
+    input_data_path = sys.argv[2]
 except IndexError:
     print("ERROR: No source or data path provided, aborting!")
     sys.exit(1)
 
 dir_names_to_id = {
-    "Bronchus"        : 1,
-    "LeftLowerLobe"   : 2,
-    "LeftUpperLobe"   : 3,
-    "RightLowerLobe"  : 4,
-    "RightMiddleLobe" : 5,
-    "RightUpperLobe"  : 6,
+    "Bronchus": 1,
+    "LeftLowerLobe": 2,
+    "LeftUpperLobe": 3,
+    "RightLowerLobe": 4,
+    "RightMiddleLobe": 5,
+    "RightUpperLobe": 6,
+    #"Vein": 7,
+    #"Artery": 8,
 }
+
 
 def get_image_num(filename):
     return int(filename.replace('IMG', ''))
+
 
 def save_images_as_npy(raw_data_path, processed_data_path):
     """Saves a 3D numpy matrix of the model to $processed_data_path
@@ -42,19 +44,20 @@ def save_images_as_npy(raw_data_path, processed_data_path):
     # s is just a debug value to print out the sum of all the lobes.
     # Useful in case some of the bronchus do overlap with some of
     # the lungs. The sums should be equal, if not something is amiss.
-    s = 0
+    total_sum = 0
 
     # Iterate over each type, adding each layer on top of the model
     # with the corresponding id marked in that position.
     for folder, lobe_id in dir_names_to_id.items():
         abs_folder_path = os.path.join(raw_data_path, folder)
         image_files = sorted(os.listdir(abs_folder_path), key=get_image_num)
+        curr_sum = 0
 
         # Initialize model. Note that we do this in this unusual location
         # instead of outside the loop because the count of the images_files
         # is not known before the loop. Therefore this should only be 
         # initialized on the first run of the loop.
-        if folder == "Bronchus":
+        if total_sum == 0:
             model = np.zeros((len(image_files), 512, 512), dtype=np.int8)
 
         for index, image_name in enumerate(image_files):
@@ -75,7 +78,7 @@ def save_images_as_npy(raw_data_path, processed_data_path):
             im = np.clip(np.add(im, 10000), 0, lobe_id)
             model[index] = np.add(model[index], im)
 
-            # This if else part is adds the bronchus. But it tries to also 
+            # This if else part adds the bronchus. But it tries to also
             # label the bronchus depending on which lobe they are in. The
             # problem with this approach was that the lobes do not share
             # any coordinates with the bronchus, therefore this did not
@@ -87,21 +90,27 @@ def save_images_as_npy(raw_data_path, processed_data_path):
             #     im = np.clip(np.add(im, 10000), 1, lobe_id)
             #     model[index] = np.multiply(model[index], im)
 
-            s += np.sum(im)//lobe_id
-        print("{} pixel count:\t {:,}".format(folder, int(s)))
+            curr_sum += np.sum(im)//lobe_id
+        print(f"{folder} pixel count:\t {curr_sum:,}")
+        total_sum += curr_sum
 
     # Create folders if they do not exist
     if not os.path.exists(processed_data_path):
         os.makedirs(processed_data_path)
 
     # Print sums of the model for easier debugging
-    print("Non empty pixels: ", np.count_nonzero(model))
+    print(f"Non empty pixels:\t {np.count_nonzero(model):,}")
     # print("Model sum: %d" % np.sum(model))
     # Save as numpy binary file to given location
     np.save(os.path.join(processed_data_path, "model"), model)
 
-    assert (s == np.count_nonzero(model)), "It seems like some bronchus coords overlap with some lobe coords"
+    class CoordinateOverlapException(Exception):
+        pass
+
+    if total_sum != np.count_nonzero(model):
+        raise CoordinateOverlapException("ERROR: It seems like some coords overlap with other coords, "
+                                         "meaning some data may have been lost.")
 
 
 if __name__ == "__main__":
-    save_images_as_npy(raw_data_path, processed_data_path)
+    save_images_as_npy(input_data_path, output_data_path)
