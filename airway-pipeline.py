@@ -76,7 +76,13 @@ def main():
         if args.all:
             stages_to_process = stage_configs.keys()
         else:
-            stages_to_process = {keyword for s in args.stages for keyword in keyword_to_stages[s]}
+            # Go through each stage in args and handle ranges ('-s 5-7' as well as single calls '-s 3')
+            stages_to_process = set()
+            for s_arg in args.stages:  # e.g. s_arg in ['1-3', '4', '5-7']
+                fr = s_arg.split('-')[0]  # if '1-3' -> '1' and if '4' -> '4'
+                to = s_arg.split('-')[1] if '-' in s_arg else fr  # if '1-3' -> '3' and if '4' -> '4'
+                for s in range(int(fr), int(to)+1):
+                    stages_to_process |= {keyword for keyword in keyword_to_stages[str(s)]}
 
         # TODO: Handle in correct dependency order
 
@@ -160,8 +166,10 @@ def stage(
     """
     print(f"====== Processing {stage_name} ======")
 
-    script_path = Path(__file__).parents[0] / script
-    assert script_path.exists(), f"ERROR: script {script_path} does not exist!"
+    # script_path = Path(__file__).parents[0] / script
+    script_module = script.replace(".py", "").replace('/', '.')
+    print(f"Running script {script_module} as module.")
+    # assert script_path.exists(), f"ERROR: script {script_path} does not exist!"
 
     output_stage_path = Path(path) / stage_name
 
@@ -185,7 +193,7 @@ def stage(
                 patient_input_stage_paths = [isp / patient_dir.name for isp in input_stage_paths]
                 patient_output_stage_path.mkdir(exist_ok=True, mode=0o777)
 
-                subprocess_args.append(["python3", script_path, patient_output_stage_path, *patient_input_stage_paths, *args])
+                subprocess_args.append(["python3", "-m", script_module, patient_output_stage_path, *patient_input_stage_paths, *args])
             concurrent_executor(subprocess_args, workers)
 
 

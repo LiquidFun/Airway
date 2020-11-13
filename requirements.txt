@@ -6,3 +6,4 @@ sklearn
 pandas
 python-igraph
 pyyaml
+matplotlib

@@ -1,13 +1,10 @@
 import sys
-import os
 import math
-from pathlib import Path
 
 import numpy as np
 import networkx as nx
-# import psutil
-from time import sleep
 
+from util.util import get_data_paths_from_args
 
 # checks if a file is already opened by a other process #
 # def hasHandle(fpath):
@@ -19,6 +16,7 @@ from time import sleep
 #        except Exception:
 #            pass
 #    return False
+
 
 def get_value_from_model(coord, reduced_model):
     return reduced_model[coord[0], coord[1], coord[2]]
@@ -97,14 +95,17 @@ def create_nodes(graph, np_coord, np_coord_attributes, reduced_model):
             level=level_val,
             group_size=group_size
         )
-        i = i + 1
+        i += 1
 
     return dic_coords_to_nodes
 
 
 def get_weight(coord1, coord2):
-    return math.sqrt((coord1[0] - coord2[0]) ** 2 + (coord1[1] - coord2[1]) ** 2
-                     + (coord1[2] - coord2[2]) ** 2)
+    return math.sqrt(
+        (coord1[0] - coord2[0])**2
+        + (coord1[1] - coord2[1])**2
+        + (coord1[2] - coord2[2])**2
+    )
 
 
 # returns a dict with association edge -> weight
@@ -126,7 +127,7 @@ def create_edges(graph, np_edges, dic_coords, edge_attributes):
             weight=curr_weight,
             group_sizes=group_sizes
         )
-        i = i + 1
+        i += 1
 
     return dic_edges_to_weight
 
@@ -182,7 +183,7 @@ def get_children(graph, node):
 
 def set_attribute_to_node(graph, filt, target):
     """ 
-    setAttributeToNode(graph, filter, target) set or update existing atributes to
+    set_attribute_to_node(graph, filter, target) set or update existing atributes to
     a node filtered by filter.
 
     graph -> a graph
@@ -203,19 +204,12 @@ def set_attribute_to_node(graph, filt, target):
     return graph
 
 
-###### main ######
 def main():
-    try:
-        output_data_path = Path(sys.argv[1])
-        tree_input_data_path = Path(sys.argv[2])
-        reduced_model_data_path = Path(sys.argv[3])
-    except IndexError:
-        print("ERROR: No data or target folder found, aborting")
-        sys.exit(1)
+    output_data_path, tree_input_data_path, reduced_model_data_path = get_data_paths_from_args(inputs=2)
 
-    patient_id = Path(tree_input_data_path).parts[-1]
+    patient_id = tree_input_data_path.parts[-1]
 
-    if Path(tree_input_data_path).is_dir and Path(output_data_path).is_dir:
+    if tree_input_data_path.is_dir and output_data_path.is_dir:
         coord_file_path = tree_input_data_path / "final_coords.npy"
         edges_file_path = tree_input_data_path / "final_edges.npy"
         coord_attributes_file_path = tree_input_data_path / "coord_attributes.npy"
@@ -223,7 +217,10 @@ def main():
     else:
         sys.exit(1)
 
-    if not Path(reduced_model_data_path).exists():
+    print("hello")
+    sys.exit(1)
+
+    if not reduced_model_data_path.exists():
         print("ERROR: stage-02 needed")
         print(reduced_model_data_path)
         sys.exit(-1)
@@ -248,7 +245,7 @@ def main():
 
     show_stats(graph, patient_id)
 
-    nx.write_graphml(graph, os.path.join(output_data_path, "tree.graphml"))
+    nx.write_graphml(graph, output_data_path / "tree.graphml")
 
 
 if __name__ == "__main__":

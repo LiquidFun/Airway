@@ -1,18 +1,14 @@
 """ Used to separate lobes
 """
 import os
-import sys
-import csv
-from pathlib import Path
 
 import networkx as nx
 
-from compose_tree import eraseLevelfromGraph
-from compose_tree import setLevel
-from post_processing import load_graph
+from tree_extraction.compose_tree import erase_level_from_graph
+from tree_extraction.post_processing import load_graph
+from util.util import get_data_paths_from_args
 
 
-# single splits without any edges are erased from graph
 def erase_orphaned_nodes(view):
     degree_dict = dict(nx.degree(view))
     lobe_graph = view.copy()
@@ -39,7 +35,7 @@ def create_subtrees(graph, patient, target_path):
         if lobe_graph.number_of_nodes() == 0:
             print("x")
             continue
-        lobe_graph = eraseLevelfromGraph(lobe_graph, 4)
+        lobe_graph = erase_level_from_graph(lobe_graph, 4)
         print(lobe_graph.number_of_nodes())
         nx.write_graphml(
             lobe_graph, os.path.join(target_path, f"lobe-{curr_lobe}-{patient}.graphml")
@@ -58,13 +54,8 @@ def main():
     # |>- Process arguments -<|
     # |>-<-><-><-><-><-><-><-<|
 
-    try:
-        data_folder = sys.argv[1]
-        target_folder = sys.argv[2]
-        patient = os.path.basename(sys.argv[1])
-    except IndexError:
-        print("ERROR: No data or target folder found, aborting")
-        sys.exit(1)
+    output_data_path, input_data_path = get_data_paths_from_args()
+    patient = input_data_path.name
 
     print(f"\nstage-07 current patient: {patient}\n")
 
@@ -72,18 +63,18 @@ def main():
     # |>- Load graph -<|
     # |>-<-><-><-><->-<|
 
-    graph = load_graph(os.path.join(data_folder, "tree.graphml"))
+    graph = load_graph(input_data_path / "tree.graphml")
 
     # |>-<-><-><-><-><-<|
     # |>- Write lobes -<|
     # |>-<-><-><-><-><-<|
 
-    if not os.path.exists(target_folder):
-        os.makedirs(target_folder)
-    nx.write_graphml(graph, os.path.join(target_folder, "tree.graphml"))
+    if not output_data_path.exists():
+        output_data_path.mkdir(parents=True)
+    nx.write_graphml(graph, output_data_path / "tree.graphml")
 
     # Store subtrees and connection statistics
-    create_subtrees(graph, patient, target_folder)
+    create_subtrees(graph, patient, output_data_path)
 
 
 if __name__ == "__main__":

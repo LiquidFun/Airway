@@ -5,20 +5,16 @@ from pathlib import Path
 
 import numpy as np
 
-from helper_functions import adjacent
+from tree_extraction.helper_functions import adjacent
+from util.util import get_data_paths_from_args
 
-try:
-    output_path_dir = Path(sys.argv[1])
-    input_path_dir = Path(sys.argv[2])
-except IndexError:
-    print("ERROR: No data or target folder found, aborting")
-    sys.exit(1)
+output_data_path, input_data_path = get_data_paths_from_args()
 
-patient_data_file = input_path_dir / "reduced_model.npy"
-distance_to_coords_file = output_path_dir / "map_distance_to_coords"
-coord_to_distance_file = output_path_dir / "map_coord_to_distance.txt"
-coord_to_previous_file = output_path_dir / "map_coord_to_previous.txt"
-coord_to_next_count_file = output_path_dir / "map_coord_to_next_count.txt"
+patient_data_file = input_data_path / "reduced_model.npy"
+distance_to_coords_file = output_data_path / "map_distance_to_coords"
+coord_to_distance_file = output_data_path / "map_coord_to_distance.txt"
+coord_to_previous_file = output_data_path / "map_coord_to_previous.txt"
+coord_to_next_count_file = output_data_path / "map_coord_to_next_count.txt"
 
 
 def find_first_voxel(model):

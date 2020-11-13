@@ -21,7 +21,7 @@ from pathlib import Path
 
 import numpy as np
 
-from helper_functions import adjacent
+from tree_extraction.helper_functions import adjacent
 
 try:
     output_data_path = Path(sys.argv[1])
@@ -63,7 +63,7 @@ for dictionary, filename in [(coord_to_previous, MAP_COORD_TO_PREVIOUS_FILE),
                 prev = parse_coord(second_half, ' ')
                 dictionary[coord] = prev
 
-# Maps group id (1,0) to group_id (0, 0) to show the predecessor
+# Maps group id (1, 0) to group_id (0, 0) to show the predecessor
 prev_group = {}
 
 # A list of all groups, where each entry corresponds to a list with all the groups in the distance

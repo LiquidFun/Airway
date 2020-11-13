@@ -12,16 +12,16 @@ it adds the points which haven't been added yet on that face and also adds the f
 Then it saves everything into a .obj file with the format of [patient_it].obj. This file can
 be imported into blender, 3D printed, visualized and many other nice things.
 """
-import os
-import sys
-
 import numpy as np
 from skimage.morphology import skeletonize
 
-def generate_obj(target, accepted_types, model):
+from util.util import get_data_paths_from_args
+
+
+def generate_obj(output_data_path, accepted_types, model):
     """Saves a .obj file given the model, the accepted types and a name
 
-    target is a string, this is the full path the file will be saved as
+    output_data_path is a string, this is the full path the file will be saved as
 
     accepted_types is a list or set which types should be looked for, other
     types will be ignored. If empty set then everything except for 0 will be
@@ -31,11 +31,11 @@ def generate_obj(target, accepted_types, model):
     want to convert to 3D
     """
 
-    if os.path.exists(target):
-        print(f"Skipping {target} since it already exists. Manually delete to regenerate.")
+    if output_data_path.exists():
+        print(f"Skipping {output_data_path} since it already exists. Manually delete to regenerate.")
         return
 
-    print(f"Generating {target} with accepted types of {accepted_types}")
+    print(f"Generating {output_data_path} with accepted types of {accepted_types}")
 
     vertices = {}
     faces = []
@@ -92,13 +92,14 @@ def generate_obj(target, accepted_types, model):
     vertices = normalize(vertices)
 
     # Write vertices and faces to file
-    with open(target, 'w') as file:
+    with open(output_data_path, 'w') as file:
         file.write("# Vertices\n")
         for x, y, z in vertices:
             file.write(f"v {x:.6f} {y:.6f} {z:.6f}\n")
         file.write("\n# Faces\n")
         for a, b, c, d in faces:
             file.write(f"f {a} {b} {c} {d}\n")
+
 
 def normalize(vertices):
     """Normalize each coordinate to around -10 to 10, also center them
@@ -114,26 +115,23 @@ def normalize(vertices):
     return vertices
 
 
-if __name__ == "__main__":
-    try:
-        SOURCE_DATA_PATH = sys.argv[1]
-        TARGET_DATA_PATH = sys.argv[2]
-    except IndexError:
-        print("ERROR: No source or data path provided, aborting!")
-        sys.exit(1)
+def main():
+    output_data_path, input_data_path = get_data_paths_from_args()
 
-    MODEL = np.load(os.path.join(SOURCE_DATA_PATH, "reduced_model.npy"))
-    print(f"Loaded model with shape {MODEL.shape}")
+    model = np.load(input_data_path / "reduced_model.npy")
+    print(f"Loaded model with shape {model.shape}")
 
-    if not os.path.exists(TARGET_DATA_PATH):
-        os.makedirs(TARGET_DATA_PATH)
-
+    if not output_data_path.exists():
+        output_data_path.mkdir(parents=True, exist_ok=True)
 
     print("Running skeletonize on model")
     # Remove lobe coordinates from model by clipping everything
     # between 0 and 2, then modulo everything by 2 to remove 2s
-    SKELETON = skeletonize(np.clip(MODEL, 0, 2) % 2)
-    generate_obj(os.path.join(TARGET_DATA_PATH, "skeleton.obj"), set(), SKELETON)
-    generate_obj(os.path.join(TARGET_DATA_PATH, "bronchus.obj"), {1}, MODEL)
-    generate_obj(os.path.join(TARGET_DATA_PATH, "lung.obj"), {1, 2, 3, 4, 5, 6}, MODEL)
+    skeleton = skeletonize(np.clip(model, 0, 2) % 2)
+    generate_obj(output_data_path / "skeleton.obj", set(), skeleton)
+    generate_obj(output_data_path / "bronchus.obj", {1}, model)
+    generate_obj(output_data_path / "lung.obj", {1, 2, 3, 4, 5, 6}, model)
 
+
+if __name__ == "__main__":
+    main()

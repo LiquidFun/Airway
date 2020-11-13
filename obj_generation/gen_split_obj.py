@@ -1,12 +1,10 @@
 """Module to generate .obj file from splits (places cubes where splits are)
 """
-import os
-import sys
-
 import networkx as nx
-import numpy as np
 
-from gen_obj import normalize
+from obj_generation.gen_obj import normalize
+from util.util import get_data_paths_from_args
+
 
 def gen_split_obj(target_data_path, graph):
 
@@ -54,20 +52,15 @@ def gen_split_obj(target_data_path, graph):
             j = i + len(vertices) + 1
             file.write(f"f {j} {j+1} {j+3} {j+2}\n")
 
+
 def main():
-    try:
-        source_data_path = sys.argv[1]
-        target_data_path = sys.argv[2]
-    except IndexError:
-        print("ERROR: No source or data path provided, aborting!")
-        sys.exit(1)
+    output_data_path, input_data_path = get_data_paths_from_args()
 
-    if not os.path.exists(target_data_path):
-        os.makedirs(target_data_path)
+    if not output_data_path.exists():
+        output_data_path.mkdir(parents=True, exist_ok=True)
 
-    graph = nx.read_graphml(os.path.join(source_data_path, "tree.graphml"))
-    gen_split_obj(os.path.join(target_data_path, "splits.obj"), graph)
-
+    graph = nx.read_graphml(input_data_path / "tree.graphml")
+    gen_split_obj(output_data_path / "splits.obj", graph)
 
 
 if __name__ == "__main__":
