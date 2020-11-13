@@ -7,3 +7,4 @@ pandas
 python-igraph
 pyyaml
 matplotlib
+igraph

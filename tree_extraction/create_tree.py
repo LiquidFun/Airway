@@ -13,29 +13,19 @@ happens it marks this as a split and saves it later on.
 After doing that it backtracks all nodes and creates all the edges. 
 """
 
-import os
 import queue
-import sys
 import math
-from pathlib import Path
 
 import numpy as np
 
 from tree_extraction.helper_functions import adjacent
+from util.util import get_data_paths_from_args
 
-try:
-    output_data_path = Path(sys.argv[1])
-    input_data_path = Path(sys.argv[2])
-except IndexError:
-    print("ERROR: No data or target folder found, aborting")
-    sys.exit(1)
+output_data_path, input_data_path = get_data_paths_from_args()
 
 DISTANCE_TO_COORDS_FILE = input_data_path / "map_distance_to_coords.npy"
 MAP_COORD_TO_PREVIOUS_FILE = input_data_path / "map_coord_to_previous.txt"
 MAP_COORD_TO_NEXT_COUNT_FILE = input_data_path / "map_coord_to_next_count.txt"
-
-if not os.path.exists(output_data_path):
-    os.makedirs(output_data_path)
 
 FINAL_COORDS_FILE = output_data_path / "final_coords"
 FINAL_EDGES_FILE = output_data_path / "final_edges"

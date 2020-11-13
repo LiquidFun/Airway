@@ -33,7 +33,7 @@ def check_axis(axis_id, coord_list, direction, reduced_model):
     while coord in range(0, maximum - 1):
         path_len = path_len + 1
 
-        coord += (direction == "positive")
+        coord += (1 if direction == "positive" else -1)
 
         curr_coord_list[axis_id] = coord
 
@@ -67,6 +67,7 @@ def get_lobe(coords, reduced_model):
 
 # returns a dict with association coordinate -> node Number
 def create_nodes(graph, np_coord, np_coord_attributes, reduced_model):
+    # assert False, "Crashes here"
     # get node coordinates
     max_coords = np.shape(np_coord)[1]
     dic_coords_to_nodes = {}
@@ -217,8 +218,6 @@ def main():
     else:
         sys.exit(1)
 
-    print("hello")
-    sys.exit(1)
 
     if not reduced_model_data_path.exists():
         print("ERROR: stage-02 needed")
@@ -235,6 +234,7 @@ def main():
     # create empty graphs
     graph = nx.Graph(patient=int(patient_id))
     # compose graphs
+    # assert False, "Crashes not here"
     dic_coords = create_nodes(graph, np_coord, np_coord_attributes, reduced_model)
     dic_edges = create_edges(graph, np_edges, dic_coords, np_edges_attributes)
 

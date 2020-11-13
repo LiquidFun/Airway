@@ -1,26 +1,25 @@
-'''
-This script espects two command line arguments.
+"""
+This script expects two command line arguments.
 
 The first, input, is the directory where the graphml files for a certain
 patient are stored e.g. ~/Airway/stage-05/123123.
 
 The second, output, is the directory where you want the output graphs for a certain
 patient to be stored at, e.g. ~/Airway/stage-22/123123.
-'''
+"""
 
 import os
 import sys
 import argparse as arg
 from pathlib import Path
-import glob
 import igraph as ig
 import math
 
 
-################################################
-##  Parse the command line arguments and      ##
-##  store them in variables input and output  ##
-################################################
+##############################################
+#  Parse the command line arguments and      #
+#  store them in variables input and output  #
+##############################################
 parser = arg.ArgumentParser()
 parser.add_argument('input', help='Path to patient directory: e.g. /Airway/stage-07/123123', type=Path)
 parser.add_argument('output', help='Path to output directory: e.g. /Airway/stage-23/123123', type=Path)
@@ -164,4 +163,5 @@ for patient in patient_input_folder:
             if lobe in ['tree', 'simplified-tree']:
                 number_of_nodes = len(graph.vs)
                 picture_size = (2000+3*number_of_nodes,1000+number_of_nodes) #(3500,1500)
-            ig.plot(graph, os.path.join(patient_output_folder, lobe)+'.png', layout=layout, bbox=picture_size)'''
+            ig.plot(graph, os.path.join(patient_output_folder, lobe)+'.png', layout=layout, bbox=picture_size)
+'''

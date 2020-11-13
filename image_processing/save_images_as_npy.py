@@ -2,18 +2,14 @@
 """
 
 import os
-import sys
 
 import numpy as np
 import pydicom
 
+from util.util import get_data_paths_from_args
+
 # Process arguments supplied
-try:
-    output_data_path = sys.argv[1]
-    input_data_path = sys.argv[2]
-except IndexError:
-    print("ERROR: No source or data path provided, aborting!")
-    sys.exit(1)
+output_data_path, input_data_path = get_data_paths_from_args()
 
 dir_names_to_id = {
     "Bronchus": 1,
@@ -27,19 +23,12 @@ dir_names_to_id = {
 }
 
 
-def get_image_num(filename):
-    return int(filename.replace('IMG', ''))
-
-
 def save_images_as_npy(raw_data_path, processed_data_path):
     """Saves a 3D numpy matrix of the model to $processed_data_path
 
     The matrix has 0 for empty space and dir_names_to_id for each
     type given. 
     """
-
-    # Get the patient id from the folder name 
-    patient_id = os.path.basename(raw_data_path)
 
     # s is just a debug value to print out the sum of all the lobes.
     # Useful in case some of the bronchus do overlap with some of
@@ -49,8 +38,8 @@ def save_images_as_npy(raw_data_path, processed_data_path):
     # Iterate over each type, adding each layer on top of the model
     # with the corresponding id marked in that position.
     for folder, lobe_id in dir_names_to_id.items():
-        abs_folder_path = os.path.join(raw_data_path, folder)
-        image_files = sorted(os.listdir(abs_folder_path), key=get_image_num)
+        abs_folder_path = raw_data_path / folder
+        image_files = sorted(abs_folder_path.glob('*'), key=lambda f: int(f.name.replace('IMG', '')))
         curr_sum = 0
 
         # Initialize model. Note that we do this in this unusual location
@@ -61,7 +50,7 @@ def save_images_as_npy(raw_data_path, processed_data_path):
             model = np.zeros((len(image_files), 512, 512), dtype=np.int8)
 
         for index, image_name in enumerate(image_files):
-            image_path = os.path.join(abs_folder_path, image_name)
+            image_path = abs_folder_path / image_name
 
             # Read the data and save the pixel_array which will have a 
             # shape of around (700, 512, 512), the 512s being consistent.
@@ -95,14 +84,14 @@ def save_images_as_npy(raw_data_path, processed_data_path):
         total_sum += curr_sum
 
     # Create folders if they do not exist
-    if not os.path.exists(processed_data_path):
+    if not processed_data_path.exists():
         os.makedirs(processed_data_path)
 
     # Print sums of the model for easier debugging
     print(f"Non empty pixels:\t {np.count_nonzero(model):,}")
     # print("Model sum: %d" % np.sum(model))
     # Save as numpy binary file to given location
-    np.save(os.path.join(processed_data_path, "model"), model)
+    np.save(processed_data_path / "model", model)
 
     class CoordinateOverlapException(Exception):
         pass

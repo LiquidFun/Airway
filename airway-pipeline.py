@@ -11,7 +11,7 @@ import sys
 import os
 import argparse
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, List
 
 import subprocess
 from subprocess import PIPE
@@ -29,7 +29,7 @@ errors = {}  # used for collecting errors while executing parallel tasks
 def main():
     base_path = Path(sys.argv[0]).parents[0]
 
-    defaults = {"path": None, "workers": 4, "force": False, "debug": False, "all": False}
+    defaults = {"path": None, "workers": 4, "force": False, "single": False, "all": False}
     defaults_path = base_path / "defaults.yaml"
     if defaults_path.exists():
         with open(defaults_path) as config_file:
@@ -43,8 +43,8 @@ def main():
     parser.add_argument("-w", "--workers", type=int, default=defaults["workers"], help="number of parallel workers")
     parser.add_argument("-f", "--force", help="force overwriting of previous stages",
                         default=defaults["force"], action="store_true")
-    parser.add_argument("-1", "--single", help="will do a single patient instead of all patients",
-                        default=defaults['debug'], action="store_true")
+    parser.add_argument("-1", "--single", help="will do a single patient instead of all patients (useful for testing)",
+                        default=defaults['single'], action="store_true")
     args = parser.parse_args()
 
     assert args.path is not None, "ERROR: Airway data path required!"
@@ -78,61 +78,22 @@ def main():
         else:
             # Go through each stage in args and handle ranges ('-s 5-7' as well as single calls '-s 3')
             stages_to_process = set()
-            for s_arg in args.stages:  # e.g. s_arg in ['1-3', '4', '5-7']
-                fr = s_arg.split('-')[0]  # if '1-3' -> '1' and if '4' -> '4'
-                to = s_arg.split('-')[1] if '-' in s_arg else fr  # if '1-3' -> '3' and if '4' -> '4'
-                for s in range(int(fr), int(to)+1):
+            for s_arg in args.stages:  # e.g. s_arg in ['1-3', '4', '5-7', 'analysis']
+                if '-' in s_arg:
+                    fr = int(s_arg.split('-')[0])
+                    to = int(s_arg.split('-')[1]) + 1
+                    keywords = list(map(str, range(fr, to)))
+                else:
+                    keywords = [s_arg]
+                for s in keywords:
                     stages_to_process |= {keyword for keyword in keyword_to_stages[str(s)]}
 
+        assert all([isinstance(a, str) for a in stages_to_process]), "ERROR: Not all keywords are strings"
         # TODO: Handle in correct dependency order
 
         for curr_stage_name in stages_to_process:
             assert curr_stage_name in stage_configs, f"ERROR: Unknown stage name {curr_stage_name}!"
             stage(curr_stage_name, **stage_configs[curr_stage_name], **vars(args))
-
-    # if 10 in stages:  # analysis
-    #     retVal = subprocess.run(
-    #         ['python3', Path(base_path) / 'analysis/analyze_tree.py', path],
-    #         capture_output=True,
-    #         encoding='utf-8'
-    #     )
-    #     print("STDOUT:\n{}\n\nSTDERR:\n{}\n\n".format(retVal.stdout, retVal.stderr))
-    #     retVal = subprocess.run(
-    #         ['python3', Path(base_path) / 'visualization/plot_dist_to_first_split.py', path, "False"],
-    #         capture_output=True,
-    #         encoding='utf-8'
-    #     )
-    #     print("STDOUT:\n{}\n\nSTDERR:\n{}\n\n".format(retVal.stdout, retVal.stderr))
-    #     retVal = subprocess.run(
-    #         ['python3', Path(base_path) / 'analysis/plot_connected_lobes_status.py', path, "False"],
-    #         capture_output=True,
-    #         encoding='utf-8'
-    #     )
-    #     print("STDOUT:\n{}\n\nSTDERR:\n{}\n\n".format(retVal.stdout, retVal.stderr))
-
-    # if 11 in stages:  # analysis
-    #     retVal = subprocess.run(
-    #         ['python3', Path(base_path) / 'analysis/metadata.py', path],
-    #         capture_output=True,
-    #         encoding='utf-8'
-    #     )
-    #     print("STDOUT:\n{}\n\nSTDERR:\n{}\n\n".format(retVal.stdout, retVal.stderr))
-    # if 20 in stages:  # preparing for visualization
-    #     stage(path, workers, force, "stage-02", "stage-20", f"{base_path}/image_processing/generate_bronchus_coords.py")
-    # if 21 in stages:  # object generation
-    #     stage(path, workers, force, "stage-02", "stage-21", f"{base_path}/obj_generation/gen_obj.py")
-    #     stage(path, workers, True, "stage-07", "stage-21", f"{base_path}/obj_generation/gen_split_obj.py")
-    # if 22 in stages:  # plots and fancy stuff
-    #     # Generate split plots
-    #     stage(
-    #         path,
-    #         workers,
-    #         force,
-    #         "stage-06",
-    #         "stage-22",
-    #         Path(base_path) / "visualization/plot_splits.py",
-    #         "False",  # This tells the script not to display pyplot interactively
-    #     )
 
     show_error_statistics()
 
@@ -166,6 +127,8 @@ def stage(
     """
     print(f"====== Processing {stage_name} ======")
 
+    args = list(map(str, args))
+
     # script_path = Path(__file__).parents[0] / script
     script_module = script.replace(".py", "").replace('/', '.')
     print(f"Running script {script_module} as module.")
@@ -180,21 +143,27 @@ def stage(
         print(f"ERROR: {output_stage_path} already exists, use the -f flag to overwrite.")
         sys.exit(1)
     else:
-        for input_stage_path in input_stage_paths:
-            assert input_stage_path.exists(), f"ERROR: {input_stage_path} does not exist. " \
-                                              f"Calculate the predecessor stage first!"
-            patient_dirs = input_stage_path.glob('*')
-            output_stage_path.mkdir(exist_ok=True, mode=0o777)
+        input_stage_path = input_stage_paths[0]
+        assert input_stage_path.exists(), f"ERROR: {input_stage_path} does not exist. " \
+                                          f"Calculate the predecessor stage first!"
+        output_stage_path.mkdir(exist_ok=True, parents=True)
 
-            # build the list of subprocess-arguments for later use with subprocess.run
-            subprocess_args = []
-            for patient_dir in patient_dirs:
+        # build the list of subprocess-arguments for later use with subprocess.run
+        subprocess_args = []
+        # If script should be called for every patiente
+        if per_patient:
+            # Iterate over each patient directory
+            for patient_dir in input_stage_path.glob('*'):
                 patient_output_stage_path = output_stage_path / patient_dir.name
                 patient_input_stage_paths = [isp / patient_dir.name for isp in input_stage_paths]
                 patient_output_stage_path.mkdir(exist_ok=True, mode=0o777)
 
-                subprocess_args.append(["python3", "-m", script_module, patient_output_stage_path, *patient_input_stage_paths, *args])
-            concurrent_executor(subprocess_args, workers)
+                subprocess_args.append(["python3", "-m", script_module, patient_output_stage_path,
+                                        *patient_input_stage_paths, *args])
+        # Call script with default directory otherwise
+        else:
+            subprocess_args.append(["python3", "-m", script_module, output_stage_path, *input_stage_paths, *args])
+        concurrent_executor(subprocess_args, workers)
 
 
 def subprocess_executor(argument):

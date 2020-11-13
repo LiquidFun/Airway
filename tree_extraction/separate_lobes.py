@@ -1,7 +1,5 @@
 """ Used to separate lobes
 """
-import os
-
 import networkx as nx
 
 from tree_extraction.compose_tree import erase_level_from_graph
@@ -37,9 +35,7 @@ def create_subtrees(graph, patient, target_path):
             continue
         lobe_graph = erase_level_from_graph(lobe_graph, 4)
         print(lobe_graph.number_of_nodes())
-        nx.write_graphml(
-            lobe_graph, os.path.join(target_path, f"lobe-{curr_lobe}-{patient}.graphml")
-        )
+        nx.write_graphml(lobe_graph, target_path / f"lobe-{curr_lobe}-{patient}.graphml")
 
 
 # ============================================================================

@@ -38,7 +38,7 @@ def maximum_independent_set_length(tree):
 
 def create_general_tree_statistics_file(csv_path):
     if Path.exists(Path(csv_path)):
-        print("WARNING: File was overwritten: " + csv_path)
+        print(f"WARNING: File was overwritten: {csv_path}")
     else:
         Path(csv_path).touch(exist_ok=False)
 
@@ -225,6 +225,7 @@ def plot_distance_values(distance_dict, path):
 
     # plt.show()
     plt.savefig(path, dpi=200)
+    plt.close()
 
 
 def autolabel(bars, ax):
@@ -236,7 +237,7 @@ def autolabel(bars, ax):
 
 def export_classification_csv(distance_dict, csv_path):
     if Path.exists(Path(csv_path)):
-        print("WARNING: File was overwritten: " + csv_path)
+        print(f"WARNING: File was overwritten: {csv_path}")
     else:
         Path(csv_path).touch(exist_ok=False)
 
