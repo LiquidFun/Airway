@@ -18,8 +18,8 @@ dir_names_to_id = {
     "RightLowerLobe": 4,
     "RightMiddleLobe": 5,
     "RightUpperLobe": 6,
-    # "Vein": 7,
-    # "Artery": 8,
+    "Vein": 7,
+    "Artery": 8,
 }
 
 
@@ -34,6 +34,10 @@ def save_images_as_npy(raw_data_path, processed_data_path):
     # Useful in case some of the bronchus do overlap with some of
     # the lungs. The sums should be equal, if not something is amiss.
     total_sum = 0
+
+    # Remember which and how many coordinates overlap for better
+    # analysis
+    overlapping_coords = []
 
     # Iterate over each type, adding each layer on top of the model
     # with the corresponding id marked in that position.
@@ -82,23 +86,27 @@ def save_images_as_npy(raw_data_path, processed_data_path):
             curr_sum += np.sum(im)//lobe_id
         print(f"{folder} pixel count:\t {curr_sum:,}")
         total_sum += curr_sum
+        if total_sum != np.count_nonzero(model):
+            overlapping_coords.append((folder, total_sum-np.count_nonzero(model)))
 
     # Create folders if they do not exist
     if not processed_data_path.exists():
         os.makedirs(processed_data_path)
 
     # Print sums of the model for easier debugging
-    print(f"Non empty pixels:\t {np.count_nonzero(model):,}")
+    print(f"Non-empty voxels:\t {np.count_nonzero(model):,} out of {np.size(model):,} total voxels (shape={np.shape(model)})")
     # print("Model sum: %d" % np.sum(model))
     # Save as numpy binary file to given location
     np.save(processed_data_path / "model", model)
 
-    class CoordinateOverlapException(Exception):
-        pass
-
     if total_sum != np.count_nonzero(model):
-        raise CoordinateOverlapException("ERROR: It seems like some coords overlap with other coords, "
-                                         "meaning some data may have been lost.")
+        print("\nWARNING: It seems like some coords overlap with other coords, meaning some data has been lost.")
+        # Adjust for incorrect calculation since overlapping_coords only remembers total difference
+        print("\tNumber of overlapping coordinates:")
+        previous_count = 0
+        for folder, count in overlapping_coords:
+            print(f"\t{folder}: {count-previous_count:,}")
+            previous_count = count
 
 
 if __name__ == "__main__":

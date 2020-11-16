@@ -1,31 +1,33 @@
-import os
 import sys
 
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import networkx as nx
+
+from util.util import get_data_paths_from_args
+
 plt.rcParams.update({'font.size': 6})
 
 # |>--><-><-><-><-><->-<|
 # |>- Parse arguments -<|
 # |>--><-><-><-><-><->-<|
 
-try:
-    source_data_path = os.path.dirname(os.path.dirname(sys.argv[1]))
-    target_data_path = sys.argv[2]
-    patient = os.path.basename(sys.argv[1])
-except IndexError:
-    print("ERROR: No source or data path provided, aborting!")
-    sys.exit(1)
+(
+    output_data_path,
+    bronchus_shell_data_path,
+    map_coord_to_dist_data_path,
+    final_coords_data_path,
+    pre_post_processing_data_path,
+    post_post_processing_data_path,
+) = get_data_paths_from_args(inputs=5)
 
 try:
-    show_plot = sys.argv[3].lower() == "true"
+    show_plot = sys.argv[7].lower() == "true"
 except IndexError:
     show_plot = True
 
 try:
-    show_bronchus = sys.argv[4].lower() == "true"
+    show_bronchus = sys.argv[8].lower() == "true"
 except IndexError:
     show_bronchus = False
 
@@ -60,7 +62,7 @@ nodes_per_axis = []
 # |>- Potentially draw bronchus -<|
 # |>-><-><-><-><-><-><-><-><-><--<|
 
-arr = np.load(os.path.join(source_data_path, "stage-20/" + patient + "/bronchus_coords_outer_shell.npy"))
+arr = np.load(bronchus_shell_data_path / "bronchus_coords_outer_shell.npy")
 
 xs = arr[1]
 ys = arr[2]
@@ -71,8 +73,7 @@ distances = {}
 max_dist = 0
 
 if show_bronchus:
-
-    with open(os.path.join(source_data_path, "stage-03/" + patient + "/map_coord_to_distance.txt"), 'r') as dist_file:
+    with open(map_coord_to_dist_data_path / "map_coord_to_distance.txt", 'r') as dist_file:
         for line in dist_file.read().split('\n'):
             if line != '':
                 coord = tuple([int(a) for a in line.split(':')[0].split(',')])
@@ -97,16 +98,16 @@ if show_bronchus:
 # |>--><-><-><-><-><-><-><-><-><-><-><-><-><--<|
 
 # Draw coords
-final_coords_file = os.path.join(source_data_path, "stage-04/" + patient + "/final_coords.npy")
-if os.path.isfile(final_coords_file):
+final_coords_file = final_coords_data_path / "final_coords.npy"
+if final_coords_file.exists():
     c = np.load(final_coords_file)
     ax1.scatter(c[1], c[2], -c[0], s=5, c="red")
     nodes_per_axis.append(len(c[0]))
 
 # Draw edges
-final_edges_file = os.path.join(source_data_path, "stage-04/" + patient + "/final_edges.npy")
+final_edges_file = final_coords_data_path / "final_edges.npy"
 # print(final_edges_file)
-if os.path.isfile(final_edges_file):
+if final_edges_file.exists():
     e = np.load(final_edges_file)
     for i in range(len(e[0])):
         ax1.plot(e[1][i], e[2][i], -e[0][i], c='red')
@@ -116,13 +117,17 @@ if os.path.isfile(final_edges_file):
 # |>-><-><-><-><-><-><-><-><-><-><-><-><-><--<|
 
 axis_stage_file = [
-    (ax2, "stage-05", "tree.graphml"),
-    (ax3, "stage-06", "pre-recoloring.graphml"),
-    (ax4, "stage-06", "tree.graphml"),
+    (ax2, pre_post_processing_data_path / "tree.graphml"),
+    (ax3, post_post_processing_data_path / "pre-recoloring.graphml"),
+    (ax4, post_post_processing_data_path / "tree.graphml"),
 ]
 
-for ax, stage, file in axis_stage_file:
-    graph = nx.read_graphml(os.path.join(source_data_path, stage, patient, file))
+for ax, file in axis_stage_file:
+    if not file.exists():
+        print(f"ERROR: File {file} does not exist!")
+        sys.exit(1)
+    print(str(file))
+    graph = nx.read_graphml(file)
     nodes_per_axis.append(len(graph.nodes()))
 
     # Add nodes
@@ -190,7 +195,7 @@ for index, (ax, title) in enumerate(ax_titles):
 
 # Save as image
 plt.tight_layout()
-plt.savefig(os.path.join(target_data_path, "splits.png"), dpi=300)
+plt.savefig(output_data_path / "splits.png", dpi=300)
 
 if show_plot:
     plt.show()

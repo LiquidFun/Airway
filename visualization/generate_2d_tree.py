@@ -1,36 +1,27 @@
 """
 This script expects two command line arguments.
 
-The first, input, is the directory where the graphml files for a certain
+The first, output, is the directory where you want the output graphs for a certain
+patient to be stored at, e.g. ~/Airway/stage-22/123123.
+
+The second, input, is the directory where the graphml files for a certain
 patient are stored e.g. ~/Airway/stage-05/123123.
 
-The second, output, is the directory where you want the output graphs for a certain
-patient to be stored at, e.g. ~/Airway/stage-22/123123.
 """
 
 import os
-import sys
-import argparse as arg
-from pathlib import Path
-import igraph as ig
 import math
+
+import igraph as ig
+
+from util.util import get_data_paths_from_args
 
 
 ##############################################
 #  Parse the command line arguments and      #
 #  store them in variables input and output  #
 ##############################################
-parser = arg.ArgumentParser()
-parser.add_argument('input', help='Path to patient directory: e.g. /Airway/stage-07/123123', type=Path)
-parser.add_argument('output', help='Path to output directory: e.g. /Airway/stage-23/123123', type=Path)
-
-if len(sys.argv) > 3:
-    print("ERROR: Too many arguments")
-    sys.exit(1)
-
-parsed_arguments = parser.parse_args()
-input = parsed_arguments.input
-output = parsed_arguments.output
+output_data_path, input_data_path = get_data_paths_from_args()
 
 # Maps lobe number in .graph.ml-file to color in visualization
 lobe_color_dict = {
@@ -57,10 +48,10 @@ edge_width_dict = {
     9: 10
 }
 
-##############################
-##  Visualization of graphs ##
-##############################
-lobe_list = list(input.glob('*.graphml'))
+############################
+#  Visualization of graphs #
+############################
+lobe_list = list(input_data_path.glob('*.graphml'))
 for filepath in lobe_list:
     lobe = str(filepath.name)
     # Read file and convert it to diected graph
@@ -91,26 +82,13 @@ for filepath in lobe_list:
     if lobe.startswith('tree'):
         number_of_nodes = len(graph.vs)
         picture_size = (2000 + 3 * number_of_nodes, 1000 + number_of_nodes)  # (3500,1500)
-    ig.plot(graph, os.path.join(output, lobe) + '.png', layout=layout, bbox=picture_size)
+    ig.plot(graph, os.path.join(output_data_path, lobe) + '.png', layout=layout, bbox=picture_size)
 
 
-#Alle Patienten
+# All patients
 '''
-parser = arg.ArgumentParser()
-parser.add_argument('input', help='Path to patient directory: e.g. /Airway/stage-05/123123', type=Path)
-parser.add_argument('output', help='Path to output directory: e.g. /Airway/stage-22/123123', type=Path)
-
-if len(sys.argv) > 3:
-    print("ERROR: Too many arguments")
-    sys.exit(1)
-
-parsed_arguments = parser.parse_args()
-input = parsed_arguments.input
-output = parsed_arguments.output
-
 
 patient_input_folder = [d for d in os.listdir(input) if os.path.isdir(os.path.join(input, d))]
-
 
 lobe_color_dict = {
     0: "grey",

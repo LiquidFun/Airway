@@ -48,7 +48,7 @@ def get_lobe(coords, reduced_model):
     orig_coord_list = [int(round(i)) for i in coords]
     lobe_paths = {}
 
-    for i in range(0, 7):
+    for i in range(0, 9):
         lobe_paths.update({i: 8192})
 
     for axis_id in range(0, 3):
@@ -217,7 +217,6 @@ def main():
         edge_attributes_file_path = tree_input_data_path / "edge_attributes.npy"
     else:
         sys.exit(1)
-
 
     if not reduced_model_data_path.exists():
         print("ERROR: stage-02 needed")

@@ -130,7 +130,7 @@ def main():
     skeleton = skeletonize(np.clip(model, 0, 2) % 2)
     generate_obj(output_data_path / "skeleton.obj", set(), skeleton)
     generate_obj(output_data_path / "bronchus.obj", {1}, model)
-    generate_obj(output_data_path / "lung.obj", {1, 2, 3, 4, 5, 6}, model)
+    # generate_obj(output_data_path / "lung.obj", {1, 2, 3, 4, 5, 6}, model)
 
 
 if __name__ == "__main__":

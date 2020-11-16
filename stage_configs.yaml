@@ -1,4 +1,4 @@
-# --- Default --- #
+# --- Defaults --- #
 defaults:
   inputs: [] # Names of stages which paths will be supplied to the script
   groups: [] # Names of groups which can be used instead of a stage number to generate multiple stages
@@ -84,9 +84,9 @@ stage-71:
   groups: [vis]
 stage-72:
   script: visualization/plot_splits.py
-  inputs: [stage-06]
+  inputs: [stage-70, stage-03, stage-04, stage-05, stage-06]
   groups: [vis]
-  args: False
+  args: [False]
 
 
 # --- Website --- #
