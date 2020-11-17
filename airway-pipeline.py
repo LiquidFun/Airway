@@ -37,7 +37,7 @@ def main():
             defaults.update(yaml.load(config_file, yaml.FullLoader))
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("stages", type=str, action='append', help="list of stages to calculate")
+    parser.add_argument("stages", nargs="+", type=str, help="list of stages to calculate")
     parser.add_argument("-p", "--path", default=defaults["path"], help="airway data path")
     parser.add_argument("-w", "--workers", type=int, default=defaults["workers"], help="number of parallel workers")
     parser.add_argument("-f", "--force", help="force overwriting of previous stages",
@@ -45,8 +45,9 @@ def main():
     parser.add_argument("-1", "--single", help="will do a single patient instead of all patients (useful for testing)",
                         default=defaults['single'], action="store_true")
     # TODO: Possibly implement these:
-    # parser.add_argument("-c", "--clean", help="Cleans given stage directories")
-    # parser.add_argument("-s", "--stages", help="List possible stages with short description")
+    # parser.add_argument("-c", "--clean", help="cleans given stage directories")
+    # parser.add_argument("-s", "--stages", help="list possible stages with short description")
+    # parser.add_argument("-d", "--dependencies", help="create all given stages including their dependencies")
     args = parser.parse_args()
 
     assert args.path is not None, "ERROR: Airway data path required!"

@@ -61,7 +61,7 @@ def generate_obj(output_data_path, accepted_types, model):
 
                         # Make sure that the coordinate is empty
                         if not check_cell(x+x_, y+y_, z+z_):
-                            d = [-0.5, 0.5]
+                            direction = [-0.5, 0.5]
 
                             # Face coords is a list of 4 points, these are exactly the points in
                             # the direction of the neighboring point. This is achieved by
@@ -69,8 +69,11 @@ def generate_obj(output_data_path, accepted_types, model):
                             # then guaranteeing that the direction is the same by checking
                             # the direction given in the previous loop.
                             # May be sketchy due to float divison, assert to check for that.
-                            face_coords = [[a, b, c] for a in d for b in d for c in d if x_/2 == a or y_/2 == b or z_/2 == c]
-                            assert len(face_coords) == 4, "ERROR: Face coord contain more than 4 coordinates"
+                            face_coords = [
+                                [a, b, c] for a in direction for b in direction for c in direction
+                                if x_/2 == a or y_/2 == b or z_/2 == c
+                            ]
+                            assert len(face_coords) == 4, "ERROR: Face coords contain more than 4 coordinates"
                             curr_face = []
 
                             # Iterate over each of the 4 face coordinates, add them
@@ -95,7 +98,7 @@ def generate_obj(output_data_path, accepted_types, model):
     with open(output_data_path, 'w') as file:
         file.write("# Vertices\n")
         for x, y, z in vertices:
-            file.write(f"v {x:.6f} {y:.6f} {z:.6f}\n")
+            file.write(f"v {x:.2f} {y:.2f} {z:.2f}\n")
         file.write("\n# Faces\n")
         for a, b, c, d in faces:
             file.write(f"f {a} {b} {c} {d}\n")
@@ -129,7 +132,10 @@ def main():
     # between 0 and 2, then modulo everything by 2 to remove 2s
     skeleton = skeletonize(np.clip(model, 0, 2) % 2)
     generate_obj(output_data_path / "skeleton.obj", set(), skeleton)
+    generate_obj(output_data_path / "bav.obj", {1, 7, 8}, model)
     generate_obj(output_data_path / "bronchus.obj", {1}, model)
+    generate_obj(output_data_path / "veins.obj", {7}, model)
+    generate_obj(output_data_path / "arteries.obj", {8}, model)
     # generate_obj(output_data_path / "lung.obj", {1, 2, 3, 4, 5, 6}, model)
 
 
