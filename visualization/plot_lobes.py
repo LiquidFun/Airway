@@ -5,15 +5,9 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
-try:
-    source_data_path = os.path.dirname(os.path.dirname(sys.argv[1]))
-    target_data_path = sys.argv[2]
-    patient = os.path.basename(sys.argv[1])
-except IndexError:
-    print("ERROR: No source or data path provided, aborting!")
-    sys.exit(1)
+output_data_path, input_data_path = get_data_paths_from_args()
 
-arr = np.load(os.path.join(source_data_path, f"stage-20/{patient}/full_lung_outer_shell_coords.npy"))
+arr = np.load(input_data_path / "full_lung_outer_shell_coords.npz")['arr_0']
 # print(arr)
 # This only shows lobes where the id is 2 or 3 
 # index = np.where(np.logical_or(arr[3]==2, arr[3]==3))
@@ -48,16 +42,16 @@ distances = {}
 max_dist = 0
 
 # Draw coords
-final_coords_file = os.path.join(source_data_path, f"stage-04/{patient}/final_coords.npy")
+final_coords_file = os.path.join(input_data_path, f"stage-04/{patient}/final_coords.npz")
 if os.path.isfile(final_coords_file):
-    c = np.load(final_coords_file)
+    c = np.load(final_coords_file)['arr_0']
     ax.scatter(c[1], c[2], -c[0], s=10, c="red")
 
 # Draw edges
-final_edges_file = os.path.join(source_data_path, f"stage-04/{patient}/final_edges.npy")
+final_edges_file = os.path.join(input_data_path, f"stage-04/{patient}/final_edges.npz")
 # print(final_edges_file)
 if os.path.isfile(final_edges_file):
-    e = np.load(final_edges_file)
+    e = np.load(final_edges_file)['arr_0']
     # print(e)
     for i in range(len(e[0])):
         ax.plot(e[1][i], e[2][i], -e[0][i], c='red')

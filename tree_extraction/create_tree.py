@@ -23,7 +23,7 @@ from util.util import get_data_paths_from_args
 
 output_data_path, input_data_path = get_data_paths_from_args()
 
-DISTANCE_TO_COORDS_FILE = input_data_path / "map_distance_to_coords.npy"
+DISTANCE_TO_COORDS_FILE = input_data_path / "map_distance_to_coords.npz"
 MAP_COORD_TO_PREVIOUS_FILE = input_data_path / "map_coord_to_previous.txt"
 MAP_COORD_TO_NEXT_COUNT_FILE = input_data_path / "map_coord_to_next_count.txt"
 
@@ -71,7 +71,7 @@ def calc_diameter(area):
     return math.sqrt(4*area/math.pi)
 
 
-DISTANCE_TO_COORDS = np.load(DISTANCE_TO_COORDS_FILE, allow_pickle=True)
+DISTANCE_TO_COORDS = np.load(DISTANCE_TO_COORDS_FILE, allow_pickle=True)['arr_0']
 
 group_diameter = {}
 group_area = {}
@@ -245,8 +245,8 @@ final_edges = np.array([xs, ys, zs])
 # print(final_edges)
 # print(final_coords)
 
-np.save(FINAL_COORDS_FILE, np.array(final_coords))
-np.save(FINAL_EDGES_FILE, np.array(final_edges))
-np.save(COORD_ATTRIBUTES_FILE, np.array(group_attr))
-np.save(EDGE_ATTRIBUTES_FILE, np.array(edge_attr))
+np.savez_compressed(FINAL_COORDS_FILE, np.array(final_coords))
+np.savez_compressed(FINAL_EDGES_FILE, np.array(final_edges))
+np.savez_compressed(COORD_ATTRIBUTES_FILE, np.array(group_attr))
+np.savez_compressed(EDGE_ATTRIBUTES_FILE, np.array(edge_attr, dtype=object))
 # print(group_to_avg_coord)

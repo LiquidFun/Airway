@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-arrs = np.load("../data/P0/dist_to_coords.npy")
+arrs = np.load("../data/P0/dist_to_coords.npz")['arr_0']
 
 a = [len(arr) for arr in arrs]
 

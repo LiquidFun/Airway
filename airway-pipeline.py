@@ -147,7 +147,7 @@ def stage(
         path: path to your root data folder (eg. "/home/me/data/airway/")
         workers: number of threads to use when computing (eg. 4)
         force: whether the state should be overwritten if it already exists (eg. True)
-        script: path to script to run (eg. "image_processing/save_images_as_npy.py")
+        script: path to script to run (eg. "image_processing/save_images_as_npz.py")
         inputs: list of input stage names for script (eg. ["raw_airway", "stage-02"])
         args: list of arguments supplied as strings to script (eg. ["False"]
         per_patient: whether script should only be called once for all patients (eg. True)

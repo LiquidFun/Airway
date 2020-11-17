@@ -8,7 +8,7 @@ defaults:
 
 # --- Tree Generation --- #
 stage-01:
-  script: image_processing/save_images_as_npy.py
+  script: image_processing/save_images_as_npz.py
   inputs: [raw_airway]
   groups: [tree]
 stage-02:

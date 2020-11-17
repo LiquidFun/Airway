@@ -10,7 +10,7 @@ from util.util import get_data_paths_from_args
 
 output_data_path, input_data_path = get_data_paths_from_args()
 
-patient_data_file = input_data_path / "reduced_model.npy"
+patient_data_file = input_data_path / "reduced_model.npz"
 distance_to_coords_file = output_data_path / "map_distance_to_coords"
 coord_to_distance_file = output_data_path / "map_coord_to_distance.txt"
 coord_to_previous_file = output_data_path / "map_coord_to_previous.txt"
@@ -40,7 +40,7 @@ def find_first_voxel(model):
             return list(best)
 
 
-model = np.load(patient_data_file)
+model = np.load(patient_data_file)['arr_0']
 print(f"Model loaded with shape {model.shape}")
 
 first_voxel = find_first_voxel(model)
@@ -81,8 +81,9 @@ while not bfs_queue.empty():
                 next_count += 1
     coord_to_next_count[tuple(curr)] = next_count
 
-np.save(distance_to_coords_file, np.array(distance_to_coords))
-print(f"Writing distance to coords with shape: {np.array(distance_to_coords).shape}")
+np_dist_to_coords = np.array(distance_to_coords, dtype=object)
+np.savez_compressed(distance_to_coords_file, np_dist_to_coords)
+print(f"Writing distance to coords with shape: {np_dist_to_coords.shape}")
 
 for dictionary, filename in [(visited, coord_to_distance_file),
                              (coord_to_previous, coord_to_previous_file),

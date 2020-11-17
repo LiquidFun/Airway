@@ -18,7 +18,8 @@ def print_model_description(model):
     return total_sum
 
 
-model = np.load(input_data_path / "model.npy")
+model = np.load(input_data_path / "model.npz")['arr_0']
+print(model)
 
 print("{} images loaded".format(len(model)))
 
@@ -58,6 +59,6 @@ print("\n\nAfter reduction:")
 curr_total_sum = print_model_description(model)
 
 if curr_total_sum == old_total_sum:
-    np.save(output_data_path / "reduced_model", model)
+    np.savez_compressed(output_data_path / "reduced_model", model)
 else:
     raise Exception("It seems like the script removed actual data from the model; this should not happen!")

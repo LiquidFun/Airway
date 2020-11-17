@@ -23,7 +23,7 @@ dir_names_to_id = {
 }
 
 
-def save_images_as_npy(raw_data_path, processed_data_path):
+def save_images_as_npz(raw_data_path, processed_data_path):
     """Saves a 3D numpy matrix of the model to $processed_data_path
 
     The matrix has 0 for empty space and dir_names_to_id for each
@@ -97,7 +97,7 @@ def save_images_as_npy(raw_data_path, processed_data_path):
     print(f"Non-empty voxels:\t {np.count_nonzero(model):,} out of {np.size(model):,} total voxels (shape={np.shape(model)})")
     # print("Model sum: %d" % np.sum(model))
     # Save as numpy binary file to given location
-    np.save(processed_data_path / "model", model)
+    np.savez_compressed(processed_data_path / "model", model)
 
     if total_sum != np.count_nonzero(model):
         print("\nWARNING: It seems like some coords overlap with other coords, meaning some data has been lost.")
@@ -110,4 +110,4 @@ def save_images_as_npy(raw_data_path, processed_data_path):
 
 
 if __name__ == "__main__":
-    save_images_as_npy(input_data_path, output_data_path)
+    save_images_as_npz(input_data_path, output_data_path)

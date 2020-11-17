@@ -4,7 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
 
-groups = np.load("../data/3124983/map_distance_to_coords.npy")
+groups = np.load("../data/3124983/map_distance_to_coords.npz")['arr_0']
 print(len(groups))
 
 fig = plt.figure()
@@ -51,9 +51,9 @@ for index in range(len(group_coords)):
     ax.scatter(xs, ys, zs)
     ax.draw()
     plt.pause(0.00001)
-# path = '../tree_extraction/tree_coords.npy'
+# path = '../tree_extraction/tree_coords.npz'
 # if os.path.isfile(path):
-#     coords = np.load(path)
+#     coords = np.load(path)['arr_0']
 #     d = [b for a,b,c in coords]
 #     e = [c for a,b,c in coords]
 #     f = [-a for a,b,c in coords]

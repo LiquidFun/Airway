@@ -48,7 +48,7 @@ def get_lobe(coords, reduced_model):
     orig_coord_list = [int(round(i)) for i in coords]
     lobe_paths = {}
 
-    for i in range(0, 9):
+    for i in range(0, 7):
         lobe_paths.update({i: 8192})
 
     for axis_id in range(0, 3):
@@ -211,10 +211,10 @@ def main():
     patient_id = tree_input_data_path.parts[-1]
 
     if tree_input_data_path.is_dir and output_data_path.is_dir:
-        coord_file_path = tree_input_data_path / "final_coords.npy"
-        edges_file_path = tree_input_data_path / "final_edges.npy"
-        coord_attributes_file_path = tree_input_data_path / "coord_attributes.npy"
-        edge_attributes_file_path = tree_input_data_path / "edge_attributes.npy"
+        coord_file_path = tree_input_data_path / "final_coords.npz"
+        edges_file_path = tree_input_data_path / "final_edges.npz"
+        coord_attributes_file_path = tree_input_data_path / "coord_attributes.npz"
+        edge_attributes_file_path = tree_input_data_path / "edge_attributes.npz"
     else:
         sys.exit(1)
 
@@ -223,12 +223,14 @@ def main():
         print(reduced_model_data_path)
         sys.exit(-1)
 
-    reduced_model = np.load(reduced_model_data_path / "reduced_model.npy")
+    reduced_model = np.load(reduced_model_data_path / "reduced_model.npz")['arr_0']
+    reduced_model[reduced_model == 7] = 0
+    reduced_model[reduced_model == 8] = 0
 
-    np_coord = np.load(coord_file_path)
-    np_edges = np.load(edges_file_path)
-    np_coord_attributes = np.load(coord_attributes_file_path)
-    np_edges_attributes = np.load(edge_attributes_file_path, allow_pickle=True)
+    np_coord = np.load(coord_file_path)['arr_0']
+    np_edges = np.load(edges_file_path)['arr_0']
+    np_coord_attributes = np.load(coord_attributes_file_path)['arr_0']
+    np_edges_attributes = np.load(edge_attributes_file_path, allow_pickle=True)['arr_0']
 
     # create empty graphs
     graph = nx.Graph(patient=int(patient_id))

@@ -6,7 +6,7 @@ import networkx as nx
 
 from util.util import get_data_paths_from_args
 
-plt.rcParams.update({'font.size': 6})
+plt.rcParams.update({'font.size': 4})
 
 # |>--><-><-><-><-><->-<|
 # |>- Parse arguments -<|
@@ -43,6 +43,8 @@ colors_map = {
     4: "#41d741",
     5: "#fa4646",
     6: "#fa87f5",
+    7: "#0000ff",
+    8: "#ff0000",
 }
 
 
@@ -62,7 +64,7 @@ nodes_per_axis = []
 # |>- Potentially draw bronchus -<|
 # |>-><-><-><-><-><-><-><-><-><--<|
 
-arr = np.load(bronchus_shell_data_path / "bronchus_coords_outer_shell.npy")
+arr = np.load(bronchus_shell_data_path / "bronchus_coords_outer_shell.npz")['arr_0']
 
 xs = arr[1]
 ys = arr[2]
@@ -98,19 +100,19 @@ if show_bronchus:
 # |>--><-><-><-><-><-><-><-><-><-><-><-><-><--<|
 
 # Draw coords
-final_coords_file = final_coords_data_path / "final_coords.npy"
+final_coords_file = final_coords_data_path / "final_coords.npz"
 if final_coords_file.exists():
-    c = np.load(final_coords_file)
-    ax1.scatter(c[1], c[2], -c[0], s=5, c="red")
+    c = np.load(final_coords_file)['arr_0']
+    ax1.scatter(c[1], c[2], -c[0], s=1, c="red")
     nodes_per_axis.append(len(c[0]))
 
 # Draw edges
-final_edges_file = final_coords_data_path / "final_edges.npy"
+final_edges_file = final_coords_data_path / "final_edges.npz"
 # print(final_edges_file)
 if final_edges_file.exists():
-    e = np.load(final_edges_file)
+    e = np.load(final_edges_file)['arr_0']
     for i in range(len(e[0])):
-        ax1.plot(e[1][i], e[2][i], -e[0][i], c='red')
+        ax1.plot(e[1][i], e[2][i], -e[0][i], c='red', linewidth=.5)
 
 # |>-><-><-><-><-><-><-><-><-><-><-><-><-><--<|
 # |>- Draw split tree after post processing -<|
@@ -137,7 +139,7 @@ for ax, file in axis_stage_file:
         y.append(data[1]['y'])
         z.append(data[1]['z'])
         c.append(colors_map[data[1]['lobe']])
-    ax.scatter(y, z, x, s=5, c=c)
+    ax.scatter(y, z, x, s=1, c=c)
 
     # Add edges
     x = []; y = []; z = []; c = []
@@ -150,7 +152,7 @@ for ax, file in axis_stage_file:
         # c.append([colors_map[f['lobe']], colors_map[t['lobe']]])
         c.append(colors_map[f['lobe']])
     for xe, ye, ze, ce in zip(x, y, z, c):
-        ax.plot(ye, ze, xe, c=ce)
+        ax.plot(ye, ze, xe, c=ce, linewidth=.5)
 
 
 # |>-<-><-><-><-><-<|
@@ -165,7 +167,7 @@ ax_titles = [
 ] 
 
 for index, (ax, title) in enumerate(ax_titles):
-    ax.set_title(title + f" (n={nodes_per_axis[index]})\n[axis in mm]")
+    ax.set_title(title + f" (n={nodes_per_axis[index]})\n[axis in mm]", y=0.85)
 
     #ax.set_xlabel("mm")
     #ax.set_ylabel("mm")
@@ -194,7 +196,7 @@ for index, (ax, title) in enumerate(ax_titles):
     ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
 
 # Save as image
-plt.tight_layout()
+# plt.tight_layout()
 plt.savefig(output_data_path / "splits.png", dpi=300)
 
 if show_plot:

@@ -1,11 +1,11 @@
 """Module to generate .obj file from bronchus coords outer shell
 
-Needs stage-02 (reduced_model.npy) as input.
+Needs stage-02 (reduced_model.npz) as input.
 
 This file expects the first argument to be a path to the input folder (not including the 
-reduced_model.npy). The second argument needs to be a path to the output file.
+reduced_model.npz). The second argument needs to be a path to the output file.
 
-It does so by going through every bronchus point in the reduced_model.npy and checking
+It does so by going through every bronchus point in the reduced_model.npz and checking
 each of the 6 neighboring points whether it is empty. If it is indeed empty then
 it adds the points which haven't been added yet on that face and also adds the face.
 
@@ -121,7 +121,7 @@ def normalize(vertices):
 def main():
     output_data_path, input_data_path = get_data_paths_from_args()
 
-    model = np.load(input_data_path / "reduced_model.npy")
+    model = np.load(input_data_path / "reduced_model.npz")['arr_0']
     print(f"Loaded model with shape {model.shape}")
 
     if not output_data_path.exists():
@@ -132,10 +132,10 @@ def main():
     # between 0 and 2, then modulo everything by 2 to remove 2s
     skeleton = skeletonize(np.clip(model, 0, 2) % 2)
     generate_obj(output_data_path / "skeleton.obj", set(), skeleton)
-    generate_obj(output_data_path / "bav.obj", {1, 7, 8}, model)
+    # generate_obj(output_data_path / "bav.obj", {1, 7, 8}, model)
     generate_obj(output_data_path / "bronchus.obj", {1}, model)
-    generate_obj(output_data_path / "veins.obj", {7}, model)
-    generate_obj(output_data_path / "arteries.obj", {8}, model)
+    # generate_obj(output_data_path / "veins.obj", {7}, model)
+    # generate_obj(output_data_path / "arteries.obj", {8}, model)
     # generate_obj(output_data_path / "lung.obj", {1, 2, 3, 4, 5, 6}, model)
 
 

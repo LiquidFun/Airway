@@ -13,7 +13,7 @@ skeleton = skeletonize(model)
 # display results
 
 # print(set(skeleton.flatten()))
-np.save("skeleton.npy", skeleton)
+np.savez_compressed("skeleton.npz", skeleton)
 
 # plt.imshow(skeleton, cmap=plt.cm.gray)
 fig = plt.figure()
