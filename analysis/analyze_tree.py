@@ -54,12 +54,13 @@ def create_general_tree_statistics_file(csv_path):
         ])
         stat_list = []
         for key, tree in tree_dict.items():
-            curr_row = []
-            curr_row.append(str(key))
-            curr_row.append(tree.number_of_nodes())
-            curr_row.append(tree.number_of_edges())
-            curr_row.append(longest_path_length(tree))
-            curr_row.append(maximum_independent_set_length(tree))
+            curr_row = [
+                str(key),
+                tree.number_of_nodes(),
+                tree.number_of_edges(),
+                longest_path_length(tree),
+                maximum_independent_set_length(tree)
+            ]
             stat_list.append(curr_row)
 
         csv_writer.writerows(stat_list)
@@ -114,7 +115,7 @@ def upper_left_lobe_distance_analysis(plot_path, csv_path):
     ]
     # print(len(upper_left_lobe_list))
 
-    # fill a dicitionary with lobe graphs
+    # fill a dictionary with lobe graphs
     left_lobe_dict = {}
     for lobePath in upper_left_lobe_list:
         left_lobe_dict.update({lobePath.parts[-2]: nx.read_graphml(lobePath)})
@@ -126,7 +127,7 @@ def upper_left_lobe_distance_analysis(plot_path, csv_path):
     for key, lobe in left_lobe_dict.items():
         # print (key, nx.get_node_attributes(lobe, 'level'))
 
-        # check if there are lobes not beeing a tree
+        # check if there are lobes not being a tree
         if not nx.is_tree(lobe):
             count = count - 1
             not_tree_list.append(key)
@@ -181,7 +182,7 @@ def get_distance_value(lobe, nodelist, key):
         else:
             dist_value = (-1, -1)
     elif neighbour_count > 3:
-        print(key, "Error: more than 3 neigbours detected.")
+        print(key, "Error: more than 3 neighbours detected.")
         for neighbour in neighbour_list:
             length = lobe[str(root)][neighbour]['weight']
             print("Length: " + str(length))

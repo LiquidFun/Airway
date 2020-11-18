@@ -11,6 +11,7 @@ import sys
 import os
 import argparse
 from pathlib import Path
+from queue import Queue
 from typing import Dict, List
 import subprocess
 from subprocess import PIPE
@@ -76,49 +77,61 @@ def main():
                     keyword_to_stages[group].append(stage_name)
                 stage_config.pop('groups', None)
 
-        # Go through each stage in args and handle ranges ('-s 5-7' as well as single calls '-s 3')
+        # Go through each stage in args and handle ranges ('5-7' as well as single calls '3',
+        # keywords such as 'vis', 'analysis' and '3+' ranges)
         stages_to_process = set()
         for s_arg in args.stages:  # e.g. s_arg in ['1-3', '4', '5-7', 'analysis']
-            if '-' in s_arg:
-                fr = int(s_arg.split('-')[0])
-                to = int(s_arg.split('-')[1]) + 1
-                keywords = list(map(str, range(fr, to)))
-            else:
+            try:
+                to = 1000
+                if '-' in s_arg:
+                    fr, to = map(int, s_arg.split('-'))
+                elif '+' in s_arg:
+                    fr = int(s_arg.split('+')[0])
+                else:
+                    fr = to = int(s_arg)
+                keywords = list(map(str, range(fr, to+1)))
+            except ValueError:
                 keywords = [s_arg]
             for s in keywords:
-                stages_to_process |= {keyword for keyword in keyword_to_stages[str(s)]}
+                if s in keyword_to_stages:
+                    stages_to_process |= {keyword for keyword in keyword_to_stages[s]}
 
         assert all([isinstance(a, str) for a in stages_to_process]), "ERROR: Not all keywords are strings"
 
         # Root stage has no entry in configs, so ignore it
         root_stage = "raw_airway"
 
-        class Dependency:
-            """This is a simple class which is used to compare the dependency tree of various stages
+        def get_dependencies(name):
+            """ This is a simple class which creates all the dependencies of a stage """
+            _dependencies = {name}
+            # Add all dependencies for each name in _dependencies until there are no changes anymore
+            while True:
+                copy = _dependencies.copy()
+                for dependency in copy:
+                    if dependency != root_stage:
+                        _dependencies |= set(stage_configs[dependency]["inputs"])
+                if len(_dependencies) == len(copy):
+                    return _dependencies
 
-            It calculates all of its own dependencies on init, then it looks whether another
-            stage is in its dependencies in < (__lt__). If these do not share a dependency then
-            either True or False is fine.
-            """
-            def __init__(self, name):
-                self.name = name
-                self.dependencies = {name}
-                while True:
-                    copy = self.dependencies.copy()
-                    for dependency in copy:
-                        if dependency != root_stage:
-                            for i in stage_configs[dependency]["inputs"]:
-                                if i not in self.dependencies:
-                                    self.dependencies.add(i)
-                    if len(self.dependencies) == len(copy):
-                        break
+        stages_to_process_in_dependency_order = []
+        queue = Queue()
+        for curr in sorted(stages_to_process):
+            queue.put(curr)
+        # Iterate over queue of stages and only insert a stage once all its dependencies have been inserted
+        while not queue.empty():
+            curr = queue.get()
 
-            def __lt__(self, other):
-                return other.name not in self.dependencies
+            # Only keep dependencies which are in the list of stages to process without the
+            # root_stage (raw_airway) and the current stage since these cannot be actual
+            # dependencies of it.
+            dependencies = get_dependencies(curr) & stages_to_process - {root_stage, curr}
+            if all(dep in stages_to_process_in_dependency_order for dep in dependencies):
+                stages_to_process_in_dependency_order.append(curr)
+            else:
+                queue.put(curr)
 
-        stages_to_process_in_dependency_order = sorted(stages_to_process, key=Dependency)
         formatted = ', '.join([s.replace('stage-', '') for s in stages_to_process_in_dependency_order])
-        print(f"Processing stages in this order:\n{formatted}\n")
+        print(f"Stage processing order:\n    [{formatted}]\n")
 
         for curr_stage_name in stages_to_process_in_dependency_order:
             assert curr_stage_name in stage_configs, f"ERROR: Unknown stage name {curr_stage_name}!"
