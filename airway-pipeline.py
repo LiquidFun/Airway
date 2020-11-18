@@ -19,6 +19,8 @@ from concurrent.futures import ProcessPoolExecutor
 
 import yaml
 
+import util.color as col
+
 
 reqVersion = (3, 6)  # because of concurrent.futures and f-strings
 currVersion = (sys.version_info.major, sys.version_info.minor)
@@ -167,7 +169,7 @@ def stage(
         single: whether only a single patient should be computed (eg. True)
 
     """
-    title = f"========== Processing {stage_name} =========="
+    title = f"========== {col.yellow}Processing {stage_name}{col.reset} =========="
     print("{0}\n{1}\n{0}\n".format("="*len(title), title))
 
     args = list(map(str, args))
@@ -235,13 +237,13 @@ def concurrent_executor(subprocess_args, worker):
 
 def show_error_statistics():
     global errors
-    print("\n====== Error Statistics  ======\n")
+    print(f"\n====== Error Statistics  ======\n{col.red}")
     if errors:
         err_count = 0
         for key, val in errors.items():
             err_count += len(val)
             print(f"\n{key}:{len(val):>3} errors")
-        print(f"---- Overall errors: {err_count} ----\n")
+        print(f"---- Overall errors: {err_count} ----\n{col.reset}")
     else:
         print("---- No errors occurred ----\n")
 
