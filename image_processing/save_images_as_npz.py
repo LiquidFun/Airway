@@ -69,7 +69,7 @@ def save_images_as_npz(raw_data_path, processed_data_path):
             # that in case later types are at the same coordinates these
             # will be overwritten.
             im = np.clip(np.add(im, 10000), 0, lobe_id)
-            model[index] = np.add(model[index], im)
+            model[index][im == lobe_id] = im[im == lobe_id]
 
             # This if else part adds the bronchus. But it tries to also
             # label the bronchus depending on which lobe they are in. The
@@ -92,6 +92,11 @@ def save_images_as_npz(raw_data_path, processed_data_path):
     # Create folders if they do not exist
     if not processed_data_path.exists():
         os.makedirs(processed_data_path)
+
+    unique, counts = np.unique(model, return_counts=True)
+    print("\nOccurrences:")
+    for u, c in zip(unique, counts):
+        print(f"\tType {u} appeared {c:,} times")
 
     # Print sums of the model for easier debugging
     print(f"Non-empty voxels:\t {np.count_nonzero(model):,} out of {np.size(model):,} total voxels (shape={np.shape(model)})")

@@ -17,6 +17,7 @@ import subprocess
 from subprocess import PIPE
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
+import time
 
 import yaml
 from tqdm import tqdm
@@ -37,7 +38,7 @@ log_path = base_path / "logs" / f"log_{datetime.now().strftime('%Y-%m-%d_%H:%M:%
 
 
 def main():
-    log(f"===== Running {col.bold()}{col.green()}Airway{col.reset()} =====", stdout=True)
+    log(f"Running {col.bold()}{col.green()}Airway{col.reset()}", stdout=True, add_time=True)
     start_time = datetime.now()
     defaults = {"path": None, "workers": 4, "force": False, "single": False, "all": False}
     defaults_path = base_path / "defaults.yaml"
@@ -138,8 +139,11 @@ def main():
             else:
                 queue.put(curr)
 
-        formatted = ', '.join([s.replace('stage-', '') for s in stages_to_process_in_dependency_order])
-        log(f"Stage processing order:\n    [{formatted}]\n", stdout=True)
+        formatted = ', '.join([
+            col.yellow() + s.replace('stage-', '') + col.reset()
+            for s in stages_to_process_in_dependency_order
+        ])
+        log(f"Stage processing order: [{formatted}]\n", stdout=True, tabs=1)
 
         for curr_stage_name in stages_to_process_in_dependency_order:
             assert curr_stage_name in stage_configs, f"ERROR: Unknown stage name {curr_stage_name}!"
@@ -147,6 +151,8 @@ def main():
 
     show_error_statistics()
 
+
+for_tqdm = ""
 
 def stage(
         stage_name: str,
@@ -175,8 +181,10 @@ def stage(
         single: whether only a single patient should be computed (eg. True)
 
     """
-    title = f"========== {col.green()}Processing {stage_name}{col.reset()} =========="
-    log("{0}\n{1}\n{0}\n".format("="*len(col.filter_color_codes(title)), title), stdout=True)
+    # title = f"========== {col.green()}Processing {stage_name}{col.reset()} =========="
+    # log("{0}\n{1}\n{0}\n".format("="*len(col.filter_color_codes(title)), title), stdout=True)
+    global for_tqdm
+    for_tqdm = log(f"{col.green()}Processing {stage_name}{col.reset()}", add_time=True)
 
     args = list(map(str, args))
 
@@ -218,18 +226,22 @@ def stage(
         else:
             subprocess_args.append(["python3", "-m", script_module, output_stage_path, *input_stage_paths, *args])
         concurrent_executor(subprocess_args, workers)
-        log("", stdout=True)
-    log(f'\nSaved log file to {col.green()}{log_path}{col.reset()}.', stdout=True)
+        # log("", stdout=True)
 
 
-def log(message: str, stdout=False):
+def log(message: str, stdout=False, add_time=False, tabs=0, end='\n'):
     if not log_path.parent.exists():
         log_path.parent.mkdir(exist_ok=True)
+    if add_time:
+        time_fmt = f"[{col.green()}{datetime.now().strftime('%H:%M:%S')}{col.reset()}] "
+        message = time_fmt + message.replace('\n', '\n' + time_fmt)
+    message = ('\t' * tabs) + message.replace('\n', '\n' + ('\t'*tabs))
     with open(log_path, 'a+') as log_file:
         if stdout:
-            print(message)
+            print(message, end=end)
         filtered_message = col.filter_color_codes(message)
-        log_file.write(filtered_message + "\n")
+        log_file.write(filtered_message + end)
+    return message
 
 
 def subprocess_executor(argument):
@@ -241,7 +253,8 @@ def subprocess_executor(argument):
 def concurrent_executor(subprocess_args, worker):
     global errors
     with ProcessPoolExecutor(max_workers=worker) as executor:
-        with tqdm(total=len(subprocess_args)) as progress_bar:
+        bar_format = "{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_inv_fmt}{postfix}]"
+        with tqdm(total=len(subprocess_args), unit="run", desc=for_tqdm, ncols=80, bar_format=bar_format) as progress_bar:
             for count, retVal in enumerate(executor.map(subprocess_executor, subprocess_args), start=1):
                 log(f"---- Output for Process {count}/{len(subprocess_args)} ----")
                 log(f"STDOUT:\n{retVal.stdout}\n")
@@ -257,18 +270,16 @@ def concurrent_executor(subprocess_args, worker):
 
 def show_error_statistics():
     global errors
-    if errors:
-        print(col.red())
-    log(f"\n====== Error Statistics ======", stdout=True)
+    log(f"Error Statistics", stdout=True, add_time=True)
     if errors:
         print(col.red())
         err_count = 0
         for key, val in errors.items():
             err_count += len(val)
-            log(f"{key}: {len(val):>3} errors", stdout=True)
-        log(f"---- Overall errors: {err_count} ----\n{col.reset()}", stdout=True)
+            log(f"{key}: {len(val):>3} errors", stdout=True, tabs=1)
+        log(f"Overall errors: {err_count}\n{col.reset()}", stdout=True, tabs=1)
     else:
-        log("---- No errors occurred ----\n", stdout=True)
+        log("No errors occurred", stdout=True, tabs=1)
 
 
 if __name__ == "__main__":
@@ -276,5 +287,10 @@ if __name__ == "__main__":
     previous_cwd = Path.cwd()
     os.chdir(base_path)
     main()
+    log_link_path = base_path / "log"
+    if log_link_path.exists():
+        os.unlink(log_link_path)
+    os.link(log_path, base_path / "log")
+    log(f'\nSaved log file to {col.green()}{log_path}{col.reset()} (linked to ./log)', stdout=True, add_time=True)
     os.chdir(previous_cwd)
     os.umask(previous_mask)
