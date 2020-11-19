@@ -47,14 +47,14 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("stages", nargs="+", type=str, help="list of stages to calculate (e.g. 1, 2, 3, tree, vis)")
-    parser.add_argument("-p", "--path", default=defaults["path"], help="airway data path")
+    parser.add_argument("--path", default=defaults["path"], help="airway data path")
     parser.add_argument("-w", "--workers", type=int, default=defaults["workers"],
                         help="number of parallel workers (threads)")
     parser.add_argument("-f", "--force", help="force overwriting of previous stages",
                         default=defaults["force"], action="store_true")
     parser.add_argument("-1", "--single", help="will do a single patient instead of all patients (useful for testing)",
                         default=defaults['single'], action="store_true")
-    parser.add_argument("-i", "--id", type=str, action="append",
+    parser.add_argument("-p", "--patients", type=str, action="append",
                         help="instead of processing all patients, only these patient ids will be used")
     parser.add_argument("-l", "--list_patients", action="store_true",
                         help="only list patients including their index and generated name in the given stages")
@@ -222,10 +222,15 @@ def stage(
 
         # build the list of subprocess-arguments for later use with subprocess.run
         subprocess_args = []
+
+        patient_dirs = input_stage_path.glob('*')
+        if patients:
+            filter(lambda p: p in patients, patient_dirs)
+
         # If script should be called for every patient
         if per_patient:
             # Iterate over each patient directory
-            for patient_dir in input_stage_path.glob('*'):
+            for patient_dir in patient_dirs:
                 patient_output_stage_path = output_stage_path / patient_dir.name
                 patient_input_stage_paths = [isp / patient_dir.name for isp in input_stage_paths]
                 patient_output_stage_path.mkdir(exist_ok=True, mode=0o777)
