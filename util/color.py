@@ -20,7 +20,7 @@ class Color:
     def _surr_color(self, color_index, surround=""):
         full = self._set_color(self.color_names[color_index])
         if surround:
-            full += surround + self.reset()
+            full += str(surround) + self.reset()
         return full
 
     def _set_color(self, name):

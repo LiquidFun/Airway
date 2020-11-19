@@ -67,6 +67,9 @@ def main():
 
     assert args.path is not None, "ERROR: Airway data path required!"
 
+    log(f"Using up to {col.green(args.workers)} workers", stdout=True, tabs=1)
+    log(f"Using {col.green(args.path)} as data path", stdout=True, tabs=1)
+
     stage_configs_path = base_path / "stage_configs.yaml"
     assert stage_configs_path.exists(), "ERROR: Stage configs path does not exist!"
     with open(stage_configs_path) as stage_configs_file:
@@ -155,6 +158,7 @@ def main():
             stage(curr_stage_name, **stage_configs[curr_stage_name], **vars(args))
 
     show_error_statistics()
+    log(f"Finished in {col.green(str(datetime.now() - start_time))}", stdout=True, add_time=True)
 
 
 def stage(
@@ -195,7 +199,6 @@ def stage(
         for index, patient_dir in enumerate(sorted(stage_path.glob("*")), start=1):
             log(f"| {index} | {patient_dir.name} | {get_patient_name(patient_dir.name)} |", stdout=True, tabs=1)
         log("", stdout=True)
-
         return
 
     tqdm_prefix = log(f"{col.green()}Processing {stage_name}{col.reset()}", add_time=True)
