@@ -2,6 +2,7 @@
 
 Airway is a project which analyses the anatomy of the lung bronchus by viewing it as a tree and looking for unusual structures. 
 Specifically the upper left lobe is of interest, where there is a rather unusual three-way split after the lingula. 
+
 According to Dr. Rolf Oerter this has not yet been documented and is of great interest to surgeons.
 
 ![](./visualization/images/distance-to-top.png)
@@ -23,31 +24,31 @@ We do provide a script which handled our case, you can find it in
 `scripts/separate-bronchus-files.sh`.
 
 ```
-	DATADIR
-	├── raw_data					<- This is the entirely unformatted raw data 
-	│   └── Ct_Thorax_Standard_Mit_Km - 3123156
-	│       ├── DATA
-	│       │   ├── Data.txt 		<- This contained the paths for finding the various bronchus and lobes
-	│       │   └── 3123156			<- Example Patient ID
-	│       │       └── ...			<- Some folder structure with the data
-	├── raw_airway					<- Formatted data which will be used as input for stage-01
-	│   └── 3123156					
-	│       ├── Artery
-	│       ├── Bronchus
-	│       ├── Koerperstamm
-	│       ├── LeftLowerLobe
-	│       ├── LeftUpperLobe
-	│       ├── RightLowerLobe
-	│       ├── RightMiddleLobe
-	│       ├── RightUpperLobe
-	│       └── Vein
-	├── stage-01					<- Each stage now has the same basic format
-	│   ├── 3123156
-	│   └── ...
-	├── stage-02
-	│   ├── 3123156
-	│   └── ...
-	...
+    DATADIR
+    ├── raw_data                    <- This is the entirely unformatted raw data 
+    │   └── Ct_Thorax_Standard_Mit_Km - 3123156
+    │       ├── DATA
+    │       │   ├── Data.txt        <- This contained the paths for finding the various bronchus and lobes
+    │       │   └── 3123156         <- Example Patient ID
+    │       │       └── ...         <- Some folder structure with the data
+    ├── raw_airway                  <- Formatted data which will be used as input for stage-01
+    │   └── 3123156                 
+    │       ├── Artery
+    │       ├── Bronchus
+    │       ├── Koerperstamm
+    │       ├── LeftLowerLobe
+    │       ├── LeftUpperLobe
+    │       ├── RightLowerLobe
+    │       ├── RightMiddleLobe
+    │       ├── RightUpperLobe
+    │       └── Vein
+    ├── stage-01                    <- Each stage now has the same basic format
+    │   ├── 3123156
+    │   └── ...
+    ├── stage-02
+    │   ├── 3123156
+    │   └── ...
+    ...
 
 ```
 
@@ -115,12 +116,14 @@ Stages 20 through 29 are responsible for visualisation.
 
 Airway originated as an observation by Dr. Rolf Oerter at the University of Rostock that certain structures in the lungs bronchus he has seen while operating have not been documented. 
 The first steps of the project were made as a student project at the University of Rostock at the Department of Systems Biology organised by Mariam Nassar. 
+
 It consisted of this Team:
-	- [Martin Steinbach](https://github.com/meetunix)
-	- [Brutenis Gliwa](https://github.com/liquidfun)
-	- Lukas Großehagenbrock
-	- Jonas Moesicke
-	- Joris Thiele
+
+- [Martin Steinbach](https://github.com/meetunix)
+- [Brutenis Gliwa](https://github.com/liquidfun)
+- Lukas Großehagenbrock
+- Jonas Moesicke
+- Joris Thiele
 
 After this, the project is being continued by me (Brutenis) as my bachelor thesis. 
 Thanks to Mariam Nassar, Gundram Leifert and Prof. Olaf Wolkenhauer for supervision during this time.
