@@ -310,7 +310,7 @@ if __name__ == "__main__":
     log_link_path = base_path / "log"
     if log_link_path.exists():
         os.unlink(log_link_path)
-    os.link(log_path, base_path / "log")
+    os.link(log_path, log_link_path)
     log(f'\nSaved log file to {col.green()}{log_path}{col.reset()} (linked to ./log)', stdout=True, add_time=True)
     os.chdir(previous_cwd)
     os.umask(previous_mask)
