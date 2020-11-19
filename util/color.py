@@ -8,14 +8,20 @@ class Color:
         self._filter_pattern = re.compile(r"\033\[\d;\d+m")
         self.reset()
 
-    def black(self): return self._set_color("black")
-    def red(self): return self._set_color("red")
-    def green(self): return self._set_color("green")
-    def yellow(self): return self._set_color("yellow")
-    def blue(self): return self._set_color("blue")
-    def purple(self): return self._set_color("purple")
-    def cyan(self): return self._set_color("cyan")
-    def white(self): return self._set_color("black")
+    def black(self, surround=""): return self._surr_color(0, surround)
+    def red(self, surround=""): return self._surr_color(1, surround)
+    def green(self, surround=""): return self._surr_color(2, surround)
+    def yellow(self, surround=""): return self._surr_color(3, surround)
+    def blue(self, surround=""): return self._surr_color(4, surround)
+    def purple(self, surround=""): return self._surr_color(5, surround)
+    def cyan(self, surround=""): return self._surr_color(6, surround)
+    def white(self, surround=""): return self._surr_color(7, surround)
+
+    def _surr_color(self, color_index, surround=""):
+        full = self._set_color(self.color_names[color_index])
+        if surround:
+            full += surround + self.reset()
+        return full
 
     def _set_color(self, name):
         self._prev_color = name

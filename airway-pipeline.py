@@ -14,15 +14,14 @@ from pathlib import Path
 from queue import Queue
 from typing import Dict, List
 import subprocess
-from subprocess import PIPE
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
-import time
 
 import yaml
 from tqdm import tqdm
 
 from util.color import Color
+from util.util import get_patient_name
 
 col = Color()
 
@@ -47,15 +46,21 @@ def main():
             defaults.update(yaml.load(config_file, yaml.FullLoader))
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("stages", nargs="+", type=str, help="list of stages to calculate")
+    parser.add_argument("stages", nargs="+", type=str, help="list of stages to calculate (e.g. 1, 2, 3, tree, vis)")
     parser.add_argument("-p", "--path", default=defaults["path"], help="airway data path")
-    parser.add_argument("-w", "--workers", type=int, default=defaults["workers"], help="number of parallel workers")
+    parser.add_argument("-w", "--workers", type=int, default=defaults["workers"],
+                        help="number of parallel workers (threads)")
     parser.add_argument("-f", "--force", help="force overwriting of previous stages",
                         default=defaults["force"], action="store_true")
     parser.add_argument("-1", "--single", help="will do a single patient instead of all patients (useful for testing)",
                         default=defaults['single'], action="store_true")
+    parser.add_argument("-i", "--id", type=str, action="append",
+                        help="instead of processing all patients, only these patient ids will be used")
+    parser.add_argument("-l", "--list_patients", action="store_true",
+                        help="only list patients including their index and generated name in the given stages")
     # TODO: Possibly implement these:
     # parser.add_argument("-c", "--clean", help="cleans given stage directories")
+    # parser.add_argument("-v", "--verbose", help="print more info")
     # parser.add_argument("-s", "--stages", help="list possible stages with short description")
     # parser.add_argument("-d", "--dependencies", help="create all given stages including their dependencies")
     args = parser.parse_args()
@@ -143,7 +148,7 @@ def main():
             col.yellow() + s.replace('stage-', '') + col.reset()
             for s in stages_to_process_in_dependency_order
         ])
-        log(f"Stage processing order: [{formatted}]\n", stdout=True, tabs=1)
+        log(f"Stage processing order: {formatted}\n", stdout=True, tabs=1)
 
         for curr_stage_name in stages_to_process_in_dependency_order:
             assert curr_stage_name in stage_configs, f"ERROR: Unknown stage name {curr_stage_name}!"
@@ -151,8 +156,6 @@ def main():
 
     show_error_statistics()
 
-
-for_tqdm = ""
 
 def stage(
         stage_name: str,
@@ -163,8 +166,10 @@ def stage(
         script: str,
         inputs: List[str],
         args: List[str],
-        per_patient: bool,
         single: bool,
+        patients: List[str],  # TODO
+        per_patient: bool,
+        list_patients: bool,  # TODO
         **_,  # Ignore kwargs
     ):
     """Meta function for calculating most stages in parallel.
@@ -183,12 +188,20 @@ def stage(
     """
     # title = f"========== {col.green()}Processing {stage_name}{col.reset()} =========="
     # log("{0}\n{1}\n{0}\n".format("="*len(col.filter_color_codes(title)), title), stdout=True)
-    global for_tqdm
-    for_tqdm = log(f"{col.green()}Processing {stage_name}{col.reset()}", add_time=True)
+
+    if list_patients:
+        log(f"Listing patients in {col.green(stage_name)}:", stdout=True, add_time=True)
+        stage_path = Path(path) / stage_name
+        for index, patient_dir in enumerate(sorted(stage_path.glob("*")), start=1):
+            log(f"| {index} | {patient_dir.name} | {get_patient_name(patient_dir.name)} |", stdout=True, tabs=1)
+        log("", stdout=True)
+
+        return
+
+    tqdm_prefix = log(f"{col.green()}Processing {stage_name}{col.reset()}", add_time=True)
 
     args = list(map(str, args))
 
-    # script_path = Path(__file__).parents[0] / script
     script_module = script.replace(".py", "").replace('/', '.')
     log(f"Running script {col.bold()}{script_module}{col.reset()} as module.\n")
     # assert script_path.exists(), f"ERROR: script {script_path} does not exist!"
@@ -225,17 +238,18 @@ def stage(
         # Call script with default directory otherwise
         else:
             subprocess_args.append(["python3", "-m", script_module, output_stage_path, *input_stage_paths, *args])
-        concurrent_executor(subprocess_args, workers)
+        concurrent_executor(subprocess_args, workers, tqdm_prefix=tqdm_prefix)
         # log("", stdout=True)
 
 
 def log(message: str, stdout=False, add_time=False, tabs=0, end='\n'):
+    prefix = ' ' * 11 * tabs
     if not log_path.parent.exists():
         log_path.parent.mkdir(exist_ok=True)
     if add_time:
         time_fmt = f"[{col.green()}{datetime.now().strftime('%H:%M:%S')}{col.reset()}] "
         message = time_fmt + message.replace('\n', '\n' + time_fmt)
-    message = ('\t' * tabs) + message.replace('\n', '\n' + ('\t'*tabs))
+    message = prefix + message.replace('\n', '\n' + prefix)
     with open(log_path, 'a+') as log_file:
         if stdout:
             print(message, end=end)
@@ -247,14 +261,14 @@ def log(message: str, stdout=False, add_time=False, tabs=0, end='\n'):
 def subprocess_executor(argument):
     # return subprocess.run(argument, capture_output=True, encoding="utf-8")
     # Above is Python 3.7, so PIPE instead of capture_output=True
-    return subprocess.run(argument, encoding="utf-8", stdout=PIPE, stderr=PIPE)
+    return subprocess.run(argument, encoding="utf-8", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
-def concurrent_executor(subprocess_args, worker):
+def concurrent_executor(subprocess_args, worker, tqdm_prefix=""):
     global errors
     with ProcessPoolExecutor(max_workers=worker) as executor:
-        bar_format = "{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_inv_fmt}{postfix}]"
-        with tqdm(total=len(subprocess_args), unit="run", desc=for_tqdm, ncols=80, bar_format=bar_format) as progress_bar:
+        bar_fmt = "{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_inv_fmt}{postfix}]"
+        with tqdm(total=len(subprocess_args), unit="run", desc=tqdm_prefix, ncols=80, bar_format=bar_fmt) as progress_bar:
             for count, retVal in enumerate(executor.map(subprocess_executor, subprocess_args), start=1):
                 log(f"---- Output for Process {count}/{len(subprocess_args)} ----")
                 log(f"STDOUT:\n{retVal.stdout}\n")
@@ -270,16 +284,17 @@ def concurrent_executor(subprocess_args, worker):
 
 def show_error_statistics():
     global errors
-    log(f"Error Statistics", stdout=True, add_time=True)
     if errors:
+        log(f"Error Statistics:", stdout=True, add_time=True)
         print(col.red())
         err_count = 0
         for key, val in errors.items():
             err_count += len(val)
-            log(f"{key}: {len(val):>3} errors", stdout=True, tabs=1)
+            plural = "errors" if len(val) > 1 else "error"
+            log(f"{key}: {len(val):>3} {plural}", stdout=True, tabs=1)
         log(f"Overall errors: {err_count}\n{col.reset()}", stdout=True, tabs=1)
     else:
-        log("No errors occurred", stdout=True, tabs=1)
+        log("No errors occurred", stdout=True, add_time=True)
 
 
 if __name__ == "__main__":

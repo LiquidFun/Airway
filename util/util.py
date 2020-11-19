@@ -1,5 +1,7 @@
 import sys
 from pathlib import Path
+import random
+import string
 
 
 def get_data_paths_from_args(outputs=1, inputs=1):
@@ -19,3 +21,22 @@ def get_data_paths_from_args(outputs=1, inputs=1):
     #     Path(arg) if index <= outputs+inputs else arg
     #     for index, arg in enumerate(sys.argv[1:], start=1)
     # )
+
+
+def get_patient_name(patient_id):
+    random.seed(int(patient_id))
+    vowels = "aeiou"
+    name = ""
+    letters = string.ascii_lowercase
+    for i in range(4):
+        while True:
+            curr = letters[random.randint(0, len(letters) - 1)]
+            if i & 1:
+                if curr in vowels:
+                    break
+            else:
+                if curr not in vowels:
+                    break
+
+        name += curr
+    return name.capitalize()

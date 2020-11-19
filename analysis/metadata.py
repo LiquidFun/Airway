@@ -1,10 +1,8 @@
-import random
-import string
-
 import pydicom
 import csv
 
 from util.util import get_data_paths_from_args
+from util.util import get_patient_name
 
 
 def read_metadata(path):
@@ -22,28 +20,9 @@ def read_metadata(path):
                 ]
         for key in keys:
             values[key] = str(data.data_element(key).value)
-        values["Name"] = get_name(values["PatientID"])
+        values["Name"] = get_patient_name(values["PatientID"])
         patients.append(values)
     return patients
-
-
-def get_name(patient_id):
-    random.seed(int(patient_id))
-    vowels = "aeiou"
-    name = ""
-    letters = string.ascii_lowercase
-    for i in range(4):
-        while True:
-            curr = letters[random.randint(0, len(letters) - 1)]
-            if i & 1:
-                if curr in vowels:
-                    break
-            else:
-                if curr not in vowels:
-                    break
-
-        name += curr
-    return name.capitalize()
 
 
 def write_table(path, data):
