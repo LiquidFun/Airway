@@ -16,11 +16,14 @@ from typing import Dict, List
 import subprocess
 from subprocess import PIPE
 from concurrent.futures import ProcessPoolExecutor
+from datetime import datetime
 
 import yaml
+from tqdm import tqdm
 
-import util.color as col
+from util.color import Color
 
+col = Color()
 
 reqVersion = (3, 6)  # because of concurrent.futures and f-strings
 currVersion = (sys.version_info.major, sys.version_info.minor)
@@ -30,9 +33,11 @@ errors = {}  # used for collecting errors while executing parallel tasks
 
 base_path = Path(sys.argv[0]).parents[0]
 
+log_path = base_path / "logs" / f"log_{datetime.now().strftime('%Y-%m-%dT%H:%M:%S')}"
+
 
 def main():
-
+    start_time = datetime.now()
     defaults = {"path": None, "workers": 4, "force": False, "single": False, "all": False}
     defaults_path = base_path / "defaults.yaml"
     if defaults_path.exists():
@@ -133,7 +138,7 @@ def main():
                 queue.put(curr)
 
         formatted = ', '.join([s.replace('stage-', '') for s in stages_to_process_in_dependency_order])
-        print(f"Stage processing order:\n    [{formatted}]\n")
+        log(f"Stage processing order:\n    [{formatted}]\n", stdout=True)
 
         for curr_stage_name in stages_to_process_in_dependency_order:
             assert curr_stage_name in stage_configs, f"ERROR: Unknown stage name {curr_stage_name}!"
@@ -169,14 +174,14 @@ def stage(
         single: whether only a single patient should be computed (eg. True)
 
     """
-    title = f"========== {col.yellow}Processing {stage_name}{col.reset} =========="
-    print("{0}\n{1}\n{0}\n".format("="*len(title), title))
+    title = f"========== {col.yellow()}Processing {stage_name}{col.reset()} =========="
+    log("{0}\n{1}\n{0}\n".format("="*len(col.filter_color_codes(title)), title), stdout=True)
 
     args = list(map(str, args))
 
     # script_path = Path(__file__).parents[0] / script
     script_module = script.replace(".py", "").replace('/', '.')
-    print(f"Running script {script_module} as module.")
+    log(f"Running script {col.bold()}{script_module}{col.reset()} as module.\n", stdout=True)
     # assert script_path.exists(), f"ERROR: script {script_path} does not exist!"
 
     output_stage_path = Path(path) / stage_name
@@ -185,7 +190,7 @@ def stage(
 
     # check if output directory 'stage-xx' exists
     if output_stage_path.exists() and not force:
-        print(f"ERROR: {output_stage_path} already exists, use the -f flag to overwrite.")
+        log(f"ERROR: {output_stage_path} already exists, use the -f flag to overwrite.", stdout=True)
         sys.exit(1)
     else:
         input_stage_path = input_stage_paths[0]
@@ -212,6 +217,17 @@ def stage(
         else:
             subprocess_args.append(["python3", "-m", script_module, output_stage_path, *input_stage_paths, *args])
         concurrent_executor(subprocess_args, workers)
+        log("", stdout=True)
+
+
+def log(message: str, stdout=False):
+    if not log_path.parent.exists():
+        log_path.parent.mkdir(exist_ok=True)
+    with open(log_path, 'a+') as log_file:
+        if stdout:
+            print(message)
+        filtered_message = col.filter_color_codes(message)
+        log_file.write(filtered_message)
 
 
 def subprocess_executor(argument):
@@ -223,29 +239,32 @@ def subprocess_executor(argument):
 def concurrent_executor(subprocess_args, worker):
     global errors
     with ProcessPoolExecutor(max_workers=worker) as executor:
-        for count, retVal in enumerate(executor.map(subprocess_executor, subprocess_args), start=1):
-            print(f"---- Output for Process {count}/{len(subprocess_args)} ----")
-            print(f"STDOUT:\n{retVal.stdout}\n")
-            print(f"STDERR:\n{retVal.stderr}\n")
+        with tqdm(total=len(subprocess_args)) as progress_bar:
+            for count, retVal in enumerate(executor.map(subprocess_executor, subprocess_args), start=1):
+                log(f"---- Output for Process {count}/{len(subprocess_args)} ----")
+                log(f"STDOUT:\n{retVal.stdout}\n")
+                log(f"STDERR:\n{retVal.stderr}\n")
+                progress_bar.update()
 
-            if len(retVal.stderr) > 0:
-                stage_name = str(Path(subprocess_args[0][3]).parents[0].name)
-                if stage_name not in errors:
-                    errors[stage_name] = []
-                errors[stage_name].append(count)
+                if len(retVal.stderr) > 0:
+                    stage_name = str(Path(subprocess_args[0][3]).parents[0].name)
+                    if stage_name not in errors:
+                        errors[stage_name] = []
+                    errors[stage_name].append(count)
 
 
 def show_error_statistics():
     global errors
-    print(f"\n====== Error Statistics  ======\n{col.red}")
+    log(f"\n====== Error Statistics  ======\n", stdout=True)
     if errors:
+        log(f"{col.red()}", stdout=True)
         err_count = 0
         for key, val in errors.items():
             err_count += len(val)
-            print(f"\n{key}:{len(val):>3} errors")
-        print(f"---- Overall errors: {err_count} ----\n{col.reset}")
+            log(f"\n{key}:{len(val):>3} errors", stdout=True)
+        log(f"---- Overall errors: {err_count} ----\n{col.reset()}", stdout=True)
     else:
-        print("---- No errors occurred ----\n")
+        log("---- No errors occurred ----\n", stdout=True)
 
 
 if __name__ == "__main__":

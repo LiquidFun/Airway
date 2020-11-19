@@ -7,3 +7,7 @@ pandas
 python-igraph
 pyyaml
 matplotlib
+
+regex
+igraph
+tqdm

@@ -224,8 +224,11 @@ def main():
         sys.exit(-1)
 
     reduced_model = np.load(reduced_model_data_path / "reduced_model.npz")['arr_0']
-    reduced_model[reduced_model == 7] = 0
-    reduced_model[reduced_model == 8] = 0
+    print(np.unique(reduced_model))
+    reduced_model[reduced_model >= 7] = 0
+    # Remove all voxels 7, 8 and 9 since these are veins/arteries and not useful in classification
+    print(np.unique(reduced_model))
+    sys.exit(0)
 
     np_coord = np.load(coord_file_path)['arr_0']
     np_edges = np.load(edges_file_path)['arr_0']
