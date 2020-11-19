@@ -61,7 +61,7 @@ curr_total_sum = print_model_description(model)
 unique, counts = np.unique(model, return_counts=True)
 print("\nOccurrences:")
 for u, c in zip(unique, counts):
-    print(f"\tType u appeared c times")
+    print(f"\tType {u} appeared {c} times")
 
 if curr_total_sum == old_total_sum:
     np.savez_compressed(output_data_path / "reduced_model", model)
