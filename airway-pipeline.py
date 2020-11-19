@@ -33,10 +33,11 @@ errors = {}  # used for collecting errors while executing parallel tasks
 
 base_path = Path(sys.argv[0]).parents[0]
 
-log_path = base_path / "logs" / f"log_{datetime.now().strftime('%Y-%m-%dT%H:%M:%S')}"
+log_path = base_path / "logs" / f"log_{datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}"
 
 
 def main():
+    log(f"===== Running {col.bold()}{col.green()}Airway{col.reset()} =====", stdout=True)
     start_time = datetime.now()
     defaults = {"path": None, "workers": 4, "force": False, "single": False, "all": False}
     defaults_path = base_path / "defaults.yaml"
@@ -174,14 +175,14 @@ def stage(
         single: whether only a single patient should be computed (eg. True)
 
     """
-    title = f"========== {col.yellow()}Processing {stage_name}{col.reset()} =========="
+    title = f"========== {col.green()}Processing {stage_name}{col.reset()} =========="
     log("{0}\n{1}\n{0}\n".format("="*len(col.filter_color_codes(title)), title), stdout=True)
 
     args = list(map(str, args))
 
     # script_path = Path(__file__).parents[0] / script
     script_module = script.replace(".py", "").replace('/', '.')
-    log(f"Running script {col.bold()}{script_module}{col.reset()} as module.\n", stdout=True)
+    log(f"Running script {col.bold()}{script_module}{col.reset()} as module.\n")
     # assert script_path.exists(), f"ERROR: script {script_path} does not exist!"
 
     output_stage_path = Path(path) / stage_name
@@ -218,6 +219,7 @@ def stage(
             subprocess_args.append(["python3", "-m", script_module, output_stage_path, *input_stage_paths, *args])
         concurrent_executor(subprocess_args, workers)
         log("", stdout=True)
+    log(f'\nSaved log file to {col.green()}{log_path}{col.reset()}.', stdout=True)
 
 
 def log(message: str, stdout=False):
@@ -255,13 +257,15 @@ def concurrent_executor(subprocess_args, worker):
 
 def show_error_statistics():
     global errors
-    log(f"\n====== Error Statistics  ======\n", stdout=True)
     if errors:
-        log(f"{col.red()}", stdout=True)
+        print(col.red())
+    log(f"\n====== Error Statistics ======", stdout=True)
+    if errors:
+        print(col.red())
         err_count = 0
         for key, val in errors.items():
             err_count += len(val)
-            log(f"\n{key}:{len(val):>3} errors", stdout=True)
+            log(f"{key}: {len(val):>3} errors", stdout=True)
         log(f"---- Overall errors: {err_count} ----\n{col.reset()}", stdout=True)
     else:
         log("---- No errors occurred ----\n", stdout=True)
