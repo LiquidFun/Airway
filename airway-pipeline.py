@@ -229,7 +229,7 @@ def log(message: str, stdout=False):
         if stdout:
             print(message)
         filtered_message = col.filter_color_codes(message)
-        log_file.write(filtered_message)
+        log_file.write(filtered_message + "\n")
 
 
 def subprocess_executor(argument):
