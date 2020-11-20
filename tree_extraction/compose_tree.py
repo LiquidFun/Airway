@@ -240,7 +240,6 @@ def main():
     # assert False, "Crashes not here"
     dic_coords = create_nodes(graph, np_coord, np_coord_attributes, reduced_model)
     dic_edges = create_edges(graph, np_edges, dic_coords, np_edges_attributes)
-    print("el")
 
     # set levels to the graph
     graph = set_level(graph)

@@ -114,6 +114,7 @@ def upper_left_lobe_distance_analysis(plot_path, csv_path):
         if patDir.is_dir() and (Path(str(patDir) + "/lobe-3-" + str(patDir.parts[-1]) + ".graphml")).is_file()
     ]
     # print(len(upper_left_lobe_list))
+    
 
     # fill a dictionary with lobe graphs
     left_lobe_dict = {}
@@ -123,6 +124,7 @@ def upper_left_lobe_distance_analysis(plot_path, csv_path):
     count = len(left_lobe_dict)
     not_tree_list = []
     lobe_tree_dict = {}
+
     # iterate over the lobes
     for key, lobe in left_lobe_dict.items():
         # print (key, nx.get_node_attributes(lobe, 'level'))

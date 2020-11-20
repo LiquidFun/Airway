@@ -280,10 +280,10 @@ def concurrent_executor(subprocess_args, worker, tqdm_prefix=""):
             for count, retVal in enumerate(executor.map(subprocess_executor, subprocess_args), start=1):
                 log(f"---- Output for Process {count}/{len(subprocess_args)} ----")
                 log(f"STDOUT:\n{retVal.stdout}\n")
-                log(f"STDERR:\n{retVal.stderr}\n")
                 progress_bar.update()
 
                 if len(retVal.stderr) > 0:
+                    log(f"STDERR:\n{retVal.stderr}\n")
                     stage_name = str(Path(subprocess_args[0][3]).parents[0].name)
                     if stage_name not in errors:
                         errors[stage_name] = []

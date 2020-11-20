@@ -1,9 +1,10 @@
 import os
-import sys
 
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
+
+from util.util import get_data_paths_from_args
 
 output_data_path, input_data_path = get_data_paths_from_args()
 
