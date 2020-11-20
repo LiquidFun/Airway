@@ -8,7 +8,7 @@ argv = argv[argv.index("--") + 1:]
 print(argv)
 path = argv[0]
 
-bpy.data.objects.remove(bpy.data.objects['Cube'])
+bpy.ops.object.delete()
 
 bpy.ops.import_scene.obj(filepath=path)
 bronchus = bpy.data.objects['bronchus']
