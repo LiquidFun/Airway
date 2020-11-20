@@ -60,6 +60,7 @@ def main():
                         help="only list patients including their index and generated name in the given stages")
     # TODO: Possibly implement these:
     # parser.add_argument("-c", "--clean", help="cleans given stage directories")
+    # parser.add_argument("-s", "--stages", help="print a detailed description for each stage")
     # parser.add_argument("-v", "--verbose", help="print more info")
     # parser.add_argument("-s", "--stages", help="list possible stages with short description")
     # parser.add_argument("-d", "--dependencies", help="create all given stages including their dependencies")
