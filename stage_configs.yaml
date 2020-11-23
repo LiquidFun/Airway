@@ -55,6 +55,8 @@ stage-32:
   groups: [analysis]
   per_patient: False
   args: [False]
+  interactive_args:
+    lobes: [True, True]
 stage-33:
   script: analysis/metadata.py
   inputs: [raw_airway]
@@ -75,6 +77,8 @@ stage-62:
   script: visualization/run_blender.py
   inputs: [stage-60]
   groups: [3d, obj]
+  interactive_args:
+    object: [False]
 
 
 # --- Visualisation --- #
@@ -91,6 +95,9 @@ stage-72:
   inputs: [stage-70, stage-03, stage-04, stage-05, stage-06]
   groups: [vis]
   args: [False]
+  interactive_args:
+    bronchus: [True, True]
+    splits: [True, False]
 
 
 # --- Website --- #

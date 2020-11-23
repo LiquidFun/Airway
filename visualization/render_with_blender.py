@@ -35,6 +35,7 @@ bpy.context.scene.render.resolution_percentage = 100
 
 bpy.ops.mesh.primitive_plane_add()
 plane = bpy.data.objects['Plane']
+plane.hide = True
 plane.scale = (8, 8, 1)
 plane.location[2] = 10
 # plane_material = plane.material.new()
@@ -52,3 +53,6 @@ outp = mat.node_tree.nodes['Emission'].outputs['Emission']
 mat.node_tree.links.new(inp, outp)
 
 plane.active_material = mat
+
+
+bpy.context.window.screen = bpy.data.screens['3D View Full']
