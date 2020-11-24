@@ -58,8 +58,21 @@ def parse_args(defaults):
     # parser.add_argument("-s", "--stages", help="print a detailed description for each stage and exit")
     # parser.add_argument("-d", "--dependencies", help="create all given stages including their dependencies")
     args = parser.parse_args()
-    assert args.path is not None, "ERROR: Airway data path required!"
     return args
+
+
+def validate_args(args):
+    assert args.path is not None, "ERROR: Airway data path required!"
+    if args.clean:
+        log(f"{col.yellow('WARNING')}: Argument {col.green('--clean')} was given. ",
+            stdout=True, add_time=True)
+        log("This will delete and rerun all the supplied stages!", stdout=True, tabs=1)
+        log(f"This might delete data, do you really want to continue ({col.yellow('y')}/{col.yellow('n')}): ",
+            stdout=True, tabs=1, end='')
+        question = input()
+        if question.lower() not in ['yes', 'y']:
+            log("User questions their (life-)decisions! Aborting!", stdout=True, add_time=True)
+            sys.exit(0)
 
 
 def parse_defaults():
@@ -78,6 +91,7 @@ def main():
 
     defaults = parse_defaults()
     args = parse_args(defaults)
+    validate_args(args)
 
     log(f"Using up to {col.green(args.workers)} workers", stdout=True, tabs=1)
     log(f"Using {col.green(args.path)} as data path", stdout=True, tabs=1)

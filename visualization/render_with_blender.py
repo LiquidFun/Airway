@@ -60,7 +60,7 @@ outp = mat.node_tree.nodes['Emission'].outputs['Emission']
 mat.node_tree.links.new(inp, outp)
 plane.active_material = mat
 
-# Change default screenh
+# Change default screen
 bpy.context.window.screen = bpy.data.screens['3D View Full']
 
 # Import splits object

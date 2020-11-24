@@ -42,6 +42,7 @@ def find_legal_point(node, distances):
             if adj not in visited:
                 if adj in distances:
                     return adj
+                visited.add(adj)
                 queue.put(adj)
 
 
