@@ -4,13 +4,17 @@ from pathlib import Path
 
 from util.util import get_data_paths_from_args
 
-output_data_path, input_data_path = get_data_paths_from_args()
+output_data_path, bronchus_input_data_path, splits_input_data_path = get_data_paths_from_args(inputs=2)
 output_path = output_data_path / "left_upper_lobe#"
-input_path = input_data_path / "bronchus.obj"
+bronchus_input_path = bronchus_input_data_path / "bronchus.obj"
+splits_input_path = splits_input_data_path / "splits.obj"
 script_path = Path(__file__).parent.absolute() / "render_with_blender.py"
-run_in_background = False
-if 4 <= len(sys.argv):
-    run_in_background = sys.argv[3].lower() == "true"
+print(sys.argv)
+try:
+    run_in_background = sys.argv[4].lower() == "true"
+    assert sys.argv[4].lower() in ["true", "false"], "given arg is not True or False"
+except IndexError:
+    run_in_background = True
 
 command = [
     'blender',
@@ -25,6 +29,9 @@ if run_in_background:
     ])
 
 command.extend([
-    '--', input_path,
+    '--',
+    bronchus_input_path,
+    splits_input_path,
 ])
+print(command)
 subprocess.Popen(command)

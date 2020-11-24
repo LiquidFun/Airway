@@ -208,7 +208,7 @@ for group_id in minimal_tree:
     xs.append(c[0])
     ys.append(c[1])
     zs.append(c[2])
-    group_attr.append(np.array([group_diameter[group_id], group_area[group_id]]))
+    group_attr.append(np.array([group_diameter[group_id], group_area[group_id], group_id[0]], dtype=object))
 
 final_coords = np.array([xs, ys, zs])
 

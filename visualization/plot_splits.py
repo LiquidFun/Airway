@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 
+from util.parsing import parse_map_coord_to_distance
 from util.util import get_data_paths_from_args
 
 plt.rcParams.update({'font.size': 4})
@@ -75,13 +76,8 @@ distances = {}
 max_dist = 0
 
 if show_bronchus:
-    with open(map_coord_to_dist_data_path / "map_coord_to_distance.txt", 'r') as dist_file:
-        for line in dist_file.read().split('\n'):
-            if line != '':
-                coord = tuple([int(a) for a in line.split(':')[0].split(',')])
-                dist = int(line.split(':')[1])
-                distances[coord] = dist
-                max_dist = max(max_dist, dist)
+    distances = parse_map_coord_to_distance(map_coord_to_dist_data_path / "map_coord_to_distance.txt")
+    max_dist = max(distances.values())
 
     # Normalize colors
     for key in distances.keys():

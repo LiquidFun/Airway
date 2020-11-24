@@ -36,15 +36,7 @@ base_path = Path(sys.argv[0]).parents[0]
 log_path = base_path / "logs" / f"log_{datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}"
 
 
-def main():
-    log(f"Running {col.bold()}{col.green()}Airway{col.reset()}", stdout=True, add_time=True)
-    start_time = datetime.now()
-    defaults = {"path": None, "workers": 4, "force": False, "single": False, "all": False}
-    defaults_path = base_path / "defaults.yaml"
-    if defaults_path.exists():
-        with open(defaults_path) as config_file:
-            defaults.update(yaml.load(config_file, yaml.FullLoader))
-
+def parse_args(defaults):
     parser = argparse.ArgumentParser()
     parser.add_argument("stages", nargs="+", type=str, help="list of stages to calculate (e.g. 1, 2, 3, tree, vis)")
     parser.add_argument("--path", default=defaults["path"], help="airway data path")
@@ -58,15 +50,34 @@ def main():
                         help="instead of processing all patients, only these patient ids will be used")
     parser.add_argument("-l", "--list_patients", action="store_true",
                         help="only list patients including their index and generated name in the given stages")
+    parser.add_argument("-v", "--verbose", action="store_true", default=defaults['verbose'],
+                        help="print stdout and stderr directly")
+    parser.add_argument("-c", "--clean", action="store_true", default=defaults['clean'],
+                        help="cleans given stage directories before running them")
     # TODO: Possibly implement these:
-    # parser.add_argument("-c", "--clean", help="cleans given stage directories")
-    # parser.add_argument("-s", "--stages", help="print a detailed description for each stage")
-    # parser.add_argument("-v", "--verbose", help="print more info")
-    # parser.add_argument("-s", "--stages", help="list possible stages with short description")
+    # parser.add_argument("-s", "--stages", help="print a detailed description for each stage and exit")
     # parser.add_argument("-d", "--dependencies", help="create all given stages including their dependencies")
     args = parser.parse_args()
-
     assert args.path is not None, "ERROR: Airway data path required!"
+    return args
+
+
+def parse_defaults():
+    defaults = {"path": None, "workers": 4, "force": False, "single": False,
+                "all": False, "verbose": False, "clean": False}
+    defaults_path = base_path / "defaults.yaml"
+    if defaults_path.exists():
+        with open(defaults_path) as config_file:
+            defaults.update(yaml.load(config_file, yaml.FullLoader))
+    return defaults
+
+
+def main():
+    log(f"Running {col.bold()}{col.green()}Airway{col.reset()}", stdout=True, add_time=True)
+    start_time = datetime.now()
+
+    defaults = parse_defaults()
+    args = parse_args(defaults)
 
     log(f"Using up to {col.green(args.workers)} workers", stdout=True, tabs=1)
     log(f"Using {col.green(args.path)} as data path", stdout=True, tabs=1)
@@ -172,9 +183,10 @@ def stage(
         inputs: List[str],
         args: List[str],
         single: bool,
-        patients: List[str],  # TODO
+        patients: List[str],  # TODO add desc
         per_patient: bool,
-        list_patients: bool,  # TODO
+        list_patients: bool,  # TODO add desc
+        verbose: bool, # TODO add desc
         **_,  # Ignore kwargs
     ):
     """Meta function for calculating most stages in parallel.
@@ -191,8 +203,6 @@ def stage(
         single: whether only a single patient should be computed (eg. True)
 
     """
-    # title = f"========== {col.green()}Processing {stage_name}{col.reset()} =========="
-    # log("{0}\n{1}\n{0}\n".format("="*len(col.filter_color_codes(title)), title), stdout=True)
 
     if list_patients:
         log(f"Listing patients in {col.green(stage_name)}:", stdout=True, add_time=True)
@@ -247,11 +257,22 @@ def stage(
         # Call script with default directory otherwise
         else:
             subprocess_args.append(["python3", "-m", script_module, output_stage_path, *input_stage_paths, *args])
-        concurrent_executor(subprocess_args, workers, tqdm_prefix=tqdm_prefix)
+        concurrent_executor(subprocess_args, workers, tqdm_prefix=tqdm_prefix, verbose=verbose)
         # log("", stdout=True)
 
 
 def log(message: str, stdout=False, add_time=False, tabs=0, end='\n'):
+    """ Logs to a file and optionally to stdout
+
+    args:
+        message: a string (possibly multiline) which will be logged
+        stdout: if the message should be added to stdout
+        add_time: if each line in the message should be prepended by the current time
+        tabs: padding in front of each line in the message.
+              1 tab will align it with lines which have add_time
+        end: same as the end arg in print(), is just passed through
+
+    """
     prefix = ' ' * 11 * tabs
     if not log_path.parent.exists():
         log_path.parent.mkdir(exist_ok=True)
@@ -267,31 +288,35 @@ def log(message: str, stdout=False, add_time=False, tabs=0, end='\n'):
     return message
 
 
-def subprocess_executor(argument):
+def subprocess_executor(args):
+    """ Run a single script with args """
     # return subprocess.run(argument, capture_output=True, encoding="utf-8")
     # Above is Python 3.7, so PIPE instead of capture_output=True
-    return subprocess.run(argument, encoding="utf-8", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return subprocess.run(args, encoding="utf-8", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
-def concurrent_executor(subprocess_args, worker, tqdm_prefix=""):
+def concurrent_executor(subprocess_args, worker, tqdm_prefix="", verbose=False):
+    """ Executes multiple scripts as their own modules, logging their STDOUT and STDERR """
     global errors
     with ProcessPoolExecutor(max_workers=worker) as executor:
         bar_fmt = "{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_inv_fmt}{postfix}]"
         with tqdm(total=len(subprocess_args), unit="run", desc=tqdm_prefix, ncols=80, bar_format=bar_fmt) as progress_bar:
             for count, retVal in enumerate(executor.map(subprocess_executor, subprocess_args), start=1):
-                log(f"---- Output for Process {count}/{len(subprocess_args)} ----")
-                log(f"STDOUT:\n{retVal.stdout}\n")
+                log(f"\nOutput for Process {count}/{len(subprocess_args)}", stdout=verbose, add_time=True)
+                out = f"STDOUT:\n{retVal.stdout}\n"
                 progress_bar.update()
 
                 if len(retVal.stderr) > 0:
-                    log(f"STDERR:\n{retVal.stderr}\n")
+                    out += f"\nSTDERR:\n{retVal.stderr}\n"
                     stage_name = str(Path(subprocess_args[0][3]).parents[0].name)
                     if stage_name not in errors:
                         errors[stage_name] = []
                     errors[stage_name].append(count)
+                log(out, tabs=1, stdout=verbose)
 
 
 def show_error_statistics():
+    """ Display error statistics for all computed stages using a global dict """
     global errors
     if errors:
         log(f"Error Statistics:", stdout=True, add_time=True)

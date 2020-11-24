@@ -67,7 +67,6 @@ def get_lobe(coords, reduced_model):
 
 # returns a dict with association coordinate -> node Number
 def create_nodes(graph, np_coord, np_coord_attributes, reduced_model):
-    # assert False, "Crashes here"
     # get node coordinates
     max_coords = np.shape(np_coord)[1]
     dic_coords_to_nodes = {}
@@ -85,7 +84,9 @@ def create_nodes(graph, np_coord, np_coord_attributes, reduced_model):
             lobe_val = 0
         else:
             lobe_val = get_lobe(curr_coord, reduced_model)
+        print(np_coord_attributes[i])
         group_size = np_coord_attributes[i][1]
+        group = np_coord_attributes[i][2]
 
         graph.add_node(
             i,
@@ -94,7 +95,8 @@ def create_nodes(graph, np_coord, np_coord_attributes, reduced_model):
             z=curr_coord[2],
             lobe=lobe_val,
             level=level_val,
-            group_size=group_size
+            group_size=group_size,
+            group=group,
         )
         i += 1
 
@@ -231,7 +233,7 @@ def main():
 
     np_coord = np.load(coord_file_path)['arr_0']
     np_edges = np.load(edges_file_path)['arr_0']
-    np_coord_attributes = np.load(coord_attributes_file_path)['arr_0']
+    np_coord_attributes = np.load(coord_attributes_file_path, allow_pickle=True)['arr_0']
     np_edges_attributes = np.load(edge_attributes_file_path, allow_pickle=True)['arr_0']
 
     # create empty graphs

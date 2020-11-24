@@ -62,12 +62,16 @@ stage-33:
   inputs: [raw_airway]
   groups: [analysis]
   per_patient: False
+stage-34:
+  script: analysis/filter_lingula.py
+  inputs: [stage-02, stage-03, stage-07]
+  groups: [analysis]
 
 
 # --- 3D Objects --- #
 stage-60:
   script: obj_generation/gen_obj.py
-  inputs: [stage-02]
+  inputs: [stage-02, stage-34]
   groups: [3d, obj]
 stage-61:
   script: obj_generation/gen_split_obj.py
@@ -75,8 +79,9 @@ stage-61:
   groups: [3d, obj]
 stage-62:
   script: visualization/run_blender.py
-  inputs: [stage-60]
+  inputs: [stage-60, stage-61]
   groups: [3d, obj]
+  args: [True]
   interactive_args:
     object: [False]
 
