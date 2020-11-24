@@ -28,19 +28,21 @@ def run():
     defaults_path = base_path / "defaults.yaml"
     if defaults_path.exists():
         with open(defaults_path) as config_file:
-            path = yaml.load(config_file, yaml.FullLoader)['path']
+            defaults = yaml.load(config_file, yaml.FullLoader)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("id", nargs='?', default="1", help="patient id (can be index, name, or id)")
-    parser.add_argument("--path", default=path, help="working data path")
+    parser.add_argument("-P", "--path", default=defaults['path'], help="working data path")
     for name, config in vis_name_to_config.items():
         parser.add_argument(f"-{name[0]}", f"--{name}", default=False, action="store_true",
                             help=f"show plot of {name}")
+
     # parser.add_argument("-s", "--splits", default=False, action="store_true", help="show plot of splits")
     # parser.add_argument("-b", "--bronchus", default=False, action="store_true", help="show plot of bronchus")
     # parser.add_argument("-l", "--lobes", default=False, action="store_true", help="show plot of lobes")
     # parser.add_argument("-o", "--object", default=False, action="store_true", help="show .obj of bronchus")
     args = parser.parse_args()
+    path = defaults['paths'].get(args.path, args.path)
 
     arg_dict = vars(args)
 
@@ -57,8 +59,6 @@ def run():
                 keyword_to_patient_id[str(index)] = patient
                 keyword_to_patient_id[get_patient_name(patient)] = patient
 
-            print(keyword_to_patient_id)
-
             curr_patient_id = keyword_to_patient_id[str(args.id).capitalize()]
 
             output_patient_path = Path(path) / config['output'] / curr_patient_id
@@ -71,7 +71,6 @@ def run():
                 *input_patient_paths,
                 *config['args'],
             ]))
-            print(subprocess_args)
             return_val = subprocess.run(subprocess_args)
             print(f"STDOUT:\n{return_val.stdout}\n")
             print(f"STDERR:\n{return_val.stderr}\n\n")

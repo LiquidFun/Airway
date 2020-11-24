@@ -63,7 +63,7 @@ stage-33:
   groups: [analysis]
   per_patient: False
 stage-34:
-  script: analysis/filter_lingula.py
+  script: analysis/create_color_masks.py
   inputs: [stage-02, stage-03, stage-07]
   groups: [analysis]
 
@@ -80,7 +80,7 @@ stage-61:
 stage-62:
   script: visualization/run_blender.py
   inputs: [stage-60, stage-61]
-  groups: [3d, obj]
+  groups: [render]
   args: [True]
   interactive_args:
     object: [False]

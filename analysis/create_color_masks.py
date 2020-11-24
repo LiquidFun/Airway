@@ -20,14 +20,15 @@ def fill_color_mask_with_bfs(for_point, color_mask, curr_color, distances):
     while not queue.empty():
         for adj in map(tuple, adjacent(queue.get())):
             if adj in distances and adj not in visited:
-                if distances[adj] > node_dist:
-                    color_mask[adj] = curr_color
+                if distances[adj] >= node_dist-3:
+                    if distances[adj] > node_dist:
+                        color_mask[adj] = curr_color
                     queue.put(adj)
                     visited.add(adj)
     print(f"Added {curr_color}")
 
 
-def find_legal_point(node, distances):
+def find_legal_point(node, distances, target_distance):
     p = (round(node['x']), round(node['y']), round(node['z']))
     queue = Queue()
     queue.put(p)
@@ -36,7 +37,8 @@ def find_legal_point(node, distances):
         for adj in map(tuple, adjacent(queue.get())):
             if adj not in visited:
                 if adj in distances:
-                    return adj
+                    if distances[adj] == target_distance:
+                        return adj
                 visited.add(adj)
                 queue.put(adj)
 
@@ -48,13 +50,14 @@ def main():
     np_dist = np.full(model.shape, 0)
     for (x, y, z), val in distances.items():
         np_dist[x, y, z] = val
-    lu_lobe = nx.read_graphml(tree_path / f"lobe-3-{tree_path.name}.graphml")
+    # lu_lobe = nx.read_graphml(tree_path / f"lobe-3-{tree_path.name}.graphml")
+    lu_lobe = nx.read_graphml(tree_path / f"tree.graphml")
     # lu_traversing = nx.bfs_successors(lu_lobe, "5")
     color_mask = np.full(model.shape, 0)
     first_node = list(lu_lobe.nodes)[0]
     for curr_color, (node_index, successors) in enumerate(nx.bfs_successors(lu_lobe, first_node), start=1):
         node = lu_lobe.nodes[node_index]
-        point = find_legal_point(node, distances)
+        point = find_legal_point(node, distances, node["group"])
         fill_color_mask_with_bfs(point, color_mask, curr_color, distances)
         # color_mask[np_dist >= node_dist] = curr_color
     print(np.unique(model))

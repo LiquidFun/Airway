@@ -39,7 +39,7 @@ log_path = base_path / "logs" / f"log_{datetime.now().strftime('%Y-%m-%d_%H:%M:%
 def parse_args(defaults):
     parser = argparse.ArgumentParser()
     parser.add_argument("stages", nargs="+", type=str, help="list of stages to calculate (e.g. 1, 2, 3, tree, vis)")
-    parser.add_argument("--path", default=defaults["path"], help="airway data path")
+    parser.add_argument("-P", "--path", default=defaults["path"], help="airway data path")
     parser.add_argument("-w", "--workers", type=int, default=defaults["workers"],
                         help="number of parallel workers (threads)")
     parser.add_argument("-f", "--force", help="force overwriting of previous stages",
@@ -59,6 +59,8 @@ def parse_args(defaults):
     # parser.add_argument("-s", "--stages", help="print a detailed description for each stage and exit")
     # parser.add_argument("-d", "--dependencies", help="create all given stages including their dependencies")
     args = parser.parse_args()
+    if args.path in defaults['paths']:
+        args.path = defaults['paths'][args.path]
     return args
 
 
@@ -284,7 +286,8 @@ def log(message: str, stdout=False, add_time=False, tabs=0, end='\n'):
     args:
         message: a string (possibly multiline) which will be logged
         stdout: if the message should be added to stdout
-        add_time: if each line in the message should be prepended by the current time
+        add_time: will add formatted timestamp for the first non-empty message
+                  possibly replacing indentation through tabs
         tabs: padding in front of each line in the message.
               1 tab will align it with lines which have add_time
         end: same as the end arg in print(), is just passed through
@@ -362,12 +365,15 @@ if __name__ == "__main__":
     previous_mask = os.umask(0o002)
     previous_cwd = Path.cwd()
     os.chdir(base_path)
+    # Remove logs if there are too many
+    log_files = sorted(log_path.parent.glob('*'), key=lambda p: p.stat().st_mtime)
+    for existing_log_file in log_files[:-9]:
+        existing_log_file.unlink()
     main()
     log_link_path = base_path / "log"
     if log_link_path.exists():
         os.unlink(log_link_path)
     os.link(log_path, log_link_path)
-    log("", stdout=True)
     log(f'Saved log file to {col.green()}{log_path}{col.reset()} (linked to ./log)', stdout=True, add_time=True)
     os.chdir(previous_cwd)
     os.umask(previous_mask)

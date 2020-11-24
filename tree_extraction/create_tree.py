@@ -18,7 +18,7 @@ import math
 
 import numpy as np
 
-from tree_extraction.helper_functions import adjacent
+from tree_extraction.helper_functions import adjacent, adjacent_euclidean
 from util.util import get_data_paths_from_args
 
 output_data_path, input_data_path = get_data_paths_from_args()
@@ -109,7 +109,7 @@ for curr_dist, coords in enumerate(DISTANCE_TO_COORDS):
                 curr = bfs_queue.get()
 
                 # Iterate over adjacent coords
-                for adj in adjacent(curr, moore_neighborhood=True):
+                for adj in adjacent_euclidean(curr, dist=4):
                     adj = tuple(adj)
 
                     # If the adjacent is an actual coordinate (not empty space) and has not yet
@@ -216,9 +216,6 @@ xs = []
 ys = []
 zs = []
 edge_attr = []
-# print("="*50)
-# print("minimal_tree: ", minimal_tree)
-# print("="*50)
 
 # Calculate edge and coord attributes
 for group_id in minimal_tree:
