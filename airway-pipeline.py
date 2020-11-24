@@ -55,6 +55,7 @@ def parse_args(defaults):
     parser.add_argument("-c", "--clean", action="store_true", default=defaults['clean'],
                         help="cleans given stage directories before running them")
     # TODO: Possibly implement these:
+    # parser.add_argument("-i", "--interactive", help="run script for single patient without creating subprocess")
     # parser.add_argument("-s", "--stages", help="print a detailed description for each stage and exit")
     # parser.add_argument("-d", "--dependencies", help="create all given stages including their dependencies")
     args = parser.parse_args()
@@ -253,7 +254,9 @@ def stage(
 
         patient_dirs = input_stage_path.glob('*')
         if patients:
-            filter(lambda p: p in patients, patient_dirs)
+            log("Handling only these patients:", stdout=True, add_time=True)
+            log('\n'.join(map(col.yellow, patients)) + "\n", stdout=True, tabs=1)
+            patient_dirs = list(filter(lambda p: p.name in patients, patient_dirs))
 
         # If script should be called for every patient
         if per_patient:
@@ -287,13 +290,21 @@ def log(message: str, stdout=False, add_time=False, tabs=0, end='\n'):
         end: same as the end arg in print(), is just passed through
 
     """
-    prefix = ' ' * 11 * tabs
     if not log_path.parent.exists():
         log_path.parent.mkdir(exist_ok=True)
-    if add_time:
-        time_fmt = f"[{col.green()}{datetime.now().strftime('%H:%M:%S')}{col.reset()}] "
-        message = time_fmt + message.replace('\n', '\n' + time_fmt)
-    message = prefix + message.replace('\n', '\n' + prefix)
+    lines = message.split('\n')
+    time_added = False
+    for i in range(len(lines)):
+        add_time_for_this_line = lines[i].strip() != '' and add_time and not time_added
+        tabs_adjusted_to_time = tabs-1 if add_time_for_this_line else tabs
+        if tabs_adjusted_to_time >= 1:
+            prefix = ' ' * 11 * tabs_adjusted_to_time
+            lines[i] = prefix + lines[i]
+        if add_time_for_this_line:
+            time_fmt = f"[{col.green()}{datetime.now().strftime('%H:%M:%S')}{col.reset()}] "
+            lines[i] = time_fmt + lines[i]
+            time_added = True
+    message = '\n'.join(lines)
     with open(log_path, 'a+') as log_file:
         if stdout:
             print(message, end=end)
@@ -316,8 +327,10 @@ def concurrent_executor(subprocess_args, worker, tqdm_prefix="", verbose=False):
         bar_fmt = "{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_inv_fmt}{postfix}]"
         with tqdm(total=len(subprocess_args), unit="run", desc=tqdm_prefix, ncols=80, bar_format=bar_fmt) as progress_bar:
             for count, retVal in enumerate(executor.map(subprocess_executor, subprocess_args), start=1):
-                log(f"\nOutput for Process {count}/{len(subprocess_args)}", stdout=verbose, add_time=True)
-                out = f"STDOUT:\n{retVal.stdout}\n"
+
+                out = f"\nOutput for Process {col.yellow(count)}/{col.yellow(len(subprocess_args))}"
+                out += f" (Patient {col.green(Path(retVal.args[3]).name)})\n"
+                out += f"STDOUT:\n{retVal.stdout}\n"
                 progress_bar.update()
 
                 if len(retVal.stderr) > 0:
@@ -326,7 +339,7 @@ def concurrent_executor(subprocess_args, worker, tqdm_prefix="", verbose=False):
                     if stage_name not in errors:
                         errors[stage_name] = []
                     errors[stage_name].append(count)
-                log(out, tabs=1, stdout=verbose)
+                log(out, tabs=1, add_time=True, stdout=verbose)
 
 
 def show_error_statistics():
@@ -354,6 +367,7 @@ if __name__ == "__main__":
     if log_link_path.exists():
         os.unlink(log_link_path)
     os.link(log_path, log_link_path)
-    log(f'\nSaved log file to {col.green()}{log_path}{col.reset()} (linked to ./log)', stdout=True, add_time=True)
+    log("", stdout=True)
+    log(f'Saved log file to {col.green()}{log_path}{col.reset()} (linked to ./log)', stdout=True, add_time=True)
     os.chdir(previous_cwd)
     os.umask(previous_mask)

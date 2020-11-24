@@ -15,15 +15,12 @@ def fill_color_mask_with_bfs(for_point, color_mask, curr_color, distances):
     # Mark every split interval
     queue = Queue()
     queue.put(for_point)
+    visited = set(for_point)
     node_dist = distances[for_point]
-    visited = set()
     while not queue.empty():
-        curr = queue.get()
-        for adj in map(tuple, adjacent(curr)):
-            if adj in distances:
-                if distances[adj] > node_dist and adj not in visited:
-                    # print(distances[adj], node_dist)
-                    # print(adj)
+        for adj in map(tuple, adjacent(queue.get())):
+            if adj in distances and adj not in visited:
+                if distances[adj] > node_dist:
                     color_mask[adj] = curr_color
                     queue.put(adj)
                     visited.add(adj)
@@ -31,14 +28,12 @@ def fill_color_mask_with_bfs(for_point, color_mask, curr_color, distances):
 
 
 def find_legal_point(node, distances):
-    x = round(node['x'])
-    y = round(node['y'])
-    z = round(node['z'])
+    p = (round(node['x']), round(node['y']), round(node['z']))
     queue = Queue()
-    queue.put((x, y, z))
-    visited = set()
+    queue.put(p)
+    visited = set(p)
     while not queue.empty():
-        for adj in map(tuple, adjacent((x, y, z))):
+        for adj in map(tuple, adjacent(queue.get())):
             if adj not in visited:
                 if adj in distances:
                     return adj

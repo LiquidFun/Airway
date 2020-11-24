@@ -84,7 +84,6 @@ def create_nodes(graph, np_coord, np_coord_attributes, reduced_model):
             lobe_val = 0
         else:
             lobe_val = get_lobe(curr_coord, reduced_model)
-        print(np_coord_attributes[i])
         group_size = np_coord_attributes[i][1]
         group = np_coord_attributes[i][2]
 
