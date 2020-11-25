@@ -4,7 +4,6 @@ networkx
 scikit-image
 sklearn
 pandas
-python-igraph
 pyyaml
 matplotlib
 regex

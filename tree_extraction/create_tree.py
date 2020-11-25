@@ -109,7 +109,7 @@ for curr_dist, coords in enumerate(DISTANCE_TO_COORDS):
                 curr = bfs_queue.get()
 
                 # Iterate over adjacent coords
-                for adj in adjacent_euclidean(curr, dist=4):
+                for adj in adjacent(curr, moore_neighborhood=True):
                     adj = tuple(adj)
 
                     # If the adjacent is an actual coordinate (not empty space) and has not yet

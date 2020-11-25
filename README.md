@@ -5,9 +5,23 @@ Specifically the upper left lobe is of interest, where there is a rather unusual
 
 According to Dr. Rolf Oerter this has not yet been documented and is of great interest to surgeons.
 
-![](./visualization/images/distance-to-top.png)
+![](./visualization/images/left_upper_lobe0.png)
+
+Example visualisation of split detection, rendered with blender.
 
 This project is WIP and currently very actively in development!
+
+## Installation
+
+At least Python 3.6 is required for this project.
+
+`pip3 install -r requirements.txt`
+
+These are required for certain stages:
+
+`apt install blender python3-igraph`
+
+Now you can run `python3 airway-pipeline.py -h for the possible commands.`
 
 ## Working with the data
 
@@ -87,15 +101,20 @@ You can type `./airway-pipeline --stages` for this description as well:
 
 TODO: out of date
 
-Stages 1 through 9 are responsible for generation of the bronchus tree splits.
+Stages 1 through 7 use the raw data to create the tree splits used in the rest of the stages.
 
-Stage 10 through 19 are responsible for tree analysis.
+Stage 30 through 34 analyse the tree structure, focusing mostly on the left upper lobe.
 
-Stages 20 through 29 are responsible for visualisation.
+Stages 60 through 62 are 3D visualisations, wherein .obj files of the lungs are exported.
+
+Stages 70 through 72 are plot visualisations of various stats.
+
+Stage 90 is the website which displays information for each patient including the 3D models.
 
 
 
 
+![](./visualization/images/distance-to-top.png)
 
 ![](./visualization/images/tree-only.png)
 
