@@ -53,7 +53,7 @@ def generate_obj(output_data_path,
     faces: Dict[int, List[List[int]]] = {0: []}
 
     def cell_is_empty(x, y, z):
-        return not (accepted_types == set() and model[x][y][z]) or model[x][y][z] in accepted_types
+        return not ((accepted_types == set() and model[x][y][z]) or model[x][y][z] in accepted_types)
 
     # Go through each point comparing it to all adjacent faces, if one
     # of the blocks is filled and the other is empty then add a face there
@@ -109,7 +109,10 @@ def generate_obj(output_data_path,
 
     # make to numpy for more easy usage later
 
+    print(model.shape)
+    print(vertices)
     vertices = np.array([np.array(v) for v in vertices])
+    print(vertices)
     vertices = normalize(vertices, model.shape, rot_mat=rot_mat)
 
     # Write vertices and faces to obj_file

@@ -263,7 +263,7 @@ def stage(
         # If script should be called for every patient
         if per_patient:
             # Iterate over each patient directory
-            for patient_dir in patient_dirs:
+            for patient_dir in sorted(patient_dirs):
                 patient_output_stage_path = output_stage_path / patient_dir.name
                 patient_input_stage_paths = [isp / patient_dir.name for isp in input_stage_paths]
                 patient_output_stage_path.mkdir(exist_ok=True, mode=0o777)

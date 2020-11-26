@@ -15,7 +15,7 @@ After doing that it backtracks all nodes and creates all the edges.
 
 import queue
 import math
-from typing import Tuple
+from typing import Tuple, Set
 
 import numpy as np
 
@@ -178,14 +178,20 @@ def hollow_sphere(radius):
     return (radius-1 < dist_mat) & (dist_mat <= radius)
 
 
-def find_radius_via_sphere(at_point: Tuple[int, int, int]):
-    for radius in range(1, 50):
+def find_radius_via_sphere(at_point: Tuple[int, int, int], allowed_types: Set[int]):
+    max_radius = 50
+    for radius in range(1, max_radius):
         sphere = hollow_sphere(radius + .5)
         coords = np.nonzero(sphere)
         sphere_around_point = tuple(map(sum, zip(coords, at_point)))
         for x, y, z in zip(*sphere_around_point):
-            if model[round(x), round(y), round(z)] == 0:
-                return radius
+            try:
+                if model[round(x), round(y), round(z)] not in allowed_types:
+                    return radius
+            except IndexError:
+                pass
+    raise Exception("ERROR: Cannot find any 0-")
+    return max_radius
 
 
 for group, prev_group_index in prev_group.items():
