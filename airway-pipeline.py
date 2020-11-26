@@ -328,6 +328,7 @@ def concurrent_executor(subprocess_args, worker, tqdm_prefix="", verbose=False):
     global errors
     with ProcessPoolExecutor(max_workers=worker) as executor:
         bar_fmt = "{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_inv_fmt}{postfix}]"
+        stage_name = str(Path(subprocess_args[0][3]).parents[0].name)
         with tqdm(total=len(subprocess_args), unit="run", desc=tqdm_prefix, ncols=80, bar_format=bar_fmt) as progress_bar:
             for count, retVal in enumerate(executor.map(subprocess_executor, subprocess_args), start=1):
 
@@ -338,11 +339,13 @@ def concurrent_executor(subprocess_args, worker, tqdm_prefix="", verbose=False):
 
                 if len(retVal.stderr) > 0:
                     out += f"\nSTDERR:\n{retVal.stderr}\n"
-                    stage_name = str(Path(subprocess_args[0][3]).parents[0].name)
                     if stage_name not in errors:
                         errors[stage_name] = []
                     errors[stage_name].append(count)
                 log(out, tabs=1, add_time=True, stdout=verbose)
+        if stage_name in errors:
+            plural = "processes" if len(errors[stage_name]) > 1 else "process"
+            log(f"{col.red()}{len(errors[stage_name])} {plural} had errors!{col.reset()}\n", stdout=True, tabs=1)
 
 
 def show_error_statistics():
@@ -363,17 +366,17 @@ def show_error_statistics():
 
 if __name__ == "__main__":
     previous_mask = os.umask(0o002)
-    previous_cwd = Path.cwd()
     os.chdir(base_path)
     # Remove logs if there are too many
     log_files = sorted(log_path.parent.glob('*'), key=lambda p: p.stat().st_mtime)
     for existing_log_file in log_files[:-9]:
         existing_log_file.unlink()
     main()
+
+    # Link latest log file to log in basepath
     log_link_path = base_path / "log"
     if log_link_path.exists():
         os.unlink(log_link_path)
     os.link(log_path, log_link_path)
     log(f'Saved log file to {col.green()}{log_path}{col.reset()} (linked to ./log)', stdout=True, add_time=True)
-    os.chdir(previous_cwd)
     os.umask(previous_mask)

@@ -3,7 +3,7 @@ import queue
 import numpy as np
 from skimage.morphology import skeletonize
 
-from tree_extraction.helper_functions import adjacent
+from util.helper_functions import adjacent
 from util.util import get_data_paths_from_args
 
 output_data_path, input_data_path = get_data_paths_from_args()

@@ -107,36 +107,31 @@ def per_lobe_statistics():
 
 def upper_left_lobe_distance_analysis(plot_path, csv_path):
     # setup path to lobe.graphml files
-    upper_left_lobe_list = input_data_path.glob('*')
-    upper_left_lobe_list = [
-        Path(str(patDir) + "/lobe-3-" + str(patDir.parts[-1]) + ".graphml")
-        for patDir in upper_left_lobe_list
-        if patDir.is_dir() and (Path(str(patDir) + "/lobe-3-" + str(patDir.parts[-1]) + ".graphml")).is_file()
-    ]
-    # print(len(upper_left_lobe_list))
-    
-
+    upper_left_lobe_list = []
+    for pat_dir in input_data_path.glob("*"):
+        lobe_path = pat_dir / f"lobe-3-{pat_dir.parts[-1]}.graphml"
+        if lobe_path.is_file():
+            upper_left_lobe_list.append(lobe_path)
     # fill a dictionary with lobe graphs
     left_lobe_dict = {}
     for lobePath in upper_left_lobe_list:
-        left_lobe_dict.update({lobePath.parts[-2]: nx.read_graphml(lobePath)})
-    print("Found " + str(len(left_lobe_dict)) + " upper left lobes for analysis.")
-    count = len(left_lobe_dict)
+        left_lobe_dict[lobePath.parts[-2]] = nx.read_graphml(lobePath)
+    lu_count = len(left_lobe_dict)
+    print(f"Found {lu_count} upper left lobes for analysis.")
     not_tree_list = []
     lobe_tree_dict = {}
 
     # iterate over the lobes
     for key, lobe in left_lobe_dict.items():
         # print (key, nx.get_node_attributes(lobe, 'level'))
-
         # check if there are lobes not being a tree
         if not nx.is_tree(lobe):
-            count = count - 1
+            lu_count = lu_count - 1
             not_tree_list.append(key)
         else:
             lobe_tree_dict.update({key: lobe})
 
-    print("Detected trees: " + str(count) + "/" + str(len(left_lobe_dict)))
+    print(f"Detected trees: {lu_count}/{len(left_lobe_dict)}")
     print("Patients whose lobes are not a tree: ")
     for tree in not_tree_list:
         print(tree)

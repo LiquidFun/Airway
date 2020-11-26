@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+import os
 import argparse
 import subprocess
 from pathlib import Path
@@ -13,6 +14,7 @@ from util.util import get_patient_name
 
 def run():
     base_path = Path(sys.argv[0]).parent
+    os.chdir(base_path)
     stage_configs_path = base_path / "stage_configs.yaml"
     vis_name_to_config: Dict[str, Dict] = {}
     with open(stage_configs_path) as stage_configs_file:

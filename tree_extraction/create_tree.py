@@ -19,7 +19,7 @@ from typing import Tuple, Set
 
 import numpy as np
 
-from tree_extraction.helper_functions import adjacent
+from util.helper_functions import adjacent, find_radius_via_sphere
 from util.util import get_data_paths_from_args
 
 output_data_path, input_data_path, reduced_model_data_path = get_data_paths_from_args(inputs=2)
@@ -167,33 +167,6 @@ edge_area_per_group_id = {(0, 0) : [1]}
 not_skip_groups = {(0, 0)}
 
 
-def hollow_sphere(radius):
-    shape = ((math.ceil(radius) * 2) + 1,) * 3
-    point = np.array([round(radius)] * 3)
-    dist_mat = np.full(shape, 0.)
-    for x in range(len(dist_mat)):
-        for y in range(len(dist_mat[x])):
-            for z in range(len(dist_mat[x][y])):
-                dist_mat[x][y][z] = np.linalg.norm(point - np.array([x, y, z]))
-    return (radius-1 < dist_mat) & (dist_mat <= radius)
-
-
-def find_radius_via_sphere(at_point: Tuple[int, int, int], allowed_types: Set[int]):
-    max_radius = 50
-    for radius in range(1, max_radius):
-        sphere = hollow_sphere(radius + .5)
-        coords = np.nonzero(sphere)
-        sphere_around_point = tuple(map(sum, zip(coords, at_point)))
-        for x, y, z in zip(*sphere_around_point):
-            try:
-                if model[round(x), round(y), round(z)] not in allowed_types:
-                    return radius
-            except IndexError:
-                pass
-    raise Exception("ERROR: Cannot find any 0-")
-    return max_radius
-
-
 for group, prev_group_index in prev_group.items():
     curr_dist, group_index = group
     prev = (curr_dist-1, prev_group_index)
@@ -243,7 +216,7 @@ for group_id in minimal_tree:
     xs.append(c[0])
     ys.append(c[1])
     zs.append(c[2])
-    group_area[group_id] = find_radius_via_sphere(c) * 2
+    group_area[group_id] = find_radius_via_sphere(c, {1}, model) * 2
     group_diameter[group_id] = (group_area[group_id] / 2)**2 * math.pi
     group_attr.append(np.array([group_diameter[group_id], group_area[group_id], group_id[0]], dtype=object))
 
