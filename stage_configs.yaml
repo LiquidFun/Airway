@@ -75,7 +75,7 @@ stage-60:
   groups: [3d, obj]
 stage-61:
   script: obj_generation/gen_split_obj.py
-  inputs: [stage-07]
+  inputs: [stage-07, stage-02]
   groups: [3d, obj]
 stage-62:
   script: visualization/run_blender.py
