@@ -21,7 +21,7 @@ stage-03:
   groups: [tree]
 stage-04:
   script: tree_extraction/create_tree.py
-  inputs: [stage-03]
+  inputs: [stage-03, stage-02]
   groups: [tree]
 stage-05:
   script: tree_extraction/compose_tree.py

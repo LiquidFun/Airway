@@ -15,13 +15,15 @@ This project is WIP and currently very actively in development!
 
 At least Python 3.6 is required for this project.
 
-`pip3 install -r requirements.txt`
+```pip3 install -r requirements.txt```
 
 These are required for certain stages:
 
-`apt install blender python3-igraph`
+```apt install blender python3-igraph```
 
-Now you can run `python3 airway-pipeline.py -h for the possible commands.`
+Now you can run this for the possible commands to use with airway pipeline.
+
+```python3 airway-pipeline.py -h```
 
 ## Working with the data
 
@@ -83,7 +85,7 @@ a stage you need to add the `-f`/`--force` flag.
 
 Here are some other possible ways to define stages:
 
-`./airway-pipeline.py 1 3-4 6+` - will create stages 1, 3, 4, 6 and all the ones above 6
+`./airway-pipeline.py 1 3-5 7+` - will create stages 1, 3, 4, 5, 7 and all the ones above 7
 `./airway-pipeline.py tree vis` - will create stages which are in the groups tree and vis
 `./airway-pipeline.py all` - will create all stages
 
@@ -98,8 +100,6 @@ If you have more CPU threads, simply increase the number of workers:
 ## Stages
 
 You can type `./airway-pipeline --stages` for this description as well:
-
-TODO: out of date
 
 Stages 1 through 7 use the raw data to create the tree splits used in the rest of the stages.
 

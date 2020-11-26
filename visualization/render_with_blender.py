@@ -9,7 +9,8 @@ argv = sys.argv
 argv = argv[argv.index("--") + 1:]
 print(argv)
 bronchus_path = argv[0]
-split_path = argv[1]
+skeleton_path = argv[1]
+split_path = argv[2]
 
 # Delete default cube
 bpy.ops.object.delete()
@@ -67,6 +68,11 @@ bpy.context.window.screen = bpy.data.screens['3D View Full']
 bpy.ops.import_scene.obj(filepath=split_path)
 bpy.data.meshes['splits'].show_double_sided = True
 splits = bpy.data.objects['splits']
+
+# Import skeleton object
+bpy.ops.import_scene.obj(filepath=skeleton_path)
+bpy.data.meshes['skeleton'].show_double_sided = True
+skeleton = bpy.data.objects['skeleton']
 # splits.hide = True
-splits.hide_render = True
+# splits.hide_render = True
 # splits.select_set = True

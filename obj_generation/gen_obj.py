@@ -12,7 +12,8 @@ it adds the points which haven't been added yet on that face and also adds the f
 Then it saves everything into a .obj file with the format of [patient_it].obj. This file can
 be imported into blender, 3D printed, visualized and many other nice things.
 """
-from typing import List
+from pathlib import Path
+from typing import List, Set
 from typing import Dict
 
 import numpy as np
@@ -21,10 +22,10 @@ from skimage.morphology import skeletonize
 from util.util import get_data_paths_from_args
 
 
-def generate_obj(output_data_path, accepted_types, model, color_mask=None):
+def generate_obj(output_data_path: Path, accepted_types: Set[int], model: np.array, color_mask=None):
     """Saves a .obj obj_file given the model, the accepted types and a name
 
-    output_data_path is a string, this is the full path the obj_file will be saved as
+    output_data_path is a pathlib Path, this is the full path the obj_file will be saved as
 
     accepted_types is a list or set which types should be looked for, other
     types will be ignored. If empty set then everything except for 0 will be
@@ -34,12 +35,14 @@ def generate_obj(output_data_path, accepted_types, model, color_mask=None):
     want to convert to 3D
 
     color_mask is a model with the same shape as model, but its numbers represent
-    groups of colors/materials which will be added by this script
+    groups of colors/materials which Set be added by this script
     """
 
     # if output_data_path.exists():
     #     print(f"Skipping {output_data_path} since it already exists. Manually delete to regenerate.")
     #     return
+
+    output_data_path = Path(output_data_path)
 
     print(f"Generating {output_data_path} with accepted types of {accepted_types}")
 
@@ -99,7 +102,7 @@ def generate_obj(output_data_path, accepted_types, model, color_mask=None):
                             assert len(faces[material][-1]) == 4, "ERROR: Wrong number of points on face"
 
     print(f"Vertex count : {len(vertices)}")
-    print(f"Face count : {len(faces)}")
+    print(f"Face count : {sum(map(len, faces.values()))}")
 
     vertices = normalize(vertices)
 

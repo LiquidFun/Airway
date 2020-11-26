@@ -7,6 +7,7 @@ from util.util import get_data_paths_from_args
 output_data_path, bronchus_input_data_path, splits_input_data_path = get_data_paths_from_args(inputs=2)
 output_path = output_data_path / "left_upper_lobe#"
 bronchus_input_path = bronchus_input_data_path / "bronchus.obj"
+skeleton_input_path = bronchus_input_data_path / "skeleton.obj"
 splits_input_path = splits_input_data_path / "splits.obj"
 script_path = Path(__file__).parent.absolute() / "render_with_blender.py"
 print(sys.argv)
@@ -31,6 +32,7 @@ if run_in_background:
 command.extend([
     '--',
     bronchus_input_path,
+    skeleton_input_path,
     splits_input_path,
 ])
 print(command)

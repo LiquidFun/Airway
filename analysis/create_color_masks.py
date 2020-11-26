@@ -43,6 +43,9 @@ def find_legal_point(node, distances, target_distance):
                 queue.put(adj)
 
 
+# def fill_sphere_around_point():
+
+
 def main():
     output_data_path, reduced_model_path, coord_to_distance_path, tree_path, = get_data_paths_from_args(inputs=3)
     model = np.load(reduced_model_path / "reduced_model.npz")['arr_0']
@@ -54,12 +57,12 @@ def main():
     lu_lobe = nx.read_graphml(tree_path / f"tree.graphml")
     # lu_traversing = nx.bfs_successors(lu_lobe, "5")
     color_mask = np.full(model.shape, 0)
-    first_node = list(lu_lobe.nodes)[0]
-    for curr_color, (node_index, successors) in enumerate(nx.bfs_successors(lu_lobe, first_node), start=1):
-        node = lu_lobe.nodes[node_index]
-        point = find_legal_point(node, distances, node["group"])
-        fill_color_mask_with_bfs(point, color_mask, curr_color, distances)
-        # color_mask[np_dist >= node_dist] = curr_color
+
+    # first_node = list(lu_lobe.nodes)[0]
+    #  for curr_color, (node_index, successors) in enumerate(nx.bfs_successors(lu_lobe, first_node), start=1):
+    #      node = lu_lobe.nodes[node_index]
+    #      point = find_legal_point(node, distances, node["group"])
+    #      fill_color_mask_with_bfs(point, color_mask, curr_color, distances)
     print(np.unique(model))
     np.savez_compressed(output_data_path / "bronchus_color_mask.npz", color_mask)
     # color_mask

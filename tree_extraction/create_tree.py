@@ -15,14 +15,16 @@ After doing that it backtracks all nodes and creates all the edges.
 
 import queue
 import math
+from typing import Tuple
 
 import numpy as np
 
-from tree_extraction.helper_functions import adjacent, adjacent_euclidean
+from tree_extraction.helper_functions import adjacent
 from util.util import get_data_paths_from_args
 
-output_data_path, input_data_path = get_data_paths_from_args()
+output_data_path, input_data_path, reduced_model_data_path = get_data_paths_from_args(inputs=2)
 
+REDUCED_MODEL = reduced_model_data_path / "reduced_model.npz"
 DISTANCE_TO_COORDS_FILE = input_data_path / "map_distance_to_coords.npz"
 MAP_COORD_TO_PREVIOUS_FILE = input_data_path / "map_coord_to_previous.txt"
 MAP_COORD_TO_NEXT_COUNT_FILE = input_data_path / "map_coord_to_next_count.txt"
@@ -31,6 +33,9 @@ FINAL_COORDS_FILE = output_data_path / "final_coords"
 FINAL_EDGES_FILE = output_data_path / "final_edges"
 EDGE_ATTRIBUTES_FILE = output_data_path / "edge_attributes"
 COORD_ATTRIBUTES_FILE = output_data_path / "coord_attributes"
+
+model = np.load(REDUCED_MODEL)['arr_0']
+print(model.shape)
 
 
 def parse_coord(coord, split_on):
@@ -161,6 +166,28 @@ edge_area_per_group_id = {(0, 0) : [1]}
 
 not_skip_groups = {(0, 0)}
 
+
+def hollow_sphere(radius):
+    shape = ((math.ceil(radius) * 2) + 1,) * 3
+    point = np.array([round(radius)] * 3)
+    dist_mat = np.full(shape, 0.)
+    for x in range(len(dist_mat)):
+        for y in range(len(dist_mat[x])):
+            for z in range(len(dist_mat[x][y])):
+                dist_mat[x][y][z] = np.linalg.norm(point - np.array([x, y, z]))
+    return (radius-1 < dist_mat) & (dist_mat <= radius)
+
+
+def find_radius_via_sphere(at_point: Tuple[int, int, int]):
+    for radius in range(1, 50):
+        sphere = hollow_sphere(radius + .5)
+        coords = np.nonzero(sphere)
+        sphere_around_point = tuple(map(sum, zip(coords, at_point)))
+        for x, y, z in zip(*sphere_around_point):
+            if model[round(x), round(y), round(z)] == 0:
+                return radius
+
+
 for group, prev_group_index in prev_group.items():
     curr_dist, group_index = group
     prev = (curr_dist-1, prev_group_index)
@@ -175,7 +202,9 @@ for group, prev_group_index in prev_group.items():
             minimal_tree[group] = minimal_tree[prev]
             if group not in edge_area_per_group_id:
                 edge_area_per_group_id[group] = edge_area_per_group_id[prev].copy()
+            # Use this if not skeletonize
             edge_area_per_group_id[group].append(group_area[group])
+
         else:
             minimal_tree[group] = prev
             not_skip_groups.add(prev)
@@ -208,6 +237,8 @@ for group_id in minimal_tree:
     xs.append(c[0])
     ys.append(c[1])
     zs.append(c[2])
+    group_area[group_id] = find_radius_via_sphere(c) * 2
+    group_diameter[group_id] = (group_area[group_id] / 2)**2 * math.pi
     group_attr.append(np.array([group_diameter[group_id], group_area[group_id], group_id[0]], dtype=object))
 
 final_coords = np.array([xs, ys, zs])
@@ -230,7 +261,9 @@ for group_id in minimal_tree:
         zs.append([c[2], prev_c[2]])
 
         # Add edge attributes
-        curr_edge_areas = edge_area_per_group_id[group_id]
+        area1 = group_diameter[group_id]
+        area2 = group_diameter[prev_group_id]
+        curr_edge_areas = [round((area1+area2)/2)] * len(edge_area_per_group_id[group_id])
         print(group_id, curr_edge_areas)
         # avg_area = sum(curr_edge_areas) / len(curr_edge_areas)
         # avg_diameter = sum([calc_diameter(a) for a in curr_edge_areas]) / len(curr_edge_areas)

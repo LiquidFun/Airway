@@ -1,9 +1,7 @@
-import os
-import sys
 import queue
-from pathlib import Path
 
 import numpy as np
+from skimage.morphology import skeletonize
 
 from tree_extraction.helper_functions import adjacent
 from util.util import get_data_paths_from_args
@@ -41,9 +39,21 @@ def find_first_voxel(model):
 
 
 model = np.load(patient_data_file)['arr_0']
+model[model != 1] = 0
+# import sys
+# print(np.unique(model, return_counts=True))
+
+# Skeletonize model
+model = skeletonize(model)
+model[model != 0] = 1
+# print(np.unique(model, return_counts=True))
+# sys.exit(0)
+# print(np.count_nonzero(model))
+
 print(f"Model loaded with shape {model.shape}")
 
 first_voxel = find_first_voxel(model)
+print(first_voxel)
 
 bfs_queue = queue.Queue()
 
@@ -69,7 +79,7 @@ while not bfs_queue.empty():
     if vis_count % 10000 == 0:
         print(vis_count)
     next_count = 0
-    for adj in adjacent(curr):
+    for adj in adjacent(curr, moore_neighborhood=True):
         x, y, z = adj
 
         # Iterate over bronchus
