@@ -68,11 +68,11 @@ bpy.context.window.screen = bpy.data.screens['3D View Full']
 bpy.ops.import_scene.obj(filepath=skeleton_path)
 bpy.data.meshes['skeleton'].show_double_sided = True
 skeleton = bpy.data.objects['skeleton']
+skeleton.hide = True
+skeleton.hide_render = True
 
 # Import splits object
 bpy.ops.import_scene.obj(filepath=split_path)
 bpy.data.meshes['splits'].show_double_sided = True
 splits = bpy.data.objects['splits']
-# splits.hide = True
-# splits.hide_render = True
 # splits.select_set = True

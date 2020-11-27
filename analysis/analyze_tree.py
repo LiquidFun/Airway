@@ -108,7 +108,7 @@ def per_lobe_statistics():
 def upper_left_lobe_distance_analysis(plot_path, csv_path):
     # setup path to lobe.graphml files
     upper_left_lobe_list = []
-    for pat_dir in input_data_path.glob("*"):
+    for pat_dir in sorted(input_data_path.glob("*")):
         lobe_path = pat_dir / f"lobe-3-{pat_dir.parts[-1]}.graphml"
         if lobe_path.is_file():
             upper_left_lobe_list.append(lobe_path)
@@ -136,6 +136,21 @@ def upper_left_lobe_distance_analysis(plot_path, csv_path):
     for tree in not_tree_list:
         print(tree)
 
+    print(left_lobe_dict)
+    for patient_id, nx_lobe in left_lobe_dict.items():
+        first_node_index = list(nx_lobe.nodes)[0]
+        def get_coords(node): return node['x'], node['y'], node['z']
+        print(get_coords(nx_lobe.nodes[first_node_index]))
+        first_node = nx_lobe.nodes[first_node_index]
+        _, succ = next(nx.bfs_successors(nx_lobe, first_node_index))
+        print(succ)
+        for s in succ:
+            node = nx_lobe.nodes[s]
+            print(get_coords(node))
+            if node['x'] - first_node['x'] > 5:
+                print(node, "is likely lingular")
+        print()
+
     print("Classifying left upper lobes:")
     distance_dict = {}
     classified_counter = 0
@@ -160,13 +175,16 @@ def upper_left_lobe_distance_analysis(plot_path, csv_path):
 
 
 def get_distance_value(lobe, nodelist, key):
-    global dist_value
     root = min(nodelist)
     neighbour_list = list(nx.neighbors(lobe, str(root)))
-    for neighbour in neighbour_list:
+    for neighbour in neighbour_list.copy():
         if nx.get_node_attributes(lobe, 'level')[neighbour] < nx.get_node_attributes(lobe, 'level')[str(root)]:
             neighbour_list.remove(neighbour)
-    neighbour_count = len(neighbour_list)
+        elif lobe.nodes[neighbour]['x'] - lobe.nodes[str(root)]['x'] > 5:
+            neighbour_list.remove(neighbour)
+            print("lingular removed")
+        print("neighbour: ", neighbour)
+        neighbour_count = len(neighbour_list)
     if neighbour_count == 3:
         print(key, "classified as Type A")
         dist_value = (0, 0)
@@ -284,7 +302,8 @@ if __name__ == "__main__":
     # load all trees in dictionary (patID -> nx.graph)
     tree_dict = {}
     for tree_path in path_list:
-        tree_dict.update({tree_path.parts[-2]: nx.read_graphml(tree_path)})
+        if tree_path.is_file():
+            tree_dict[tree_path.parts[-2]] = nx.read_graphml(tree_path)
     print("loaded trees: " + str(len(tree_dict.keys())))
 
     # analysers
