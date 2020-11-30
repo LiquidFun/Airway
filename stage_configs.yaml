@@ -71,7 +71,7 @@ stage-34:
 # --- 3D Objects --- #
 stage-60:
   script: obj_generation/gen_obj.py
-  inputs: [stage-02, stage-34]
+  inputs: [stage-02, stage-03, stage-34]
   groups: [3d, obj]
 stage-61:
   script: obj_generation/gen_split_obj.py

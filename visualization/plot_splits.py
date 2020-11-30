@@ -191,8 +191,10 @@ for index, (ax, title) in enumerate(ax_titles):
     ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
     ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
 
+plt.subplots_adjust(left=0.0, right=1.0, bottom=0.0, top=1.0)
+
 # Save as image
-# plt.tight_layout()
+# plt.tight_layout(pad=10)
 plt.savefig(output_data_path / "splits.png", dpi=300)
 
 if show_plot:

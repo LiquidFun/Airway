@@ -218,7 +218,7 @@ def plot_distance_values(distance_dict, path):
     patients = []
     length1_list = []
     length2_list = []
-    for key, (length1, length2) in distance_dict.items():
+    for key, (length1, length2) in sorted(distance_dict.items()):
         patients.append(key)
         length1_list.append(int(length1))
         length2_list.append(int(length2))
@@ -232,7 +232,8 @@ def plot_distance_values(distance_dict, path):
     ax.set_ylabel('Length')
     ax.set_title('Length of edges of type B candidates')
     ax.set_xticks(x)
-    ax.set_xticklabels(patients)
+    # ax.set_xticklabels([f"{index+1}. {pat}" for index, pat in zip(x, patients)])
+    ax.set_xticklabels(x + 1)
     ax.legend()
     autolabel(bars1, ax)
     autolabel(bars2, ax)

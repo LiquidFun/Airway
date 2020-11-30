@@ -160,10 +160,13 @@ def normalize(vertices: np.ndarray, reference_shape: np.ndarray, rot_mat: np.nda
 
 
 def main():
-    output_data_path, input_data_path, color_mask_path  = get_data_paths_from_args(inputs=2)
+    output_data_path, input_data_path, distance_mask_path, color_mask_path = get_data_paths_from_args(inputs=3)
 
     model = np.load(input_data_path / "reduced_model.npz")['arr_0']
     print(f"Loaded model with shape {model.shape}")
+
+    distance_mask = np.load(distance_mask_path / "distance_mask.npz")['arr_0']
+    print(f"Loaded color mask with shape {distance_mask.shape}")
 
     bronchus_color_mask = np.load(color_mask_path / "bronchus_color_mask.npz")['arr_0']
     print(f"Loaded color mask with shape {bronchus_color_mask.shape}")
@@ -180,6 +183,7 @@ def main():
     generate_obj(output_data_path / "skeleton.obj", set(), skeleton, rot_mat=rot_mat)
     # generate_obj(output_data_path / "bav.obj", {1, 7, 8}, model)
     generate_obj(output_data_path / "bronchus.obj", {1}, model, color_mask=bronchus_color_mask, rot_mat=rot_mat)
+    # generate_obj(output_data_path / "bronchus.obj", {1}, model, color_mask=distance_mask, rot_mat=rot_mat)
     # generate_obj(output_data_path / "veins.obj", {7}, model)
     # generate_obj(output_data_path / "arteries.obj", {8}, model)
     # generate_obj(output_data_path / "lung.obj", {1, 2, 3, 4, 5, 6}, model)

@@ -60,9 +60,9 @@ def fill_sphere_around_point(
 
 
 def main():
-    output_data_path, reduced_model_path, coord_to_distance_path, tree_path, = get_data_paths_from_args(inputs=3)
+    output_data_path, reduced_model_path, distance_mask_path, tree_path, = get_data_paths_from_args(inputs=3)
     model = np.load(reduced_model_path / "reduced_model.npz")['arr_0']
-    # distances = parse_map_coord_to_distance(coord_to_distance_path / "map_coord_to_distance.txt")
+    distance_mask = np.load(distance_mask_path / "distance_mask.npz")['arr_0']
     # np_dist = np.full(model.shape, 0)
     # for (x, y, z), val in distances.items():
     #     np_dist[x, y, z] = val
@@ -79,8 +79,8 @@ def main():
         point = (round(node['x']), round(node['y']), round(node['z']))
         nodes_visit_order.append((node, point, curr_color))
         radius = node['group_size'] / 2
-        fill_sphere_around_point(radius, point, model, color_mask, curr_color)
-        # fill_color_mask_with_bfs(point, color_mask, curr_color, distances)
+        # fill_sphere_around_point(radius, point, model, color_mask, curr_color)
+        fill_color_mask_with_bfs(point, color_mask, curr_color, distance_mask)
 
     for node, point, curr_color in reversed(nodes_visit_order):
         fill_color_mask_with_bfs(point, color_mask, curr_color, model)

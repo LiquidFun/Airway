@@ -148,7 +148,7 @@ def main():
         root_stage = "raw_airway"
 
         def get_dependencies(name):
-            """ This is a simple class which creates all the dependencies of a stage """
+            """ This returns all the recursive dependencies of a stage """
             _dependencies = {name}
             # Add all dependencies for each name in _dependencies until there are no changes anymore
             while True:
