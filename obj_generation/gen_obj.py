@@ -28,7 +28,7 @@ def generate_obj(output_data_path: Path,
                  accepted_types: Set[int],
                  model: np.ndarray,
                  color_mask: np.ndarray = None,
-                 color_to_rgb_tuple: Dict[int, Tuple[int, int, int]] = {},
+                 color_to_rgb_tuple: Dict[int, Tuple[float, float, float]] = {},
                  rot_mat: np.ndarray = None,
                  num_decimal_digits: int = 2
              ):
@@ -64,6 +64,10 @@ def generate_obj(output_data_path: Path,
             model[model == remove] = 0
 
     index = 1
+    # Iterate over each axis and pos/neg directions, then roll the model over, afterwards subtracting these.
+    # This causes there to be only -1 and 1 values where there is air, meaning there a face should be added.
+    # Though we only look at the 1 values, since these are actually in the model (the others are outside, which means
+    # their color map will be wrong)
     for axis in range(3):
         for pos_or_neg in [-1, 1]:
             diff = np.roll(model, -pos_or_neg, axis=axis)
