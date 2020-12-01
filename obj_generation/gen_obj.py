@@ -15,7 +15,7 @@ be imported into blender, 3D printed, visualized and many other nice things.
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import List, Set
+from typing import List, Set, Tuple
 from typing import Dict
 
 import numpy as np
@@ -24,12 +24,14 @@ from skimage.morphology import skeletonize
 from util.util import get_data_paths_from_args
 
 
-def generate_obj(output_data_path,
-                 accepted_types,
-                 model,
-                 color_mask=None,
+def generate_obj(output_data_path: Path,
+                 accepted_types: Set[int],
+                 model: np.ndarray,
+                 color_mask: np.ndarray = None,
+                 color_to_rgb_tuple: Dict[int, Tuple[int, int, int]] = {},
                  rot_mat: np.ndarray = None,
-                 num_decimal_digits=2):
+                 num_decimal_digits: int = 2
+             ):
     """Saves a .obj obj_file given the model, the accepted types and a name
 
     output_data_path is a pathlib Path, this is the full path the obj_file will be saved as
@@ -91,7 +93,6 @@ def generate_obj(output_data_path,
 
     # make to numpy for easier usage later
     vertices = np.array([np.array(v) for v in vertices])
-    # print(vertices)
     vertices = normalize(vertices, model.shape, rot_mat=rot_mat)
 
     # Write vertices and faces to obj_file
@@ -106,7 +107,8 @@ def generate_obj(output_data_path,
             mat_file.write(f"newmtl mat{material}\n")
             mat_file.write("Ns 96.078431\n")
             mat_file.write("Ka 1.000000 1.000000 1.000000\n")
-            mat_file.write(f"Kd {ran()} {ran()} {ran()}\n")
+            rgb = color_to_rgb_tuple[material] if material in color_to_rgb_tuple else (ran(), ran(), ran())
+            mat_file.write(f"Kd {' '.join(map(str, rgb))}\n")
             mat_file.write("Ks 0.500000 0.500000 0.500000\n")
             mat_file.write("Ke 0.000000 0.000000 0.000000\n")
             mat_file.write("Ni 1.000000\n")
