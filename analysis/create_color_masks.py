@@ -8,19 +8,20 @@ import numpy as np
 import networkx as nx
 
 from util.helper_functions import adjacent, get_numpy_sphere, get_coords_in_sphere_at_point
-from util.parsing import parse_map_coord_to_distance
 from util.util import get_data_paths_from_args
 
 
-def fill_color_mask_with_bfs(for_point, color_mask, curr_color, model):
+def fill_color_mask_with_bfs(for_point, color_mask, curr_color, model, distance_mask, radius):
     # Mark every split interval
     queue = Queue()
     queue.put(for_point)
+    dist = distance_mask[for_point]
     visited = {for_point}
     while not queue.empty():
         for adj in map(tuple, adjacent(queue.get())):
-            if color_mask[adj] in {0, curr_color} and model[adj] == 1 and adj not in visited:
-                color_mask[adj] = curr_color
+            if color_mask[adj] == 0 and model[adj] == 1 and adj not in visited and dist <= distance_mask[adj]:
+                if dist+radius < distance_mask[adj]:
+                    color_mask[adj] = curr_color
                 queue.put(adj)
                 visited.add(adj)
     print(f"Added {curr_color}")
@@ -77,13 +78,13 @@ def main():
         node = tree.nodes[node_index]
         # point = find_legal_point(node, distances, node["group"])
         point = (round(node['x']), round(node['y']), round(node['z']))
-        nodes_visit_order.append((node, point, curr_color))
         radius = node['group_size'] / 2
+        nodes_visit_order.append((node, point, curr_color, radius))
         # fill_sphere_around_point(radius, point, model, color_mask, curr_color)
-        fill_color_mask_with_bfs(point, color_mask, curr_color, distance_mask)
+        # fill_color_mask_with_bfs(point, color_mask, curr_color, model, distance_mask)
 
-    for node, point, curr_color in reversed(nodes_visit_order):
-        fill_color_mask_with_bfs(point, color_mask, curr_color, model)
+    for node, point, curr_color, radius in reversed(nodes_visit_order):
+        fill_color_mask_with_bfs(point, color_mask, curr_color, model, distance_mask, radius)
 
     print("Colors:")
     for color, occ in zip(*np.unique(color_mask, return_counts=True)):

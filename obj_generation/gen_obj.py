@@ -12,7 +12,6 @@ it adds the points which haven't been added yet on that face and also adds the f
 Then it saves everything into a .obj file with the format of [patient_it].obj. This file can
 be imported into blender, 3D printed, visualized and many other nice things.
 """
-import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import List, Set, Tuple
@@ -42,6 +41,10 @@ def generate_obj(output_data_path: Path,
 
     model is the 3D numpy array model of the lung or whatever object you
     want to convert to 3D
+
+    color_to_rgb_tuple is a Dict which maps the color id used in color mask to a tuple
+    of rgb values. This color will be used to color the object with that color.
+    (e.g. {1: (1, 0.4, 0.5)})
 
     color_mask is a model with the same shape as model, but its numbers represent
     groups of colors/materials which will be added by this script
