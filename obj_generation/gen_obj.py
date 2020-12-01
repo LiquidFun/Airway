@@ -74,24 +74,26 @@ def generate_obj(output_data_path: Path,
     for axis in range(3):
         for pos_or_neg in [-1, 1]:
             diff = np.roll(model, -pos_or_neg, axis=axis)
-
-            model_diff = list(np.nonzero(np.clip(model - diff, 0, 1)))
+            model_diff = np.where(model > diff)
             coords = []
             for d1, d2 in [(.5, .5), (-.5, .5), (-.5, -.5), (.5, -.5)]:
                 coords.append(list(map(lambda t: t.astype(float), np.copy(model_diff))))
                 coords[-1][axis] += pos_or_neg/2
                 coords[-1][(axis + 1) % 3] += d1
                 coords[-1][(axis + 2) % 3] += d2
-            face_coords = np.transpose(coords, axes=(2, 0, 1))
-            vertex_coords = list(zip(*model_diff))
-            for i in range(len(vertex_coords)):
+
+            # Example shape: (11523, 4, 3) - face_coords is an array of faces, each face is a list of 4 points with
+            # 3 coordinates.
+            faces_coords = np.transpose(coords, axes=(2, 0, 1))
+            vertex_coords = np.transpose(model_diff)
+            for vertex_coord, face_coords in zip(vertex_coords, faces_coords):
                 curr_face = []
-                for face_coord in map(tuple, face_coords[i]):
+                for face_coord in map(tuple, face_coords):
                     if face_coord not in vertices:
                         vertices[face_coord] = index
                         index += 1
                     curr_face.append(vertices[face_coord])
-                material = color_mask[vertex_coords[i]] if color_mask is not None else 0
+                material = color_mask[tuple(vertex_coord)] if color_mask is not None else 0
                 faces[material].append(curr_face)
                 # assert len(faces[material][-1]) == 4, f"ERROR: Wrong number of points on face {faces[material][-1]}"
 
