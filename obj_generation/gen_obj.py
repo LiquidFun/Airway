@@ -12,6 +12,8 @@ it adds the points which haven't been added yet on that face and also adds the f
 Then it saves everything into a .obj file with the format of [patient_it].obj. This file can
 be imported into blender, 3D printed, visualized and many other nice things.
 """
+import sys
+from collections import defaultdict
 from pathlib import Path
 from typing import List, Set
 from typing import Dict
@@ -50,69 +52,46 @@ def generate_obj(output_data_path,
     print(f"Generating {output_data_path} with accepted types of {accepted_types}")
 
     vertices = {}
-    faces: Dict[int, List[List[int]]] = {0: []}
+    faces: Dict[int, List[List[int]]] = defaultdict(list)
 
-    def cell_is_empty(x, y, z):
-        return not ((accepted_types == set() and model[x][y][z]) or model[x][y][z] in accepted_types)
+    model = np.pad(np.copy(model), 1)
+    if color_mask is not None:
+        color_mask = np.pad(color_mask, 1)
+    if accepted_types:
+        for remove in (set(np.unique(model)) - accepted_types - {0}):
+            model[model == remove] = 0
 
-    # Go through each point comparing it to all adjacent faces, if one
-    # of the blocks is filled and the other is empty then add a face there
     index = 1
-    # Iterate over each coordinate in the model
-    for x in range(len(model)):
-        if x % 50 == 0:
-            print(f"Layer {x} of {len(model)}")
-        for y in range(len(model[x])):
-            for z in range(len(model[x][y])):
+    for axis in range(3):
+        for pos_or_neg in [-1, 1]:
+            diff = np.roll(model, -pos_or_neg, axis=axis)
 
-                # Check if current coordinate contains bronchus (1) or a lobe (>1)
-                if not cell_is_empty(x, y, z):
-                    # Checks each neighbor of the coordinate to see
-                    # whether a face should be added
-                    for x_, y_, z_ in [[-1, 0, 0], [1, 0, 0], [0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1]]:
+            model_diff = list(np.nonzero(np.clip(model - diff, 0, 1)))
+            coords = []
+            for d1, d2 in [(.5, .5), (-.5, .5), (-.5, -.5), (.5, -.5)]:
+                coords.append(list(map(lambda t: t.astype(float), np.copy(model_diff))))
+                coords[-1][axis] += pos_or_neg/2
+                coords[-1][(axis + 1) % 3] += d1
+                coords[-1][(axis + 2) % 3] += d2
+            face_coords = np.transpose(coords, axes=(2, 0, 1))
+            vertex_coords = list(zip(*model_diff))
+            for i in range(len(vertex_coords)):
+                curr_face = []
+                for face_coord in map(tuple, face_coords[i]):
+                    if face_coord not in vertices:
+                        vertices[face_coord] = index
+                        index += 1
+                    curr_face.append(vertices[face_coord])
+                material = color_mask[vertex_coords[i]] if color_mask is not None else 0
+                faces[material].append(curr_face)
+                # assert len(faces[material][-1]) == 4, f"ERROR: Wrong number of points on face {faces[material][-1]}"
 
-                        # Make sure that the coordinate is empty since otherwise there is no reason to make a face
-                        if cell_is_empty(x+x_, y+y_, z+z_):
-                            direction = [-0.5, 0.5]
+    print(f"Vertex count : {len(vertices):,}")
+    print(f"Face count : {sum(map(len, faces.values())):,}")
 
-                            # Face coords is a list of 4 points, these are exactly the points in
-                            # the direction of the neighboring point. This is achieved by
-                            # iterating over all 8 points with coordinates -0.5 and 0.5,
-                            # then guaranteeing that the direction is the same by checking
-                            # the direction given in the previous loop.
-                            # May be sketchy due to float divison, assert to check for that.
-                            face_coords = [
-                                [a, b, c] for a in direction for b in direction for c in direction
-                                if x_/2 == a or y_/2 == b or z_/2 == c
-                            ]
-                            assert len(face_coords) == 4, "ERROR: Face coords contain more than 4 coordinates"
-                            curr_face = []
-
-                            # Iterate over each of the 4 face coordinates, add them
-                            # to the vertices if they haven't yet been added
-                            for a, b, c in face_coords:
-                                key = (a + x, b + y, c + z)
-                                if key not in vertices:
-                                    vertices[key] = index
-                                    curr_face.append(index)
-                                    index += 1
-                                else:
-                                    curr_face.append(vertices[key])
-                            material = color_mask[x, y, z] if color_mask is not None else 0
-                            if material not in faces:
-                                faces[material] = []
-                            faces[material].append(curr_face[:2] + curr_face[4:1:-1])
-                            assert len(faces[material][-1]) == 4, "ERROR: Wrong number of points on face"
-
-    print(f"Vertex count : {len(vertices)}")
-    print(f"Face count : {sum(map(len, faces.values()))}")
-
-    # make to numpy for more easy usage later
-
-    print(model.shape)
-    print(vertices)
+    # make to numpy for easier usage later
     vertices = np.array([np.array(v) for v in vertices])
-    print(vertices)
+    # print(vertices)
     vertices = normalize(vertices, model.shape, rot_mat=rot_mat)
 
     # Write vertices and faces to obj_file
@@ -120,7 +99,9 @@ def generate_obj(output_data_path,
     with open(material_path, 'w') as mat_file:
         import random
         random.seed(output_data_path.parent.name)
+
         def ran(): return random.uniform(0, 1)
+
         for material in faces:
             mat_file.write(f"newmtl mat{material}\n")
             mat_file.write("Ns 96.078431\n")
