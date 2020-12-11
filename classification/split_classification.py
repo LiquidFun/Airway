@@ -25,16 +25,33 @@ def get_point(node):
 
 
 def traverse_tree(tree, classification_config):
+    tree.nodes['0']['split_classification'] = 'Trachea'
     for node_id, children_ids in nx.bfs_successors(tree, "0"):
-        print(node_id, children_ids)
         node = tree.nodes[node_id]
-        node['split_classification'] = f"c{node_id}"
         node_point = get_point(node)
+        curr_classification = node['split_classification']
+        print(node_id, children_ids, curr_classification)
+        taken_classifications = set()
         for child_id in children_ids:
             child_node = tree.nodes[child_id]
             child_point = get_point(child_node)
             vec = child_point - node_point
-            print(f"\tVector {node_id}->{child_id}: {vec}")
+            best = (1e9, f"c{child_id}")
+            if curr_classification in classification_config:
+                for child in classification_config[curr_classification]['children']:
+                    if child in taken_classifications:
+                        continue
+                    try:
+                        curr_dist = np.linalg.norm(np.array(classification_config[child]['vector']) - vec)
+                    except (KeyError, IndexError):
+                        curr_dist = 1e8
+                    # print(curr_dist, child)
+                    if best[0] > curr_dist:
+                        best = (curr_dist, child)
+                    # print(child)
+            child_node['split_classification'] = best[1]
+            taken_classifications.add(best[1])
+            print(f"\tVector {node_id}->{child_id}: {list(vec)} ({best[1]})")
         print()
     return tree
 

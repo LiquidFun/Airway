@@ -15,6 +15,7 @@ LBronchus:
 # --- Left upper lobe --- #
 LUpperLobe:
     children: [Lingular, LB1+2+3, LB1+2, LB3]
+    vector: [-15.5, -9.0, 22.5]
 Lingular:
     children: [LB4, LB5]
 LB1+2+3:
@@ -24,6 +25,9 @@ LB1+2:
 
 # --- Left lower lobe --- #
 
+LLowerLobe:
+    vector: [19.0, 8.5, 13.5]
+    children: [LB6, LB7, LB8]
 
 
 
