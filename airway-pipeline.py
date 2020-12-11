@@ -99,7 +99,7 @@ def main():
     log(f"Using up to {col.green(args.workers)} workers", stdout=True, tabs=1)
     log(f"Using {col.green(args.path)} as data path", stdout=True, tabs=1)
 
-    stage_configs_path = base_path / "stage_configs.yaml"
+    stage_configs_path = base_path / "configs" / "stage_configs.yaml"
     assert stage_configs_path.exists(), "ERROR: Stage configs path does not exist!"
     with open(stage_configs_path) as stage_configs_file:
         stage_configs: Dict = yaml.load(stage_configs_file, yaml.FullLoader)

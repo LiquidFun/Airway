@@ -82,8 +82,8 @@ def generate_obj(output_data_path: Path,
                 coords[-1][(axis + 1) % 3] += d1
                 coords[-1][(axis + 2) % 3] += d2
 
-            # Example shape: (11523, 4, 3) - face_coords is an array of faces, each face is a list of 4 points with
-            # 3 coordinates.
+            # Example shape after transpose: (11523, 4, 3) - face_coords is an array of faces,
+            # each face is a list of 4 points with 3 coordinates.
             faces_coords = np.transpose(coords, axes=(2, 0, 1))
             vertex_coords = np.transpose(model_diff)
             for vertex_coord, face_coords in zip(vertex_coords, faces_coords):

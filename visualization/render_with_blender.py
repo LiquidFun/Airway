@@ -1,6 +1,9 @@
 import sys
 import math
 
+import networkx as nx
+import numpy as np
+
 # Internal import to access blender functionalities
 import bpy
 
@@ -11,6 +14,8 @@ print(argv)
 bronchus_path = argv[0]
 skeleton_path = argv[1]
 split_path = argv[2]
+tree_path = argv[3]
+model_path = argv[4]
 
 # Delete default cube
 bpy.ops.object.delete()
@@ -76,3 +81,49 @@ bpy.ops.import_scene.obj(filepath=split_path)
 bpy.data.meshes['splits'].show_double_sided = True
 splits = bpy.data.objects['splits']
 # splits.select_set = True
+
+
+model = np.load(model_path)['arr_0']
+
+
+def normalize(vertices: np.ndarray):
+    reference_shape = np.array(model.shape)
+    rot_mat = np.array([[0, 0, -1], [0, -1, 0], [-1, 0, 0]])
+    # Shift to middle of the space
+    vertices -= np.array(reference_shape) / 2
+    # Scale to [-10..10]
+    vertices *= 20 / np.max(reference_shape)
+    # If available: transform
+    # Note: since this is applied afterwards, points can be out of [-10..10]
+    if rot_mat is not None:
+        vertices = vertices @ np.transpose(rot_mat)
+    return vertices
+
+
+class ClassificationReloader(bpy.types.Operator):
+    """Tooltip"""
+    bl_idname = "view3d.airway_reload_classification"
+    bl_label = "Airway: reload classification"
+    cubes = []
+
+    def execute(self, context):
+        for cube in self.cubes:
+            bpy.data.objects.remove(cube, do_unlink=True)
+        self.cubes.clear()
+        tree = nx.read_graphml(tree_path)
+        for node_id, _ in nx.bfs_successors(tree, "0"):
+            node = tree.nodes[node_id]
+            location = tuple(normalize(np.array([node['x'], node['y'], node['z']])))
+            bpy.ops.mesh.primitive_cube_add(radius=0.02, location=location)
+            selected = bpy.context.selected_objects[0]
+            selected.name = node['split_classification']
+            selected.show_name = True
+            self.cubes.append(selected)
+        for cube in self.cubes:
+            cube.select = True
+        bpy.data.objects['splits'].select = True
+        return {'FINISHED'}
+
+
+bpy.utils.register_class(ClassificationReloader)
+# print("Registered class")

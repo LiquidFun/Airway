@@ -1,0 +1,33 @@
+Trachea:
+    children: [Bronchus]
+Bronchus:
+    children: [LBronchus, RBronchus]
+    vector: [176.0, 53.0, -9.0]
+
+
+
+
+# --- Left Bronchus --- #
+LBronchus:
+    children: [LUpperLobe, LLowerLobe]
+    vector: [70.5, 8.0, 60.0]
+
+# --- Left upper lobe --- #
+LUpperLobe:
+    children: [Lingular, LB1+2+3, LB1+2, LB3]
+Lingular:
+    children: [LB4, LB5]
+LB1+2+3:
+    children: [LB1+2, LB1, LB2, LB3]
+LB1+2:
+    children: [LB1, LB2]
+
+# --- Left lower lobe --- #
+
+
+
+
+# --- Right Bronchus --- #
+RBronchus:
+    children: [RUpperLobe, RMiddleLobe, RLowerLobe]
+    vector: [28.5, 5.0, -23.0]

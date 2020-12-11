@@ -15,49 +15,52 @@ def gen_split_obj(
         model_shape: np.ndarray,
         rot_mat: np.ndarray = None,
 ):
-    vertices = []
+    # vertices = []
     edge_vertices = []
 
-    for node in graph.nodes.data():
-        n = node[1]
-        x, y, z = n['x'], n['y'], n['z']
-        di = [-1, 1]
-        for x_ in di:
-            for y_ in di:
-                for z_ in di:
-                    vertices.append(np.array([x+x_, y+y_, z+z_]))
+    # for node in graph.nodes.data():
+    #     n = node[1]
+    #     x, y, z = n['x'], n['y'], n['z']
+    #     di = [-0.5, 0.5]
+    #     for x_ in di:
+    #         for y_ in di:
+    #             for z_ in di:
+    #                 vertices.append(np.array([x+x_, y+y_, z+z_]))
 
     for node, successors in nx.bfs_successors(graph, '0'):
         for succ in successors:
             for curr in [node, succ]:
                 n = graph.nodes[curr]
                 x, y, z = n['x'], n['y'], n['z']
-                for i in [-0.5, 0.5]:
-                    edge_vertices.append(np.array([x + i, y + i, z + i]))
+                edge_vertices.append(np.array([x, y, z]))
+                # for i in [-0.5, 0.5]:
+                #     edge_vertices.append(np.array([x + i, y + i, z + i]))
 
-    vertices = normalize(vertices, reference_shape=model_shape, rot_mat=rot_mat)
+    # vertices = normalize(vertices, reference_shape=model_shape, rot_mat=rot_mat)
     edge_vertices = normalize(edge_vertices, reference_shape=model_shape, rot_mat=rot_mat)
 
     with open(target_data_path, 'w') as file:
         file.write("# Vertices\n")
-        for x, y, z in vertices:
-            file.write(f"v {x:.3f} {y:.3f} {z:.3f}\n")
+        # for x, y, z in vertices:
+        #     file.write(f"v {x:.3f} {y:.3f} {z:.3f}\n")
         file.write("# Edge Vertices\n")
         for x, y, z in edge_vertices:
             file.write(f"v {x:.3f} {y:.3f} {z:.3f}\n")
         file.write("\n# Faces\n")
-        for i in range(0, len(vertices), 8):
-            file.write(f"f {i + 1} {i + 3} {i + 7} {i + 5}\n")
-            file.write(f"f {i + 2} {i + 4} {i + 8} {i + 6}\n")
-            file.write(f"f {i + 1} {i + 2} {i + 6} {i + 5}\n")
-            file.write(f"f {i + 3} {i + 4} {i + 8} {i + 7}\n")
-            file.write(f"f {i + 1} {i + 2} {i + 4} {i + 3}\n")
-            file.write(f"f {i + 5} {i + 6} {i + 8} {i + 7}\n")
+        # for i in range(0, len(vertices), 8):
+        #     file.write(f"f {i + 1} {i + 3} {i + 7} {i + 5}\n")
+        #     file.write(f"f {i + 2} {i + 4} {i + 8} {i + 6}\n")
+        #     file.write(f"f {i + 1} {i + 2} {i + 6} {i + 5}\n")
+        #     file.write(f"f {i + 3} {i + 4} {i + 8} {i + 7}\n")
+        #     file.write(f"f {i + 1} {i + 2} {i + 4} {i + 3}\n")
+        #     file.write(f"f {i + 5} {i + 6} {i + 8} {i + 7}\n")
 
-        file.write("# Edge faces\n")
-        for i in range(0, len(edge_vertices), 4):
-            j = i + len(vertices) + 1
-            file.write(f"f {j} {j + 1} {j + 3} {j + 2}\n")
+        file.write("# Edge lines\n")
+        for i in range(0, len(edge_vertices), 2):
+            j = i + 1
+            # j = i + len(vertices) + 1
+            file.write(f"l {j} {j + 1}\n")
+            # file.write(f"f {j} {j + 1} {j + 3} {j + 2}\n")
 
 
 def main():

@@ -36,6 +36,11 @@ stage-07:
   inputs: [stage-06]
   groups: [tree]
 
+# --- Classification --- #
+stage-10:
+  script: classification/split_classification.py
+  inputs: [stage-07]
+  groups: [classification]
 
 # --- Analysis --- #
 stage-30:
@@ -79,7 +84,7 @@ stage-61:
   groups: [3d, obj]
 stage-62:
   script: visualization/run_blender.py
-  inputs: [stage-60, stage-61]
+  inputs: [stage-60, stage-61, stage-10, stage-02]
   groups: [render]
   args: [True]
   interactive_args:
