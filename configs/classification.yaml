@@ -1,8 +1,32 @@
+# --- Explanation --- #
+# UniqueID:
+#     # These children have to be direct children of the UniqueID node otherwise the classification is invalid
+#     children: [Child1, Child2]
+#
+#     # These children will be tried when there are more than 'children' nodes
+#     optional_children: [OptionalChild3]
+#
+#     # Indirect children which *have to* follow this node at some point, otherwise the classification is invalid.
+#     descendants: [Descendant1, Descendant2]
+#
+#     # Whenever specified to be True the classification will not try all possibilities of children, but
+#     # instead it will take the best option and stick with it. Use this with the first couple of splits
+#     # to greatly reduce search space.
+#     take_best: True
+#
+#     # Use children on the first few nodes where the structure is meant to be stable, then stick to optional_children
+#     # and guarantee that some children appear at some point by using descendants
+
+# --- Reference --- #
+# https://i.pinimg.com/originals/eb/e1/6f/ebe16f5cffc897873071d0cde7640c5d.png
+
 Trachea:
     children: [Bronchus]
+    take_best: True
 Bronchus:
     children: [LBronchus, RBronchus]
     vector: [176.0, 53.0, -9.0]
+    take_best: True
 
 
 
@@ -11,17 +35,28 @@ Bronchus:
 LBronchus:
     children: [LUpperLobe, LLowerLobe]
     vector: [70.5, 8.0, 60.0]
+    take_best: True
 
 # --- Left upper lobe --- #
 LUpperLobe:
     children: [Lingular, LB1+2+3, LB1+2, LB3]
+    descendants: [LB1, LB2, LB3]
     vector: [-15.5, -9.0, 22.5]
+    take_best: True
 Lingular:
     children: [LB4, LB5]
+    vector: [23.5, -19.0, 16.5]
 LB1+2+3:
     children: [LB1+2, LB1, LB2, LB3]
+    descendants: [LB1, LB2, LB3]
+    vector: [-21.0, 3.0, 1.0]
 LB1+2:
     children: [LB1, LB2]
+    descendants: [LB1, LB2]
+    vector: [-21.0, 3.0, 1.0]
+LB3:
+    children: [LB3a, LB3b, LB3c]
+    vector: [-4.0, -7.0, 10.0]
 
 # --- Left lower lobe --- #
 
@@ -33,5 +68,9 @@ LLowerLobe:
 
 # --- Right Bronchus --- #
 RBronchus:
-    children: [RUpperLobe, RMiddleLobe, RLowerLobe]
+    children: [RUpperLobe, RMLLobes]
     vector: [28.5, 5.0, -23.0]
+
+RMLLobes:
+    children: [RMiddleLobe, RLowerLobe]
+

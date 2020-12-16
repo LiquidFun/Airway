@@ -3,6 +3,7 @@ import math
 
 import networkx as nx
 import numpy as np
+import regex as re
 
 # Internal import to access blender functionalities
 import bpy
@@ -24,13 +25,31 @@ bpy.ops.object.delete()
 bpy.ops.import_scene.obj(filepath=bronchus_path)
 bronchus = bpy.data.objects['bronchus']
 
-# Add smoothing modifier
-smoothing = bronchus.modifiers.new(name="Smooth", type="SMOOTH")
-smoothing.iterations = 10
-smoothing.factor = 2
 
-# Since there are no normals in the vertices, add double sided rendering for faces to fix artifacts
-bpy.data.meshes['bronchus'].show_double_sided = True
+def make_obj_smooth(obj):
+
+    # Add smoothing modifier
+    smoothing = obj.modifiers.new(name="Smooth", type="SMOOTH")
+    smoothing.iterations = 10
+    smoothing.factor = 2
+
+    # Recalculate normals
+    bpy.ops.object.select_all(action='DESELECT')
+    obj.select = True
+    bpy.context.scene.objects.active = obj
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.normals_make_consistent(inside=False)
+    bpy.ops.object.editmode_toggle()
+
+    # Since there are no normals in the vertices, add double sided rendering for faces to fix artifacts
+    # Update: not needed since normals are now calculated
+    # bpy.data.meshes[obj.name].show_double_sided = True
+
+    bpy.ops.object.shade_smooth()
+
+
+make_obj_smooth(bronchus)
 
 
 # Define deg to rad function
@@ -114,11 +133,12 @@ class ClassificationReloader(bpy.types.Operator):
         for node_id, _ in nx.bfs_successors(tree, "0"):
             node = tree.nodes[node_id]
             location = tuple(normalize(np.array([node['x'], node['y'], node['z']])))
-            bpy.ops.mesh.primitive_cube_add(radius=0.02, location=location)
-            selected = bpy.context.selected_objects[0]
-            selected.name = node['split_classification']
-            selected.show_name = True
-            self.cubes.append(selected)
+            if not re.match(r"c\d+", node['split_classification']):
+                bpy.ops.mesh.primitive_cube_add(radius=0.02, location=location)
+                selected = bpy.context.selected_objects[0]
+                selected.name = node['split_classification']
+                selected.show_name = True
+                self.cubes.append(selected)
         for cube in self.cubes:
             cube.select = True
         bpy.data.objects['splits'].select = True
