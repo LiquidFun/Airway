@@ -39,10 +39,6 @@ def run():
         parser.add_argument(f"-{name[0]}", f"--{name}", default=False, action="store_true",
                             help=f"show plot of {name}")
 
-    # parser.add_argument("-s", "--splits", default=False, action="store_true", help="show plot of splits")
-    # parser.add_argument("-b", "--bronchus", default=False, action="store_true", help="show plot of bronchus")
-    # parser.add_argument("-l", "--lobes", default=False, action="store_true", help="show plot of lobes")
-    # parser.add_argument("-o", "--object", default=False, action="store_true", help="show .obj of bronchus")
     args = parser.parse_args()
     path = defaults['paths'].get(args.path, args.path)
 
