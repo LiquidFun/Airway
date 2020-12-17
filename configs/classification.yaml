@@ -49,7 +49,7 @@ Lingular:
 LB1+2+3:
     children: [LB1+2, LB1, LB2, LB3]
     descendants: [LB1, LB2, LB3]
-    vector: [-21.0, 3.0, 1.0]
+    vector: [-15.0, -2.0, 4.0]
 LB1+2:
     children: [LB1, LB2]
     descendants: [LB1, LB2]

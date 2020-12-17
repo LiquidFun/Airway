@@ -3,6 +3,7 @@
 import copy
 import itertools
 from pathlib import Path
+from queue import Queue
 from typing import Any, Dict, List, Tuple
 
 import yaml
@@ -27,58 +28,76 @@ def get_point(node):
     return np.array([node['x'], node['y'], node['z']])
 
 
-all_trees = {}
-
-
-def recursive_classify_tree(
-        tree: nx.Graph,
+def classify_tree(
+        original_tree: nx.Graph,
         successors: Dict[str, List[str]],
         classification_config: Dict[str, Dict[str, Any]],
-        current_node_id: str = "0",
-        cost: int = None,
-        classifications_used=set(),
 ):
-    if cost is None:
-        cost = len(tree) * 1000
-    all_trees[tree] = min(all_trees.get(tree, 1e9), cost)
-    node = tree.nodes[current_node_id]
-    node_point = get_point(node)
-    cost_and_trees: List[Tuple[int, nx.Graph]] = []
-    if node['split_classification'] not in classification_config:
-        cost_and_trees.append((cost, tree))
-    else:
-        children_in_rules = classification_config[node['split_classification']]['children'].copy()
-        adjust_for_unaccounted_children = len(successors[current_node_id]) - len(children_in_rules)
-        children_in_rules.extend([None] * adjust_for_unaccounted_children)
-        cost_with_perm: List[Tuple[int, List[Tuple[str, str]]]] = []
-        for perm in set(itertools.permutations(children_in_rules)):
-            curr_cost = cost
-            successors_with_permutations = list(zip(successors[current_node_id], perm))
-            for child_id, classification in successors_with_permutations:
-                child_node = tree.nodes[child_id]
-                child_point = get_point(child_node)
-                vec = child_point - node_point
-                if classification is not None:
-                    try:
-                        curr_cost -= 1000
-                        curr_cost += np.linalg.norm(np.array(classification_config[classification]['vector']) - vec)
-                    except (KeyError, IndexError):
-                        pass
-            cost_with_perm.append((curr_cost, successors_with_permutations))
-        # Sort by cost for each generated permutation
-        cost_with_perm.sort(key=lambda k: k[0])
-        for curr_cost, successors_with_permutations in cost_with_perm:
-            for child_id, classification in successors_with_permutations:
-                if classification is not None:
-                    tree.nodes[child_id]['split_classification'] = classification
-            for child_id, _ in successors_with_permutations:
-                recursive_classify_tree(tree, successors, classification_config, child_id, curr_cost)
-            if classification_config[node['split_classification']]['take_best']:
-                break
-            tree = tree.copy()
-            # break
-    # for child_id in successors[current_node_id]:
-    # return cost_and_trees
+    all_trees = {}
+
+    # queue contains the tree currently being worked on, and the current steps to work on
+    initial_cost = len(original_tree) * 1000
+    tree_variations_queue = Queue()
+    tree_variations_queue.put((original_tree, ["0"], initial_cost))
+    final_trees = []
+
+    while not tree_variations_queue.empty():
+        print()
+        print(list(map(lambda x: f"next={x[1]}, cost={x[2]}", list(tree_variations_queue.queue))))
+        tree, (current_node_id, *rest_node_ids), cost = tree_variations_queue.get()
+        node = tree.nodes[current_node_id]
+        node_point = get_point(node)
+        if node['split_classification'] in classification_config:
+            children_in_rules = classification_config[node['split_classification']]['children'].copy()
+            adjust_for_unaccounted_children = len(successors[current_node_id]) - len(children_in_rules)
+            children_in_rules.extend([None] * adjust_for_unaccounted_children)
+            cost_with_perm: List[Tuple[int, List[Tuple[str, str]]]] = []
+            for perm in set(itertools.permutations(children_in_rules)):
+                successors_with_permutations = list(zip(successors[current_node_id], perm))
+                descendant_list = sum([classification_config.get(p, {}).get('descendants', [])
+                                       for _, p in successors_with_permutations], [])
+                print(f"perm={perm}, descendants={descendant_list} => {successors_with_permutations}")
+                permutation_shares_descendants = len(descendant_list) != len(set(descendant_list))
+                if permutation_shares_descendants:
+                    continue
+                curr_cost = cost
+                all_classifications_with_vectors = all(
+                    classification in classification_config
+                    and 'vector' in classification_config.get(classification, {})
+                    for _, classification in successors_with_permutations
+                )
+                print(all_classifications_with_vectors)
+                if all_classifications_with_vectors:
+                    for child_id, classification in successors_with_permutations:
+                        child_node = tree.nodes[child_id]
+                        child_point = get_point(child_node)
+                        vec = child_point - node_point
+                        if classification is not None:
+                            curr_cost -= 1000
+                            curr_cost += np.linalg.norm(np.array(classification_config[classification]['vector']) - vec)
+                cost_with_perm.append((curr_cost, successors_with_permutations))
+                if not all_classifications_with_vectors:
+                    break
+            cost_with_perm.sort(key=lambda k: k[0])
+            print(cost_with_perm)
+            if cost_with_perm:
+                for curr_cost, successors_with_permutations in cost_with_perm:
+                    print(successors_with_permutations)
+                    new_tree = tree.copy()
+                    for child_id, classification in successors_with_permutations:
+                        if classification is not None:
+                            new_tree.nodes[child_id]['split_classification'] = classification
+                    next_nodes = rest_node_ids.copy() + [
+                        child_id for child_id, classification in successors_with_permutations
+                        if classification in classification_config
+                    ]
+                    if len(next_nodes) == 0:
+                        final_trees.append((curr_cost, new_tree))
+                    else:
+                        tree_variations_queue.put((new_tree, next_nodes, curr_cost))
+            else:
+                final_trees.append((curr_cost, new_tree))
+    return final_trees
 
 
 def is_valid_tree(
@@ -158,18 +177,19 @@ def main():
     add_defaults_to_classification_config(classification_config)
     add_default_split_classification_id_to_tree(tree)
     successors = dict(nx.bfs_successors(tree, '0'))
-    recursive_classify_tree(tree, successors, classification_config)
+    all_trees = classify_tree(tree, successors, classification_config)
     print(len(all_trees))
     # all_trees.sort(key=lambda x: x[0])
+    # print(len(all_trees))
     validated_trees_with_cost: List[Tuple[nx.Graph, int]] = []
-    for tree, cost in all_trees.items():
+    for cost, tree in all_trees:
         # if is_valid_tree(tree, classification_config, successors):
         validated_trees_with_cost.append((tree, cost))
     validated_trees_with_cost.sort(key=lambda k: k[1])
     print(len(validated_trees_with_cost))
     print('\n'.join(map(lambda a: f"{a[0]}: {a[1]}", validated_trees_with_cost)))
     # print(validated_trees_with_cost)
-    classified_tree = validated_trees_with_cost[1][0]
+    classified_tree = validated_trees_with_cost[0][0]
     # exit(0)
     # classified_tree = traverse_tree(tree, classification_config)
     nx.write_graphml(classified_tree, output_path)

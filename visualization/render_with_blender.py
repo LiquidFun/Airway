@@ -86,7 +86,7 @@ mat.node_tree.links.new(inp, outp)
 plane.active_material = mat
 
 # Change default screen
-bpy.context.window.screen = bpy.data.screens['3D View Full']
+# bpy.context.window.screen = bpy.data.screens['3D View Full']
 
 # Import skeleton object
 bpy.ops.import_scene.obj(filepath=skeleton_path)
@@ -137,6 +137,8 @@ class ClassificationReloader(bpy.types.Operator):
                 bpy.ops.mesh.primitive_cube_add(radius=0.02, location=location)
                 selected = bpy.context.selected_objects[0]
                 selected.name = node['split_classification']
+                if re.match(r"LB\d(\+\d)*[a-c]*i*", selected.name):
+                    selected.name = selected.name[1:]
                 selected.show_name = True
                 self.cubes.append(selected)
         for cube in self.cubes:
