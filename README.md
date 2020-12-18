@@ -1,9 +1,11 @@
 # Airway
 
-Airway is a project which analyses the anatomy of the lung bronchus by viewing it as a tree and looking for unusual structures. 
-Specifically the upper left lobe is of interest, where there is a rather unusual three-way split after the lingula. 
+Anatomical segmentation and classification of human lung bronchus based on high-quality CT images.
+Using a rule-based approach to the classification yields reasonable results as this approach does not differ all that much in comparison to what a surgeon does.
 
-According to Dr. Rolf Oerter this has not yet been documented and is of great interest to surgeons.
+Specifically the left upper lobe (in the below image marked as, red, blue and gold) has been used as research focus as there are unusual split structures worth looking into according to Dr. Rolf Oerter.
+
+![](./visualization/images/bronchus-classification.png)
 
 ![](./visualization/images/left_upper_lobe0.png)
 
