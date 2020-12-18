@@ -47,11 +47,12 @@ def classify_tree(
         node_point = get_point(node)
         if node['split_classification'] in classification_config:
             children_in_rules = classification_config[node['split_classification']]['children'].copy()
-            adjust_for_unaccounted_children = len(successors.get(current_node_id, [])) - len(children_in_rules)
+            successor_ids = successors.get(current_node_id, [])
+            adjust_for_unaccounted_children = len(successor_ids) - len(children_in_rules)
             children_in_rules.extend([None] * adjust_for_unaccounted_children)
             cost_with_perm: List[Tuple[int, List[Tuple[str, str]]]] = []
-            for perm in set(itertools.permutations(children_in_rules)):
-                successors_with_permutations = list(zip(successors.get(current_node_id, []), perm))
+            for perm in set(itertools.permutations(children_in_rules, r=len(successor_ids))):
+                successors_with_permutations = list(zip(successor_ids, perm))
                 descendant_list = sum([
                     list(classification_config.get(p, {}).get('deep_descendants', set())) + ([] if p is None else [p])
                     for _, p in successors_with_permutations], [])
@@ -79,10 +80,10 @@ def classify_tree(
                 if not all_classifications_with_vectors:
                     break
             cost_with_perm.sort(key=lambda k: k[0])
-            print(cost_with_perm)
+            print("cost_with_perm:", *map(lambda s: f"\n\t{s}", cost_with_perm))
             if cost_with_perm:
                 for curr_cost, successors_with_permutations in cost_with_perm:
-                    print(successors_with_permutations)
+                    print("successors with permutations:", successors_with_permutations)
                     new_tree = tree.copy()
                     for child_id, classification in successors_with_permutations:
                         if classification is not None:
@@ -96,6 +97,7 @@ def classify_tree(
                     else:
                         tree_variations_queue.put((new_tree, next_nodes, curr_cost))
                     if classification_config[node['split_classification']]['take_best']:
+                        print("Breaking for node", node['split_classification'], "since it is specified as take_best")
                         break
             else:
                 final_trees.append((cost, tree))
@@ -192,6 +194,15 @@ def get_all_classifications_in_tree(tree, successors):
     return rec('0')
 
 
+def add_colors_in_tree(tree, classification_config):
+    for node_id in tree.nodes:
+        node = tree.nodes[node_id]
+        try:
+            node['color'] = classification_config[node['split_classification']]['color']
+        except KeyError:
+            pass
+
+
 def main():
     output_path, tree, classification_config = get_inputs()
     successors = dict(nx.bfs_successors(tree, '0'))
@@ -213,11 +224,12 @@ def main():
         print(f"Cost={curr_cost:.2f}, {'B1+2 is in tree' if 'LB1+2' in all_classifications else ''}")
     # print('\n'.join(map(lambda a: f"{a[0]}: {a[1]}", validated_trees_with_cost)))
 
-    try:
-        classified_tree = validated_trees[0][1]
-    except IndexError:
-        classified_tree = all_trees[0][1]
-    # show_classification_vectors(classified_tree, successors)
+    classified_tree = validated_trees[0][1]
+    add_colors_in_tree(classified_tree, classification_config)
+    # try:
+    # except IndexError:
+    #     classified_tree = all_trees[0][1]
+    show_classification_vectors(classified_tree, successors)
     nx.write_graphml(classified_tree, output_path)
 
 

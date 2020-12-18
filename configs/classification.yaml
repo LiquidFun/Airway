@@ -23,6 +23,7 @@
 Trachea:
     children: [Bronchus]
     take_best: True
+    color: cadeca
 Bronchus:
     children: [LBronchus, RBronchus]
     vector: [176.0, 53.0, -9.0]
@@ -43,7 +44,7 @@ LUpperLobe:
     children: [Lingular, LB1+2+3, LB1+2, LB3]
     descendants: [LB1, LB2, LB3]
     vector: [-15.5, -9.0, 22.5]
-    take_best: True
+    # take_best: True
 Lingular:
     children: [LB4, LB5]
     vector: [23.5, -19.0, 16.5]
@@ -55,21 +56,47 @@ LB1+2:
     children: [LB1, LB2]
     descendants: [LB1, LB2]
     vector: [-21.0, 3.0, 1.0]
+    color: ff3432
 LB3:
     children: [LB3a, LB3b, LB3c]
     vector: [-4.0, -7.0, 10.0]
+    color: 6FB0FF
 LB1:
     vector: [-40.0, 8.5, -5.0]
+    color: ff3432
 LB2:
     vector: [-20.0, -17.0, 3.0]
+    color: ff3432
+LB4:
+    color: E6B400
+LB5:
+    color: ff6822
 
 # --- Left lower lobe --- #
 
 LLowerLobe:
     vector: [19.0, 8.5, 13.5]
-    children: [LB6, LB7, LB8]
-
-
+    children: [LB6, LB7+8+9+10]
+LB6:
+    vector: [-1.0, 10.5, 3.5]
+    color: c44b98
+LB7+8+9+10:
+    vector: [35.5, -2.0, 13.5]
+    children: [LB7+8, LB9+10, LB9, LB10]
+    descendants: [LB7+8, LB9, LB10]
+LB9+10:
+    vector: [12.0, 3.5, 2.5]
+    children: [LB9, LB10]
+    descendants: [LB9, LB10]
+LB7+8:
+    vector: [19.0, -6.5, 10.0]
+    color: ebc200
+LB9:
+    vector: [10.5, 1.5, 14.5]
+    color: bc6a26
+LB10:
+    vector: [34.66, 10.0, 8.66]
+    color: e74a00
 
 # --- Right Bronchus --- #
 RBronchus:

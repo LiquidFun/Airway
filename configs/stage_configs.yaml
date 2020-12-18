@@ -65,12 +65,12 @@ stage-32:
 stage-33:
   script: analysis/metadata.py
   inputs: [raw_airway]
-  groups: [analysis]
+  groups: [analysis, metadata]
   per_patient: False
 stage-34:
   script: analysis/create_color_masks.py
-  inputs: [stage-02, stage-03, stage-07]
-  groups: [analysis]
+  inputs: [stage-02, stage-03, stage-10]
+  groups: [analysis, color_mask, color_masks]
 
 
 # --- 3D Objects --- #

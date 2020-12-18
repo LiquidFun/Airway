@@ -1,6 +1,7 @@
 """Creates a color mask for lingula and the other
 
 """
+import random
 from queue import Queue
 from typing import Tuple
 
@@ -60,6 +61,16 @@ def fill_sphere_around_point(
     #         pass
 
 
+def color_hex_to_floats(h: str):
+    return tuple(int(h[i:i + 2], 16)/255 for i in (0, 2, 4))
+
+
+def get_color_variation(color, variance=.1):
+    def var(h):
+        return max(0.0, min(h * (1 + random.uniform(-1, 1)*variance), 1.0))
+    return tuple(map(var, color))
+
+
 def main():
     output_data_path, reduced_model_path, distance_mask_path, tree_path, = get_data_paths_from_args(inputs=3)
     model = np.load(reduced_model_path / "reduced_model.npz")['arr_0']
@@ -72,6 +83,10 @@ def main():
     # lu_traversing = nx.bfs_successors(lu_lobe, "5")
     color_mask = np.full(model.shape, 0)
 
+    color_hex_codes = [color_hex_to_floats('ffffff')]
+
+    map_node_id_to_color = {}
+
     nodes_visit_order = []
     first_node = list(tree.nodes)[0]
     for curr_color, (node_index, successors) in enumerate(nx.bfs_successors(tree, first_node), start=1):
@@ -80,8 +95,17 @@ def main():
         point = (round(node['x']), round(node['y']), round(node['z']))
         radius = node['group_size'] / 2
         nodes_visit_order.append((node, point, curr_color, radius))
+        if 'color' in node:
+            color_hex_codes.append(color_hex_to_floats(node['color']))
+        elif node_index in map_node_id_to_color:
+            color_hex_codes.append(get_color_variation(map_node_id_to_color[node_index]))
+        else:
+            color_hex_codes.append(color_hex_to_floats("ffffff"))
+        for s in successors:
+            map_node_id_to_color[s] = get_color_variation(color_hex_codes[-1])
         # fill_sphere_around_point(radius, point, model, color_mask, curr_color)
         # fill_color_mask_with_bfs(point, color_mask, curr_color, model, distance_mask)
+    print(color_hex_codes)
 
     for node, point, curr_color, radius in reversed(nodes_visit_order):
         fill_color_mask_with_bfs(point, color_mask, curr_color, model, distance_mask, radius)
@@ -89,7 +113,8 @@ def main():
     print("Colors:")
     for color, occ in zip(*np.unique(color_mask, return_counts=True)):
         print(f"Color {color} appears {occ:,} times in color mask")
-    np.savez_compressed(output_data_path / "bronchus_color_mask.npz", color_mask)
+    np.savez_compressed(output_data_path / "bronchus_color_mask.npz",
+                        color_mask=color_mask, color_codes=np.array(color_hex_codes))
     # color_mask
     # output_data_path / "color_mask.npz"
 

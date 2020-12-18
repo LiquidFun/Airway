@@ -20,6 +20,7 @@ model_path = argv[4]
 
 # Delete default cube
 bpy.ops.object.delete()
+bpy.data.objects.remove(bpy.data.objects['Lamp'])
 
 # Import bronchus
 bpy.ops.import_scene.obj(filepath=bronchus_path)
@@ -49,6 +50,7 @@ def make_obj_smooth(obj):
     bpy.ops.object.shade_smooth()
 
 
+
 make_obj_smooth(bronchus)
 
 
@@ -61,6 +63,7 @@ def rad(degrees):
 camera = bpy.data.objects['Camera']
 camera.location = (-5, -2, 2)
 camera.rotation_euler = (rad(70), 0, rad(-60))
+camera.hide = True
 
 # Set rendering options
 bpy.context.scene.render.engine = "CYCLES"
@@ -86,7 +89,23 @@ mat.node_tree.links.new(inp, outp)
 plane.active_material = mat
 
 # Change default screen
-# bpy.context.window.screen = bpy.data.screens['3D View Full']
+bpy.context.window.screen = bpy.data.screens['3D View Full']
+
+
+def get_areas_by_type(context, type):
+    return [a for a in context.screen.areas if a.type == type]
+
+
+def show_names_in_current_screen():
+    for view3d_area in get_areas_by_type(bpy.context, 'VIEW_3D'):
+        view_space = view3d_area.spaces[0]
+        view_space.show_only_render = False
+        view_space.show_floor = False
+        view_space.show_axis_x = False
+        view_space.show_axis_y = False
+        view_space.show_axis_z = False
+        view_space.cursor_location = (0, 0, 1000)
+
 
 # Import skeleton object
 bpy.ops.import_scene.obj(filepath=skeleton_path)
@@ -126,11 +145,12 @@ class ClassificationReloader(bpy.types.Operator):
     cubes = []
 
     def execute(self, context):
+        show_names_in_current_screen()
         for cube in self.cubes:
             bpy.data.objects.remove(cube, do_unlink=True)
         self.cubes.clear()
         tree = nx.read_graphml(tree_path)
-        for node_id, _ in nx.bfs_successors(tree, "0"):
+        for node_id in tree.nodes:
             node = tree.nodes[node_id]
             location = tuple(normalize(np.array([node['x'], node['y'], node['z']])))
             if not re.match(r"c\d+", node['split_classification']):

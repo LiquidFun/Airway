@@ -160,7 +160,10 @@ def main():
     distance_mask = np.load(distance_mask_path / "distance_mask.npz")['arr_0']
     print(f"Loaded color mask with shape {distance_mask.shape}")
 
-    bronchus_color_mask = np.load(color_mask_path / "bronchus_color_mask.npz")['arr_0']
+    bronchus_color_mask = np.load(color_mask_path / "bronchus_color_mask.npz")['color_mask']
+    bronchus_color_codes = np.load(color_mask_path / "bronchus_color_mask.npz")['color_codes']
+    color_codes = {i: code for i, code in enumerate(bronchus_color_codes)}
+    print(color_codes)
     print(f"Loaded color mask with shape {bronchus_color_mask.shape}")
 
     if not output_data_path.exists():
@@ -174,7 +177,8 @@ def main():
     skeleton = skeletonize(np.clip(model, 0, 2) % 2)
     generate_obj(output_data_path / "skeleton.obj", set(), skeleton, rot_mat=rot_mat)
     # generate_obj(output_data_path / "bav.obj", {1, 7, 8}, model)
-    generate_obj(output_data_path / "bronchus.obj", {1}, model, color_mask=bronchus_color_mask, rot_mat=rot_mat)
+    generate_obj(output_data_path / "bronchus.obj", {1}, model, color_mask=bronchus_color_mask,
+                 color_to_rgb_tuple=color_codes, rot_mat=rot_mat)
     # generate_obj(output_data_path / "bronchus.obj", {1}, model, color_mask=distance_mask, rot_mat=rot_mat)
     # generate_obj(output_data_path / "veins.obj", {7}, model)
     # generate_obj(output_data_path / "arteries.obj", {8}, model)
