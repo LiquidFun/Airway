@@ -367,7 +367,7 @@ def show_error_statistics():
 if __name__ == "__main__":
     previous_mask = os.umask(0o002)
     os.chdir(base_path)
-    
+
     # Remove oldest logs if there are too many
     log_files = sorted(log_path.parent.glob('*'), key=lambda p: p.stat().st_mtime)
     for existing_log_file in log_files[:-9]:

@@ -1,10 +1,7 @@
 # --- Explanation --- #
 # UniqueID:
-#     # These children have to be direct children of the UniqueID node otherwise the classification is invalid
+#     # These children are possible options for children, all will be taken.
 #     children: [Child1, Child2]
-#
-#     # These children will be tried when there are more than 'children' nodes
-#     optional_children: [OptionalChild3]
 #
 #     # Indirect children which *have to* follow this node at some point, otherwise the classification is invalid.
 #     descendants: [Descendant1, Descendant2]
@@ -23,7 +20,8 @@
 Trachea:
     children: [Bronchus]
     take_best: True
-    color: cadeca
+    # color: cadeca
+    color: ffffff
 Bronchus:
     children: [LBronchus, RBronchus]
     vector: [176.0, 53.0, -9.0]
@@ -68,7 +66,7 @@ LB2:
     vector: [-20.0, -17.0, 3.0]
     color: ff3432
 LB4:
-    color: E6B400
+    color: f6c460
 LB5:
     color: ff6822
 
@@ -82,15 +80,15 @@ LB6:
     color: c44b98
 LB7+8+9+10:
     vector: [35.5, -2.0, 13.5]
-    children: [LB7+8, LB9+10, LB9, LB10]
-    descendants: [LB7+8, LB9, LB10]
+    children: [LB7+8, LB7, LB8, LB9+10, LB9, LB10]
+    descendants: [LB7, LB8, LB9, LB10]
 LB9+10:
     vector: [12.0, 3.5, 2.5]
     children: [LB9, LB10]
-    descendants: [LB9, LB10]
 LB7+8:
     vector: [19.0, -6.5, 10.0]
-    color: ebc200
+    children: [LB7, LB8]
+    color: ffc200
 LB9:
     vector: [10.5, 1.5, 14.5]
     color: bc6a26

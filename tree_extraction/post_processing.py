@@ -182,11 +182,13 @@ def remove_minor_edges(graph):
     for fr, to in nx.bfs_edges(graph, "0"):
         if to not in has_successors:
 
+            # More naive way of checking
+            # if graph[fr][to]['group_sizes'].count(' ') < REMOVE_IF_GROUP_SIZE_LESS_THAN:
+
             # Alternative way of checking, compares the current diameter with edge length
-            # node_diameter = calc_diameter(graph.nodes.data()[fr]['group_size'])
-            # avg_edge_length = graph[fr][to]['group_sizes'].count(' ')
-            # if avg_edge_length - node_diameter < REMOVE_IF_GROUP_SIZE_LESS_THAN:
-            if graph[fr][to]['group_sizes'].count(' ') < REMOVE_IF_GROUP_SIZE_LESS_THAN:
+            node_diameter = calc_diameter(graph.nodes.data()[fr]['group_size'])
+            avg_edge_length = graph[fr][to]['group_sizes'].count(' ')
+            if avg_edge_length - node_diameter < REMOVE_IF_GROUP_SIZE_LESS_THAN:
                 nodes_to_be_removed.append(to)
     remove_nodes(graph, nodes_to_be_removed)
 
