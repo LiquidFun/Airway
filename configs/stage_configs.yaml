@@ -30,11 +30,11 @@ stage-05:
 stage-06:
   script: tree_extraction/post_processing.py
   inputs: [stage-05]
-  groups: [tree]
+  groups: [tree, post]
 stage-07:
   script: tree_extraction/separate_lobes.py
   inputs: [stage-06]
-  groups: [tree]
+  groups: [tree, post]
 
 # --- Classification --- #
 stage-10:

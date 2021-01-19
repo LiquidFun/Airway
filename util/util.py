@@ -24,19 +24,21 @@ def get_data_paths_from_args(outputs=1, inputs=1):
 
 
 def get_patient_name(patient_id):
-    random.seed(int(patient_id))
-    vowels = "aeiou"
-    name = ""
-    letters = string.ascii_lowercase
-    for i in range(4):
-        while True:
-            curr = letters[random.randint(0, len(letters) - 1)]
-            if i & 1:
-                if curr in vowels:
-                    break
-            else:
-                if curr not in vowels:
-                    break
+    random.seed(patient_id)
+    vowels = set("aeiou")
+    consonants = set(string.ascii_lowercase) - vowels
+    either = [sorted(consonants), sorted(vowels)]
+    return "".join(random.choice(either[c % 2]) for c in range(4)).capitalize()
 
-        name += curr
-    return name.capitalize()
+
+# def get_keyword_to_patient_ids(data_path: [str, Path], stage_configs):
+#     all_patient_dirs = Path(data_path).glob("*")
+#     input_paths = [Path(path) / input_path for input_path in config['inputs']]
+#     keyword_to_patient_id = {}
+#     for input_path in input_paths:
+#         for patient_path in input_path.glob('*'):
+#             patient = patient_path.name
+#             keyword_to_patient_id[patient] = patient
+#     for index, patient in enumerate(sorted(keyword_to_patient_id), start=1):
+#         keyword_to_patient_id[str(index)] = patient
+#         keyword_to_patient_id[get_patient_name(patient)] = patient

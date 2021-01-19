@@ -42,7 +42,7 @@ from util.util import get_data_paths_from_args
 # -------------------------------- Constants ---------------------------------
 # ============================================================================
 
-REMOVE_IF_GROUP_SIZE_LESS_THAN = 9
+REMOVE_IF_GROUP_SIZE_LESS_THAN = 6
 DIAMETER_TO_WEIGHT_RATIO = 0.85
 
 
