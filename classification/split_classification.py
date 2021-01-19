@@ -115,19 +115,28 @@ def is_valid_tree(
     def recursive_is_valid_tree(current_id):
         nonlocal required_descendants, have_appeared, tree
         classification = tree.nodes[current_id]['split_classification']
+
+        # Make sure each classification appears only once
+        if classification in have_appeared:
+            return False
+        have_appeared.add(classification)
+
+        # Remember required descendants for subtree
         required_descendants.discard(classification)
+        curr_descendants = set()
         if classification in classification_config:
-            required_descendants |= set(classification_config[classification]['descendants'])
-        # print(current_id, classification, required_descendants)
+            curr_descendants = set(classification_config[classification]['descendants'])
+        required_descendants |= curr_descendants
+
+        # Recursively iterate over each node and require each node to be valid
         for child_id in successors.get(current_id, []):
-            if child_id in have_appeared:
-                return False
             if not recursive_is_valid_tree(child_id):
                 return False
-        return True
 
-    recursive_is_valid_tree('0')
-    return len(required_descendants) == 0
+        # Tree is valid only if all descendants have been removed in the recursive steps above
+        return required_descendants.isdisjoint(curr_descendants)
+
+    return recursive_is_valid_tree('0')
 
 
 def show_classification_vectors(tree, successors):
