@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 import random
 import string
+from typing import List
 
 
 def get_data_paths_from_args(outputs=1, inputs=1):
@@ -31,14 +32,6 @@ def get_patient_name(patient_id):
     return "".join(random.choice(either[c % 2]) for c in range(4)).capitalize()
 
 
-# def get_keyword_to_patient_ids(data_path: [str, Path], stage_configs):
-#     all_patient_dirs = Path(data_path).glob("*")
-#     input_paths = [Path(path) / input_path for input_path in config['inputs']]
-#     keyword_to_patient_id = {}
-#     for input_path in input_paths:
-#         for patient_path in input_path.glob('*'):
-#             patient = patient_path.name
-#             keyword_to_patient_id[patient] = patient
-#     for index, patient in enumerate(sorted(keyword_to_patient_id), start=1):
-#         keyword_to_patient_id[str(index)] = patient
-#         keyword_to_patient_id[get_patient_name(patient)] = patient
+def get_keyword_to_patient_ids(stage_configs):
+    for stage_config in stage_configs:
+        print(stage_config)

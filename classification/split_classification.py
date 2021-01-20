@@ -75,9 +75,11 @@ def classify_tree(
                         child_node = tree.nodes[child_id]
                         child_point = get_point(child_node)
                         vec = child_point - node_point
-                        if classification is not None:
+                        if classification in classification_config:
                             curr_cost -= child_node['cost']
-                            curr_cost += np.linalg.norm(np.array(classification_config[classification]['vector']) - vec)
+                            target_vec = np.array(classification_config[classification]['vector'])
+                            target_vec *= np.linalg.norm(vec) / np.linalg.norm(target_vec)
+                            curr_cost += np.linalg.norm(target_vec - vec)
                 cost_with_perm.append((curr_cost, successors_with_permutations))
                 if not all_classifications_with_vectors:
                     break
@@ -216,10 +218,6 @@ def add_colors_in_tree(tree, classification_config):
 
 def main():
     output_path, tree, classification_config = get_inputs()
-    for node in tree.nodes:
-        tree.nodes[node]["split_classification"] = str(tree.nodes[node]["group_size"])
-    nx.write_graphml(tree, output_path)
-    return
     successors = dict(nx.bfs_successors(tree, '0'))
     add_defaults_to_classification_config(classification_config)
     add_default_split_classification_id_to_tree(tree)

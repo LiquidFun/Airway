@@ -95,6 +95,10 @@ LB9:
 LB10:
     vector: [34.66, 10.0, 8.66]
     color: e74a00
+LB7:
+    vector: [10.0, -6.5, 10.0]
+LB8:
+    vector: [10.0, -6.5, 10.0]
 
 # --- Right Bronchus --- #
 RBronchus:
@@ -104,8 +108,20 @@ RBronchus:
 
 RUpperLobe:
     vector: [-13.5, -1.0, -18.0]
+    children: [RB1, RB2, RB3]
 
 RMLLobes:
-    children: [RMiddleLobe, RLowerLobe]
+    children: [RMiddleLobe, RLowerLobe, RB6]
     vector: [46.5, 10.0, -9.0]
 
+# RMiddleLobe:
+#     vector: [17.5, -21.5, -13.5]
+#     children: [RB4, RB5]
+#
+# RLowerLobe:
+#     vector: [34.0, 2.0, -7.5]
+#     children: [RB7, RB8, RB9, RB10]
+#
+# RB6:
+#     vector: [8.0, 15.0, -12.0]
+#     color: c44b98

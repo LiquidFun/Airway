@@ -42,7 +42,7 @@ from util.util import get_data_paths_from_args
 # -------------------------------- Constants ---------------------------------
 # ============================================================================
 
-REMOVE_IF_GROUP_SIZE_LESS_THAN = 6
+REMOVE_IF_GROUP_SIZE_LESS_THAN = 3
 DIAMETER_TO_WEIGHT_RATIO = 0.85
 
 
@@ -186,7 +186,7 @@ def remove_minor_edges(graph):
             # if graph[fr][to]['group_sizes'].count(' ') < REMOVE_IF_GROUP_SIZE_LESS_THAN:
 
             # Alternative way of checking, compares the current diameter with edge length
-            node_diameter = calc_diameter(graph.nodes.data()[fr]['group_size'])
+            node_diameter = graph.nodes.data()[fr]['group_size']
             avg_edge_length = graph[fr][to]['group_sizes'].count(' ')
             if avg_edge_length - node_diameter < REMOVE_IF_GROUP_SIZE_LESS_THAN:
                 nodes_to_be_removed.append(to)
