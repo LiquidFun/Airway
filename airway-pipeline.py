@@ -304,7 +304,7 @@ def log(message: str, stdout=False, add_time=False, tabs=0, end='\n'):
             prefix = ' ' * 11 * tabs_adjusted_to_time
             lines[i] = prefix + lines[i]
         if add_time_for_this_line:
-            time_fmt = f"[{col.green()}{datetime.now().strftime('%H:%M:%S')}{col.reset()}] "
+            time_fmt = f"{col.reset()}[{col.green()}{datetime.now().strftime('%H:%M:%S')}{col.reset()}] "
             lines[i] = time_fmt + lines[i]
             time_added = True
     message = '\n'.join(lines)
@@ -320,7 +320,11 @@ def subprocess_executor(args):
     """ Run a single script with args """
     # return subprocess.run(argument, capture_output=True, encoding="utf-8")
     # Above is Python 3.7, so PIPE instead of capture_output=True
-    return subprocess.run(args, encoding="utf-8", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    # Important as the pycharm debugger expects strings in the flags of subprocess, this causes it to crash
+    # as this program puts PosixPaths into the arg list.
+    args_as_strings = list(map(str, args))
+    return subprocess.run(args_as_strings, encoding="utf-8", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 def concurrent_executor(subprocess_args, worker, tqdm_prefix="", verbose=False):

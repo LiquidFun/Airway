@@ -67,8 +67,10 @@ LB2:
     color: ff3432
 LB4:
     color: f6c460
+    vector: [-23.0, -5.0, -11.5]
 LB5:
     color: ff6822
+    vector: [-4.0, 0.0, -13.0]
 
 # --- Left lower lobe --- #
 
@@ -80,25 +82,28 @@ LB6:
     color: c44b98
 LB7+8+9+10:
     vector: [35.5, -2.0, 13.5]
-    children: [LB7+8, LB7, LB8, LB9+10, LB9, LB10]
+    children: [LB7+8, LB9+10, LB9, LB10]
+    # children: [LB7+8, LB7, LB8, LB9+10, LB9, LB10] # doesn't work correctly
     descendants: [LB7, LB8, LB9, LB10]
 LB9+10:
     vector: [12.0, 3.5, 2.5]
     children: [LB9, LB10]
 LB7+8:
-    vector: [19.0, -6.5, 10.0]
+    vector: [10.0, -4.0, 19.0]
     children: [LB7, LB8]
     color: ffc200
 LB9:
-    vector: [10.5, 1.5, 14.5]
+    vector: [31.0, -2.5, 16.0]
     color: bc6a26
 LB10:
     vector: [34.66, 10.0, 8.66]
     color: e74a00
 LB7:
     vector: [10.0, -6.5, 10.0]
+    color: ffc200
 LB8:
     vector: [10.0, -6.5, 10.0]
+    color: ffc200
 
 # --- Right Bronchus --- #
 RBronchus:

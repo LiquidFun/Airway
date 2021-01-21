@@ -2,6 +2,7 @@
 """
 import copy
 import itertools
+import math
 import sys
 from pathlib import Path
 from queue import Queue
@@ -76,17 +77,17 @@ def classify_tree(
                         child_point = get_point(child_node)
                         vec = child_point - node_point
                         if classification in classification_config:
-                            curr_cost -= child_node['cost']
+                            # curr_cost -= child_node['cost']
                             target_vec = np.array(classification_config[classification]['vector'])
-                            target_vec *= np.linalg.norm(vec) / np.linalg.norm(target_vec)
-                            curr_cost += np.linalg.norm(target_vec - vec)
+                            # target_vec *= np.linalg.norm(vec) / np.linalg.norm(target_vec)
+                            curr_cost += math.acos((vec @ target_vec) / (np.linalg.norm(vec) * np.linalg.norm(target_vec)))
                 cost_with_perm.append((curr_cost, successors_with_permutations))
                 if not all_classifications_with_vectors:
                     break
             cost_with_perm.sort(key=lambda k: k[0])
             # print("cost_with_perm:", *map(lambda s: f"\n\t{s}", cost_with_perm))
             if cost_with_perm:
-                for curr_cost, successors_with_permutations in cost_with_perm:
+                for curr_cost, successors_with_permutations in cost_with_perm[:5]:
                     # print("successors with permutations:", successors_with_permutations)
                     new_tree = tree.copy()
                     for child_id, classification in successors_with_permutations:
@@ -112,6 +113,7 @@ def is_valid_tree(
         tree: nx.Graph,
         classification_config: Dict[str, Dict[str, Any]],
         successors: Dict[str, List[str]],
+        start_node_id: str = "0"
 ):
     required_descendants = set()
     have_appeared = set()
@@ -140,7 +142,7 @@ def is_valid_tree(
         # Tree is valid only if all descendants have been removed in the recursive steps above
         return required_descendants.isdisjoint(curr_descendants)
 
-    return recursive_is_valid_tree('0')
+    return recursive_is_valid_tree(start_node_id)
 
 
 def show_classification_vectors(tree, successors):
@@ -187,10 +189,10 @@ def add_default_split_classification_id_to_tree(tree: nx.Graph):
 
 
 def add_cost_by_level_in_tree(tree, successors):
-    def recursive_add_cost(curr_id='0', cost=100000000.0):
-        tree.nodes[curr_id]['cost'] = cost
+    def recursive_add_cost(curr_id='0', cost=1000000.0):
+        tree.nodes[curr_id]['cost'] = 0
         for child_id in successors.get(curr_id, []):
-            recursive_add_cost(child_id, cost/10)
+            recursive_add_cost(child_id, cost/2)
     recursive_add_cost()
     tree.nodes['0']['cost'] = 0
 
