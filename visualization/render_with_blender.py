@@ -61,21 +61,23 @@ def rad(degrees):
 
 # Move camera
 camera = bpy.data.objects['Camera']
-camera.location = (-5, -2, 2)
-camera.rotation_euler = (rad(70), 0, rad(-60))
+camera.location = (0, 16, 0)
+camera.rotation_euler = (rad(90), 0, rad(-180))
 camera.hide = True
 
 # Set rendering options
 bpy.context.scene.render.engine = "CYCLES"
-bpy.context.scene.cycles.samples = 256
+bpy.context.scene.cycles.samples = 128
+bpy.context.scene.render.resolution_x = 1600
+bpy.context.scene.render.resolution_y = 1600
 bpy.context.scene.render.resolution_percentage = 100
 
 # Add lighting plane, move it and hide it
 bpy.ops.mesh.primitive_plane_add()
 plane = bpy.data.objects['Plane']
 plane.hide = True
-plane.scale = (8, 8, 1)
-plane.location[2] = 10
+plane.scale = (16, 16, 1)
+plane.location[2] = 20
 
 # Set the material for the lighting plane
 mat_name = "LightMat"
