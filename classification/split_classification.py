@@ -87,7 +87,7 @@ def classify_tree(
             cost_with_perm.sort(key=lambda k: k[0])
             # print("cost_with_perm:", *map(lambda s: f"\n\t{s}", cost_with_perm))
             if cost_with_perm:
-                for curr_cost, successors_with_permutations in cost_with_perm[:5]:
+                for curr_cost, successors_with_permutations in cost_with_perm:
                     # print("successors with permutations:", successors_with_permutations)
                     new_tree = tree.copy()
                     for child_id, classification in successors_with_permutations:

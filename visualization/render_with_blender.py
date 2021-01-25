@@ -1,5 +1,6 @@
 import sys
 import math
+from pathlib import Path
 
 import networkx as nx
 import numpy as np
@@ -48,7 +49,6 @@ def make_obj_smooth(obj):
     # bpy.data.meshes[obj.name].show_double_sided = True
 
     bpy.ops.object.shade_smooth()
-
 
 
 make_obj_smooth(bronchus)
@@ -149,7 +149,11 @@ class ClassificationReloader(bpy.types.Operator):
         for cube in self.cubes:
             bpy.data.objects.remove(cube, do_unlink=True)
         self.cubes.clear()
-        tree = nx.read_graphml(tree_path)
+        gt_tree_path = tree_path.replace("tree.graphml", "tree_gt.graphml")
+        if Path(gt_tree_path).exists():
+            tree = nx.read_graphml(gt_tree_path)
+        else:
+            tree = nx.read_graphml(tree_path)
         for node_id in tree.nodes:
             node = tree.nodes[node_id]
             location = tuple(normalize(np.array([node['x'], node['y'], node['z']])))
