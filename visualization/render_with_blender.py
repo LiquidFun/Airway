@@ -19,7 +19,9 @@ model_path = argv[4]
 
 # Delete default cube
 bpy.ops.object.delete()
-bpy.data.objects.remove(bpy.data.objects['Lamp'])
+lamp = bpy.data.objects['Lamp']
+bpy.context.scene.objects.unlink(lamp)
+bpy.data.objects.remove(lamp)
 
 # Import bronchus
 bpy.ops.import_scene.obj(filepath=bronchus_path)
@@ -120,13 +122,23 @@ bpy.data.meshes['splits'].show_double_sided = True
 splits = bpy.data.objects['splits']
 # splits.select_set = True
 
+cubes = []
+group_cubes = []
+
 
 class ClassificationReloader(bpy.types.Operator):
     """Tooltip"""
     bl_idname = "view3d.airway_reload_classification"
     bl_label = "Airway: reload classification"
-    cubes = []
+    show_all_nodes = False
     model = None
+
+    @staticmethod
+    def add_to_group(group_name, objects):
+        group = bpy.data.groups.get(group_name, bpy.data.groups.new(group_name))
+        for obj in objects:
+            if obj.name not in group.objects:
+                group.objects.link(obj)
 
     def normalize(self, vertices):
         import numpy as np
@@ -148,9 +160,10 @@ class ClassificationReloader(bpy.types.Operator):
     def execute(self, context):
         import networkx as nx
         show_names_in_current_screen()
-        for cube in self.cubes:
+        for cube in cubes:
             bpy.data.objects.remove(cube, do_unlink=True)
-        self.cubes.clear()
+        cubes.clear()
+        group_cubes.clear()
         gt_tree_path = tree_path.replace("tree.graphml", "tree_gt.graphml")
         if Path(gt_tree_path).exists():
             tree = nx.read_graphml(gt_tree_path)
@@ -159,19 +172,36 @@ class ClassificationReloader(bpy.types.Operator):
         for node_id in tree.nodes:
             node = tree.nodes[node_id]
             location = tuple(self.normalize([node['x'], node['y'], node['z']]))
-            if not re.match(r"c\d+", node['split_classification']):
+            classification = node['split_classification']
+            is_gt_classification = False
+            if 'split_classification_gt' in node:
+                if node['split_classification_gt'] == "":
+                    is_gt_classification = True
+                    classification = node['split_classification_gt']
+            if self.show_all_nodes or not re.match(r"c\d+", classification):
                 bpy.ops.mesh.primitive_cube_add(radius=0.02, location=location)
                 selected = bpy.context.selected_objects[0]
-                selected.name = node['split_classification']
+                selected.name = classification
                 if re.match(r"LB\d(\+\d)*[a-c]*i*", selected.name):
                     selected.name = selected.name[1:]
                 selected.show_name = True
-                self.cubes.append(selected)
-        for cube in self.cubes:
+                cubes.append(selected)
+                if is_gt_classification:
+                    group_cubes.append(selected)
+        for cube in cubes:
             cube.select = True
+        self.add_to_group("manually_classified", group_cubes)
         bpy.data.objects['splits'].select = True
         return {'FINISHED'}
 
 
+class FullClassificationReloader(ClassificationReloader):
+    """Tooltip"""
+    bl_idname = "view3d.airway_reload_full_classification"
+    bl_label = "Airway: reload classification and show all nodes"
+    show_all_nodes = True
+
+
+bpy.utils.register_class(FullClassificationReloader)
 bpy.utils.register_class(ClassificationReloader)
 # print("Registered class")

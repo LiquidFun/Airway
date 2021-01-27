@@ -184,6 +184,7 @@ def add_defaults_to_classification_config(classification_config):
 
 def add_default_split_classification_id_to_tree(tree: nx.Graph):
     for node in tree.nodes:
+        tree.nodes[node]['split_classification_gt'] = ""
         tree.nodes[node]['split_classification'] = f"c{node}"
     tree.nodes['0']['split_classification'] = 'Trachea'
 
