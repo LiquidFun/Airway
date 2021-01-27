@@ -2,9 +2,7 @@ import sys
 import math
 from pathlib import Path
 
-import networkx as nx
-import numpy as np
-import regex as re
+import re
 
 # Internal import to access blender functionalities
 import bpy
@@ -123,30 +121,32 @@ splits = bpy.data.objects['splits']
 # splits.select_set = True
 
 
-model = np.load(model_path)['arr_0']
-
-
-def normalize(vertices: np.ndarray):
-    reference_shape = np.array(model.shape)
-    rot_mat = np.array([[0, 0, -1], [0, -1, 0], [-1, 0, 0]])
-    # Shift to middle of the space
-    vertices -= np.array(reference_shape) / 2
-    # Scale to [-10..10]
-    vertices *= 20 / np.max(reference_shape)
-    # If available: transform
-    # Note: since this is applied afterwards, points can be out of [-10..10]
-    if rot_mat is not None:
-        vertices = vertices @ np.transpose(rot_mat)
-    return vertices
-
-
 class ClassificationReloader(bpy.types.Operator):
     """Tooltip"""
     bl_idname = "view3d.airway_reload_classification"
     bl_label = "Airway: reload classification"
     cubes = []
+    model = None
+
+    def normalize(self, vertices):
+        import numpy as np
+        vertices = np.array(vertices)
+        if self.model is None:
+            self.model = np.load(model_path)['arr_0']
+        reference_shape = np.array(self.model.shape)
+        rot_mat = np.array([[0, 0, -1], [0, -1, 0], [-1, 0, 0]])
+        # Shift to middle of the space
+        vertices -= np.array(reference_shape) / 2
+        # Scale to [-10..10]
+        vertices *= 20 / np.max(reference_shape)
+        # If available: transform
+        # Note: since this is applied afterwards, points can be out of [-10..10]
+        if rot_mat is not None:
+            vertices = vertices @ np.transpose(rot_mat)
+        return vertices
 
     def execute(self, context):
+        import networkx as nx
         show_names_in_current_screen()
         for cube in self.cubes:
             bpy.data.objects.remove(cube, do_unlink=True)
@@ -158,7 +158,7 @@ class ClassificationReloader(bpy.types.Operator):
             tree = nx.read_graphml(tree_path)
         for node_id in tree.nodes:
             node = tree.nodes[node_id]
-            location = tuple(normalize(np.array([node['x'], node['y'], node['z']])))
+            location = tuple(self.normalize([node['x'], node['y'], node['z']]))
             if not re.match(r"c\d+", node['split_classification']):
                 bpy.ops.mesh.primitive_cube_add(radius=0.02, location=location)
                 selected = bpy.context.selected_objects[0]

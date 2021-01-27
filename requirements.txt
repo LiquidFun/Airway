@@ -6,6 +6,5 @@ sklearn
 pandas
 pyyaml
 matplotlib
-regex
 igraph
 tqdm
