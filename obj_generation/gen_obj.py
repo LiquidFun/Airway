@@ -21,7 +21,7 @@ import numpy as np
 from skimage.morphology import skeletonize
 
 from util.util import get_data_paths_from_args
-
+from analysis.create_color_masks import color_hex_to_floats
 
 def generate_obj(output_data_path: Path,
                  accepted_types: Set[int],
@@ -154,6 +154,12 @@ def normalize(vertices: np.ndarray, reference_shape: np.ndarray, rot_mat: np.nda
 def main():
     output_data_path, input_data_path, distance_mask_path, color_mask_path = get_data_paths_from_args(inputs=3)
 
+    original_color_tuples = {
+        index: color_hex_to_floats(color) for index, color in enumerate(
+            ["ffffff", "bee6be", "fa87f5", "fa4646", "41d741", "6478fa", "e6ff50", "5870ff", "ff5c64"]
+        )
+    }
+
     model = np.load(input_data_path / "reduced_model.npz")['arr_0']
     print(f"Loaded model with shape {model.shape}")
 
@@ -179,10 +185,11 @@ def main():
     # generate_obj(output_data_path / "bav.obj", {1, 7, 8}, model)
     generate_obj(output_data_path / "bronchus.obj", {1}, model, color_mask=bronchus_color_mask,
                  color_to_rgb_tuple=color_codes, rot_mat=rot_mat)
-    # generate_obj(output_data_path / "bronchus.obj", {1}, model, color_mask=distance_mask, rot_mat=rot_mat)
-    # generate_obj(output_data_path / "veins.obj", {7}, model)
-    # generate_obj(output_data_path / "arteries.obj", {8}, model)
-    # generate_obj(output_data_path / "lung.obj", {1, 2, 3, 4, 5, 6}, model)
+    generate_obj(output_data_path / "distance_mask.obj", {1}, model, color_mask=distance_mask, rot_mat=rot_mat)
+    generate_obj(output_data_path / "veins.obj", {7}, model, color_to_rgb_tuple={0: (0, 0, 1)})
+    generate_obj(output_data_path / "arteries.obj", {8}, model, color_to_rgb_tuple={0: (1, 0, 0)})
+    generate_obj(output_data_path / "lung.obj", {2, 3, 4, 5, 6}, model, color_mask=model,
+                 color_to_rgb_tuple=original_color_tuples)
 
 
 if __name__ == "__main__":

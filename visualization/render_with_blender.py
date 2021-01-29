@@ -18,12 +18,21 @@ tree_path = argv[3]
 model_path = argv[4]
 
 
-def make_obj_smooth(obj):
+def load_obj(path):
+    """Loads .obj file and returns the object"""
+    name = Path(path).name.replace(".obj", "")
+    bpy.ops.import_scene.obj(filepath=path)
+    bpy.data.meshes[name].show_double_sided = True
+    return bpy.data.objects[name]
+
+
+def make_obj_smooth(obj, iterations=10, factor=2):
+    """Adds smoothing modifier in Blender"""
 
     # Add smoothing modifier
     smoothing = obj.modifiers.new(name="Smooth", type="SMOOTH")
-    smoothing.iterations = 10
-    smoothing.factor = 2
+    smoothing.iterations = iterations
+    smoothing.factor = factor
 
     # Recalculate normals
     bpy.ops.object.select_all(action='DESELECT')
@@ -111,19 +120,16 @@ def show_names_in_current_screen():
 
 
 # Import skeleton object
-bpy.ops.import_scene.obj(filepath=skeleton_path)
-bpy.data.meshes['skeleton'].show_double_sided = True
-skeleton = bpy.data.objects['skeleton']
+skeleton = load_obj(skeleton_path)
+make_obj_smooth(skeleton, 2, 2)
 skeleton.hide = True
 skeleton.hide_render = True
 skeleton.hide_select = True
 
 # Import splits object
-bpy.ops.import_scene.obj(filepath=split_path)
-bpy.data.meshes['splits'].show_double_sided = True
-splits = bpy.data.objects['splits']
-splits.hide_select = True
-# splits.select_set = True
+splits = load_obj(split_path)
+splits_no_post_processing = load_obj(split_path.replace("splits.obj", "splits_no_post_processing.obj"))
+splits_no_post_processing.hide = True
 
 cubes = []
 group_cubes = []
