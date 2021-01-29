@@ -17,16 +17,6 @@ split_path = argv[2]
 tree_path = argv[3]
 model_path = argv[4]
 
-# Delete default cube
-bpy.ops.object.delete()
-lamp = bpy.data.objects['Lamp']
-bpy.context.scene.objects.unlink(lamp)
-bpy.data.objects.remove(lamp)
-
-# Import bronchus
-bpy.ops.import_scene.obj(filepath=bronchus_path)
-bronchus = bpy.data.objects['bronchus']
-
 
 def make_obj_smooth(obj):
 
@@ -51,7 +41,17 @@ def make_obj_smooth(obj):
     bpy.ops.object.shade_smooth()
 
 
-make_obj_smooth(bronchus)
+# Delete default cube
+bpy.ops.object.delete()
+lamp = bpy.data.objects['Lamp']
+bpy.context.scene.objects.unlink(lamp)
+bpy.data.objects.remove(lamp)
+
+# Import bronchus
+bpy.ops.import_scene.obj(filepath=bronchus_path)
+bronchus = bpy.data.objects['bronchus']
+make_obj_smooth(bronchus) # Smooth before hiding select, as otherwise it doesnt work?
+bronchus.hide_select = True
 
 
 # Define deg to rad function
@@ -91,7 +91,8 @@ mat.node_tree.links.new(inp, outp)
 plane.active_material = mat
 
 # Change default screen
-bpy.context.window.screen = bpy.data.screens['3D View Full']
+# bpy.context.window.screen = bpy.data.screens['3D View Full']
+bpy.context.window.screen = bpy.data.screens['Airway']
 
 
 def get_areas_by_type(context, type):
@@ -115,93 +116,131 @@ bpy.data.meshes['skeleton'].show_double_sided = True
 skeleton = bpy.data.objects['skeleton']
 skeleton.hide = True
 skeleton.hide_render = True
+skeleton.hide_select = True
 
 # Import splits object
 bpy.ops.import_scene.obj(filepath=split_path)
 bpy.data.meshes['splits'].show_double_sided = True
 splits = bpy.data.objects['splits']
+splits.hide_select = True
 # splits.select_set = True
 
 cubes = []
 group_cubes = []
+np_model = None
+previous_reload_all_cubes = False
+
+
+def load_tree():
+    import networkx as nx
+    gt_tree_path = tree_path.replace("tree.graphml", "tree_gt.graphml")
+    return nx.read_graphml(gt_tree_path) if Path(gt_tree_path).exists() else nx.read_graphml(tree_path)
+
+
+def add_to_group(group_name, objects):
+    group = bpy.data.groups.get(group_name, bpy.data.groups.new(group_name))
+    for obj in objects:
+        if obj.name not in group.objects:
+            group.objects.link(obj)
+
+
+def normalize(vertices):
+    global np_model
+    import numpy as np
+    vertices = np.array(vertices)
+    if np_model is None:
+        np_model = np.load(model_path)['arr_0']
+    reference_shape = np.array(np_model.shape)
+    rot_mat = np.array([[0, 0, -1], [0, -1, 0], [-1, 0, 0]])
+    # Shift to middle of the space
+    vertices -= np.array(reference_shape) / 2
+    # Scale to [-10..10]
+    vertices *= 20 / np.max(reference_shape)
+    # If available: transform
+    # Note: since this is applied afterwards, points can be out of [-10..10]
+    if rot_mat is not None:
+        vertices = vertices @ np.transpose(rot_mat)
+    return vertices
+
+
+def reload_cubes(context, show_all_nodes):
+    global previous_reload_all_cubes
+    previous_reload_all_cubes = show_all_nodes
+    show_names_in_current_screen()
+    for _, cube in cubes:
+        bpy.data.objects.remove(cube, do_unlink=True)
+    cubes.clear()
+    group_cubes.clear()
+    tree = load_tree()
+    for node_id in tree.nodes:
+        node = tree.nodes[node_id]
+        location = tuple(normalize([node['x'], node['y'], node['z']]))
+        classification = node['split_classification']
+        is_gt_classification = False
+        if 'split_classification_gt' in node:
+            if node['split_classification_gt'] != "":
+                is_gt_classification = True
+                classification = node['split_classification_gt']
+        if show_all_nodes or not re.match(r"c\d+", classification):
+            bpy.ops.mesh.primitive_cube_add(radius=0.02, location=location)
+            selected = bpy.context.selected_objects[0]
+            selected.name = classification
+            if re.match(r"LB\d(\+\d)*[a-c]*i*", selected.name):
+                selected.name = selected.name[1:]
+            selected.show_name = True
+            cubes.append((node_id, selected))
+            if is_gt_classification:
+                group_cubes.append(selected)
+    for _, cube in cubes:
+        cube.select = True
+    add_to_group("manually_classified", group_cubes)
+    bpy.data.objects['splits'].select = True
+    return {'FINISHED'}
 
 
 class ClassificationReloader(bpy.types.Operator):
     """Tooltip"""
     bl_idname = "view3d.airway_reload_classification"
     bl_label = "Airway: reload classification"
-    show_all_nodes = False
-    model = None
 
-    @staticmethod
-    def add_to_group(group_name, objects):
-        group = bpy.data.groups.get(group_name, bpy.data.groups.new(group_name))
-        for obj in objects:
-            if obj.name not in group.objects:
-                group.objects.link(obj)
+    def execute(self, context):
+        reload_cubes(context, show_all_nodes=False)
+        return {"FINISHED"}
 
-    def normalize(self, vertices):
-        import numpy as np
-        vertices = np.array(vertices)
-        if self.model is None:
-            self.model = np.load(model_path)['arr_0']
-        reference_shape = np.array(self.model.shape)
-        rot_mat = np.array([[0, 0, -1], [0, -1, 0], [-1, 0, 0]])
-        # Shift to middle of the space
-        vertices -= np.array(reference_shape) / 2
-        # Scale to [-10..10]
-        vertices *= 20 / np.max(reference_shape)
-        # If available: transform
-        # Note: since this is applied afterwards, points can be out of [-10..10]
-        if rot_mat is not None:
-            vertices = vertices @ np.transpose(rot_mat)
-        return vertices
+
+class FullClassificationReloader(bpy.types.Operator):
+    """Tooltip"""
+    bl_idname = "view3d.airway_reload_full_classification"
+    bl_label = "Airway: reload classification and show all nodes"
+
+    def execute(self, context):
+        reload_cubes(context, show_all_nodes=True)
+        return {"FINISHED"}
+
+
+class ClassificationSaver(bpy.types.Operator):
+    """Tooltip"""
+    bl_idname = "view3d.airway_save_classification"
+    bl_label = "Airway: save classification"
 
     def execute(self, context):
         import networkx as nx
         show_names_in_current_screen()
-        for cube in cubes:
-            bpy.data.objects.remove(cube, do_unlink=True)
-        cubes.clear()
-        group_cubes.clear()
-        gt_tree_path = tree_path.replace("tree.graphml", "tree_gt.graphml")
-        if Path(gt_tree_path).exists():
-            tree = nx.read_graphml(gt_tree_path)
-        else:
-            tree = nx.read_graphml(tree_path)
-        for node_id in tree.nodes:
-            node = tree.nodes[node_id]
-            location = tuple(self.normalize([node['x'], node['y'], node['z']]))
-            classification = node['split_classification']
-            is_gt_classification = False
-            if 'split_classification_gt' in node:
-                if node['split_classification_gt'] == "":
-                    is_gt_classification = True
-                    classification = node['split_classification_gt']
-            if self.show_all_nodes or not re.match(r"c\d+", classification):
-                bpy.ops.mesh.primitive_cube_add(radius=0.02, location=location)
-                selected = bpy.context.selected_objects[0]
-                selected.name = classification
-                if re.match(r"LB\d(\+\d)*[a-c]*i*", selected.name):
-                    selected.name = selected.name[1:]
-                selected.show_name = True
-                cubes.append(selected)
-                if is_gt_classification:
-                    group_cubes.append(selected)
-        for cube in cubes:
-            cube.select = True
-        self.add_to_group("manually_classified", group_cubes)
-        bpy.data.objects['splits'].select = True
+        tree = load_tree()
+        for node_id, cube in cubes:
+            name = cube.name
+            if re.match(r"B\d(\+\d)*[a-c]*i*", cube.name):
+                name = "L" + name
+            if name == tree.nodes[node_id]["split_classification"]:
+                tree.nodes[node_id]["split_classification_gt"] = ""
+            else:
+                tree.nodes[node_id]["split_classification_gt"] = name
+        nx.write_graphml(tree, tree_path.replace("tree.graphml", "tree_gt.graphml"))
+        reload_cubes(context, previous_reload_all_cubes)
         return {'FINISHED'}
 
 
-class FullClassificationReloader(ClassificationReloader):
-    """Tooltip"""
-    bl_idname = "view3d.airway_reload_full_classification"
-    bl_label = "Airway: reload classification and show all nodes"
-    show_all_nodes = True
-
-
-bpy.utils.register_class(FullClassificationReloader)
 bpy.utils.register_class(ClassificationReloader)
+bpy.utils.register_class(FullClassificationReloader)
+bpy.utils.register_class(ClassificationSaver)
 # print("Registered class")
