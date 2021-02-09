@@ -148,6 +148,5 @@ def main():
     distance_mask = get_distance_in_model_from_skeleton(visited)
 
 
-
 if __name__ == "__main__":
     main()

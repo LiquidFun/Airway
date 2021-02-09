@@ -186,10 +186,10 @@ def main():
     generate_obj(output_data_path / "bronchus.obj", {1}, model, color_mask=bronchus_color_mask,
                  color_to_rgb_tuple=color_codes, rot_mat=rot_mat)
     generate_obj(output_data_path / "distance_mask.obj", {1}, model, color_mask=distance_mask, rot_mat=rot_mat)
-    generate_obj(output_data_path / "veins.obj", {7}, model, color_to_rgb_tuple={0: (0, 0, 1)})
-    generate_obj(output_data_path / "arteries.obj", {8}, model, color_to_rgb_tuple={0: (1, 0, 0)})
-    generate_obj(output_data_path / "lung.obj", {2, 3, 4, 5, 6}, model, color_mask=model,
-                 color_to_rgb_tuple=original_color_tuples)
+    generate_obj(output_data_path / "veins.obj", {7}, model, color_to_rgb_tuple={0: (0, 0, 1)}, rot_mat=rot_mat)
+    generate_obj(output_data_path / "arteries.obj", {8}, model, color_to_rgb_tuple={0: (1, 0, 0)}, rot_mat=rot_mat)
+    generate_obj(output_data_path / "lung.obj", set(), model, color_mask=model,
+                 color_to_rgb_tuple=original_color_tuples, rot_mat=rot_mat)
 
 
 if __name__ == "__main__":
