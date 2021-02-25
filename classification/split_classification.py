@@ -5,7 +5,7 @@ import itertools
 import math
 import sys
 from pathlib import Path
-from queue import Queue
+from queue import PriorityQueue
 from typing import Any, Dict, List, Tuple
 
 import yaml
@@ -13,6 +13,8 @@ import numpy as np
 import networkx as nx
 
 from util.util import get_data_paths_from_args
+
+trees_thrown_out = 0
 
 
 def get_inputs():
@@ -34,17 +36,19 @@ def classify_tree(
         successors: Dict[str, List[str]],
         classification_config: Dict[str, Dict[str, Any]],
 ):
+    global trees_thrown_out
     """ Creates every valid classification for a tree based on the rules in classification.yaml """
     initial_cost = get_total_cost_in_tree(original_tree, successors)
     # queue contains the tree currently being worked on, and the current steps to work on
-    tree_variations_queue = Queue()
-    tree_variations_queue.put((original_tree, ["0"], initial_cost))
+    tree_variations_queue = PriorityQueue()
+    tree_variations_queue.put((initial_cost, original_tree, ["0"]))
     final_trees = []
+    cost_hack = 0
 
     while not tree_variations_queue.empty():
         # print()
         # print(list(map(lambda x: f"next={x[1]}, cost={x[2]}", list(tree_variations_queue.queue))))
-        tree, (current_node_id, *rest_node_ids), cost = tree_variations_queue.get()
+        cost, tree, (current_node_id, *rest_node_ids) = tree_variations_queue.get()
         node = tree.nodes[current_node_id]
         # print(f"Current={current_node_id} ({node['split_classification']}), rest={rest_node_ids}")
         node_point = get_point(node)
@@ -98,14 +102,20 @@ def classify_tree(
                         if classification in classification_config
                     ]
                     if len(next_nodes) == 0:
-                        final_trees.append((curr_cost, new_tree))
+                        if is_valid_tree(new_tree, classification_config, successors):
+                            final_trees.append((curr_cost, new_tree))
+                            return final_trees
+                        else:
+                            trees_thrown_out += 1
                     else:
-                        tree_variations_queue.put((new_tree, next_nodes, curr_cost))
+                        cost_hack += 0.000001
+                        tree_variations_queue.put((curr_cost+cost_hack, new_tree, next_nodes))
                     if classification_config[node['split_classification']]['take_best']:
                         # print("Breaking for node", node['split_classification'], "since it is specified as take_best")
                         break
-            else:
+            elif is_valid_tree(tree, classification_config, successors):
                 final_trees.append((cost, tree))
+                break
     return final_trees
 
 
@@ -228,12 +238,13 @@ def main():
     add_cost_by_level_in_tree(tree, successors)
     print('\n'.join(map(str, classification_config.items())))
     all_trees = classify_tree(tree, successors, classification_config)
-    print(f"All trees: {len(all_trees)}")
+    # print(f"All trees: {len(all_trees)}")
     all_trees.sort(key=lambda x: x[0])
     validated_trees = []
     for cost, curr_tree in all_trees:
         if is_valid_tree(curr_tree, classification_config, successors):
             validated_trees.append((cost, curr_tree))
+    print(f"Invalid trees thrown out: {trees_thrown_out}")
     print(f"Valid trees: {len(validated_trees)}")
     for curr_cost, curr_tree in validated_trees:
         all_classifications = get_all_classifications_in_tree(curr_tree, successors)
