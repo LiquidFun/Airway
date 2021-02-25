@@ -41,6 +41,11 @@ stage-10:
   script: classification/split_classification.py
   inputs: [stage-07]
   groups: [classification]
+stage-11:
+  script: classification/clustering.py
+  inputs: [stage-10, stage-62]
+  groups: [cluster, clustering]
+  per_patient: False
 
 # --- Analysis --- #
 stage-30:

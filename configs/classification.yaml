@@ -11,6 +11,9 @@
 #     # to greatly reduce search space.
 #     take_best: True
 #
+#     # Specify whether the clustering algorithm should stop at this node or go further on
+#     clustering_endnode: True
+#
 #     # Use children on the first few nodes where the structure is meant to be stable, then stick to optional_children
 #     # and guarantee that some children appear at some point by using descendants
 
@@ -55,22 +58,28 @@ LB1+2:
     descendants: [LB1, LB2]
     vector: [-21.0, 3.0, 1.0]
     color: ff3432
+    clustering_endnode: True
 LB3:
     children: [LB3a, LB3b, LB3c]
     vector: [-4.0, -7.0, 10.0]
     color: 6FB0FF
+    clustering_endnode: True
 LB1:
     vector: [-40.0, 8.5, -5.0]
     color: ff3432
+    clustering_endnode: True
 LB2:
     vector: [-20.0, -17.0, 3.0]
     color: ff3432
+    clustering_endnode: True
 LB4:
     color: f6c460
     vector: [-23.0, -5.0, -11.5]
+    clustering_endnode: True
 LB5:
     color: ff6822
     vector: [-4.0, 0.0, -13.0]
+    clustering_endnode: True
 
 # --- Left lower lobe --- #
 
@@ -80,6 +89,7 @@ LLowerLobe:
 LB6:
     vector: [-1.0, 10.5, 3.5]
     color: c44b98
+    clustering_endnode: True
 LB7+8+9+10:
     vector: [35.5, -2.0, 13.5]
     children: [LB7+8, LB9+10, LB9, LB10]
@@ -88,16 +98,20 @@ LB7+8+9+10:
 LB9+10:
     vector: [12.0, 3.5, 2.5]
     children: [LB9, LB10]
+    clustering_endnode: True
 LB7+8:
     vector: [10.0, -4.0, 19.0]
     children: [LB7, LB8]
     color: ffc200
+    clustering_endnode: True
 LB9:
     vector: [31.0, -2.5, 16.0]
     color: bc6a26
+    clustering_endnode: True
 LB10:
     vector: [34.66, 10.0, 8.66]
     color: e74a00
+    clustering_endnode: True
 LB7:
     vector: [10.0, -6.5, 10.0]
     color: ffc200
@@ -110,6 +124,7 @@ RBronchus:
     children: [RUpperLobe, RMLLobes]
     vector: [28.5, 5.0, -23.0]
     take_best: True
+    clustering_endnode: True
 
 RUpperLobe:
     vector: [-13.5, -1.0, -18.0]

@@ -8,3 +8,5 @@ pyyaml
 matplotlib
 igraph
 tqdm
+Markdown
+WeasyPrint
