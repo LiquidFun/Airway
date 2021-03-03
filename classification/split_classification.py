@@ -15,6 +15,7 @@ import networkx as nx
 from util.util import get_data_paths_from_args
 
 trees_thrown_out = 0
+global_angles = []
 
 
 def get_inputs():
@@ -33,8 +34,10 @@ def get_point(node):
 
 def cost_exponential_diff_function(curr_vec: np.array, target_vec: np.array):
     angle_radians = np.arccos((curr_vec @ target_vec) / (np.linalg.norm(curr_vec) * np.linalg.norm(target_vec)))
-    exp = 2
-    div = math.pi / 6
+    global_angles.append(angle_radians)
+    exp = 1
+    # div = math.pi / 6
+    div = 1
     return (angle_radians / div) ** exp
 
 
@@ -57,14 +60,17 @@ def classify_tree(
 
     # queue contains the tree currently being worked on, and the current steps to work on
     tree_variations_queue = PriorityQueue()
-    tree_variations_queue.put((starting_cost, starting_tree, [starting_node], set()))
+    tree_variations_queue.put((starting_cost, starting_tree, [starting_node]))
 
-    print(starting_cost, starting_tree, starting_node)
+    print(starting_cost, starting_tree, starting_node, starting_tree.nodes[starting_node]['split_classification'])
     cost_hack = 0
 
     # While there are any tree variations in queue iterate over them
     while not tree_variations_queue.empty():
-        curr_cost, curr_tree, next_node_id_list, curr_classifications_used = tree_variations_queue.get()
+        curr_cost, curr_tree, next_node_id_list = tree_variations_queue.get()
+
+        # Save which classifications have already been used so no invalid trees are created unnecessarily
+        curr_classifications_used = {curr_tree.nodes[index]["split_classification"] for index in curr_tree.nodes}
 
         # If there is a tree variation which has no next nodes in list, then return it if it is a valid tree.
         # Sine tree variations is a priority queue this must be the best possible (lowest cost) tree
@@ -128,8 +134,8 @@ def classify_tree(
                         vec = child_point - curr_node_point
                         if classification in classification_config:
                             target_vec = classification_config[classification]['vector']
-                            # perm_cost += cost_exponential_diff_function(vec, target_vec)
-                            perm_cost += math.acos((vec @ target_vec) / (np.linalg.norm(vec) * np.linalg.norm(target_vec)))
+                            perm_cost += cost_exponential_diff_function(vec, target_vec)
+                            # perm_cost += math.acos((vec @ target_vec) / (np.linalg.norm(vec) * np.linalg.norm(target_vec)))
                 cost_with_perm.append((perm_cost, successors_with_permutations))
 
                 # Only add first permutation if not all children have vectors
@@ -152,21 +158,22 @@ def classify_tree(
                         child_id for child_id, classification in successors_with_permutations
                         if classification in classification_config
                     ]
-                    if classification_config[curr_node['split_classification']]['take_best']:
-                        # print(f"Take best {curr_node['split_classification']}")
-                        # curr_tree = tree.copy()
+                    take_best = classification_config[curr_node['split_classification']]['take_best']
+                    if take_best:
                         for child_node_id in successors[curr_node_id]:
-                            # print(f"Next node {child_node_id}")
                             perm_cost, perm_tree = classify_tree(perm_tree, successors, classification_config,
                                                                  child_node_id, perm_cost + cost_hack)[0]
-                        tree_variations_queue.put((perm_cost, perm_tree, next_nodes, set()))
-                        break
+                            next_nodes.remove(child_node_id)
                     cost_hack += 0.000001
-                    tree_variations_queue.put((perm_cost+cost_hack, perm_tree, next_nodes, set()))
+                    tree_variations_queue.put((perm_cost+cost_hack, perm_tree, next_nodes))
+                    if take_best:
+                        break
                     # print("Breaking for node", node['split_classification'], "since it is specified as take_best")
             else:
                 # print("WEIRD ELSE?")
-                tree_variations_queue.put((curr_cost, curr_tree, [], set()))
+                tree_variations_queue.put((curr_cost, curr_tree, []))
+    return [(curr_cost, curr_tree)]
+    raise Exception("Sacrebleu! Only invalid trees are possible!")
 
 
 def merge_tree_into(tree_into, tree_other):
@@ -192,6 +199,7 @@ def is_valid_tree(
 
         # Make sure each classification appears only once
         if classification in have_appeared:
+            print(f"Classification {classification} appears twice!")
             return False
         have_appeared.add(classification)
 
@@ -208,7 +216,10 @@ def is_valid_tree(
                 return False
 
         # Tree is valid only if all descendants have been removed in the recursive steps above
-        return required_descendants.isdisjoint(curr_descendants)
+        if not required_descendants.isdisjoint(curr_descendants):
+            print(f"Invalid because {required_descendants} and {curr_descendants} are not disjoint")
+            return False
+        return True
 
     return recursive_is_valid_tree(start_node_id)
 
@@ -320,6 +331,8 @@ def main():
     add_colors_in_tree(classified_tree, classification_config)
     show_classification_vectors(classified_tree, successors)
     nx.write_graphml(classified_tree, output_path)
+
+    print("Angles found: ", ' '.join(map(lambda x: f"{x/math.pi*180:.2f}°", sorted(global_angles))))
 
 
 if __name__ == "__main__":
