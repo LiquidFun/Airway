@@ -11,8 +11,8 @@ from util.util import get_data_paths_from_args
 
 
 # classify_for = ["Trachea"]
-# classify_for = ["LLowerLobe", "LUpperLobe", "RMiddleLobe", "RUpperLobe", "RLowerLobe"]
-classify_for = ["LLowerLobe", "LUpperLobe"]
+classify_for = ["LLowerLobe", "LUpperLobe", "RMiddleLobe", "RUpperLobe", "RLowerLobe"]
+# classify_for = ["LLowerLobe", "LUpperLobe"]
 
 
 def get_input():

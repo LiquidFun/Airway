@@ -138,7 +138,7 @@ RBronchus:
     children: [RUpperLobe, RMLLobes]
     vector: [28.5, 5.0, -23.0]
     # take_best: True
-    clustering_endnode: True
+    # clustering_endnode: True
 
 RMLLobes:
     children: [RMiddleLobe, RLowerLobe, RB6]
