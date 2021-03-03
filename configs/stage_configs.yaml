@@ -75,7 +75,7 @@ stage-33:
 stage-34:
   script: analysis/create_color_masks.py
   inputs: [stage-02, stage-03, stage-10]
-  groups: [analysis, color_mask, color_masks]
+  groups: [color_mask, color_masks]
 
 
 # --- 3D Objects --- #

@@ -22,7 +22,7 @@
 
 Trachea:
     children: [Bronchus]
-    take_best: True
+    # take_best: True
     # color: cadeca
     color: ffffff
 Bronchus:
@@ -33,12 +33,17 @@ Bronchus:
 
 
 
+
+
+
 # --- Left Bronchus --- #
 LBronchus:
     children: [LUpperLobe, LLowerLobe]
     descendants: [LUpperLobe, LLowerLobe, Lingular]
     vector: [70.5, 8.0, 60.0]
     take_best: True
+
+
 
 # --- Left upper lobe --- #
 LUpperLobe:
@@ -81,6 +86,8 @@ LB5:
     vector: [-4.0, 0.0, -13.0]
     clustering_endnode: True
 
+
+
 # --- Left lower lobe --- #
 
 LLowerLobe:
@@ -119,6 +126,13 @@ LB8:
     vector: [10.0, -6.5, 10.0]
     color: ffc200
 
+
+
+
+
+
+
+
 # --- Right Bronchus --- #
 RBronchus:
     children: [RUpperLobe, RMLLobes]
@@ -126,22 +140,86 @@ RBronchus:
     take_best: True
     clustering_endnode: True
 
-RUpperLobe:
-    vector: [-13.5, -1.0, -18.0]
-    children: [RB1, RB2, RB3]
-
 RMLLobes:
     children: [RMiddleLobe, RLowerLobe, RB6]
     vector: [46.5, 10.0, -9.0]
+    #descendants: [RB6, RB7, RB8, RB9, RB10]
 
-# RMiddleLobe:
-#     vector: [17.5, -21.5, -13.5]
-#     children: [RB4, RB5]
-#
-# RLowerLobe:
-#     vector: [34.0, 2.0, -7.5]
-#     children: [RB7, RB8, RB9, RB10]
-#
-# RB6:
-#     vector: [8.0, 15.0, -12.0]
-#     color: c44b98
+
+
+# --- Right Upper Lobe --- #
+RUpperLobe:
+    vector: [-13.5, -1.0, -18.0]
+    children: [RB1, RB2, RB3]
+    # take_best: True
+
+RB1:
+    vector: [-23.0, -5.0, -1.0]
+    color: ff3432
+    clustering_endnode: True
+
+RB2:
+    vector: [-16.0, 11.0, -10.5]
+    color: 34ff32
+    clustering_endnode: True
+
+RB3:
+    vector: [-16.0, 11.0, -10.5]
+    color: 6FB0FF
+    clustering_endnode: True
+
+
+
+# --- Right Middle Lobe --- #
+RMiddleLobe:
+    vector: [17.5, -21.5, -13.5]
+    children: [RB4, RB5]
+    # take_best: True
+
+RB4:
+    color: f6c460
+    vector: [-4.0, 0.0, -13.0]
+    clustering_endnode: True
+RB5:
+    color: ff6822
+    vector: [7.0, -6.5, -13.0]
+    clustering_endnode: True
+
+
+
+# --- Right Lower Lobe --- #
+RLowerLobe:
+    vector: [34.0, 2.0, -7.5]
+    children: [RB7, RB8+9+10]
+
+RB6:
+    vector: [8.0, 15.0, -12.0]
+    color: c44b98
+    clustering_endnode: True
+
+RB7:
+    vector: [32.0, -8.5, 2.0]
+    color: 11aa11
+    clustering_endnode: True
+
+RB8+9+10:
+    vector: [19.0, 1.5, -8.0]
+    children: [RB8, RB9+10] # Don't add RB6!
+
+RB8:
+    vector: [14.5, -3.0, -11.5]
+    color: ffdd00
+    clustering_endnode: True
+
+RB9+10:
+    vector: [9.0, 7.5, -0.5]
+    children: [RB9, RB10]
+
+RB9:
+    vector: [4.5, 5.5, -16.0]
+    color: bc6a26
+    clustering_endnode: True
+RB10:
+    vector: [20.5, -6.0, -11.0]
+    color: e74a00
+    clustering_endnode: True

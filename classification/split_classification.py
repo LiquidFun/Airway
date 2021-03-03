@@ -6,7 +6,7 @@ import math
 import sys
 from pathlib import Path
 from queue import PriorityQueue
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional
 
 import yaml
 import numpy as np
@@ -31,92 +31,150 @@ def get_point(node):
     return np.array([node['x'], node['y'], node['z']])
 
 
+def cost_exponential_diff_function(curr_vec: np.array, target_vec: np.array):
+    angle_radians = np.arccos((curr_vec @ target_vec) / (np.linalg.norm(curr_vec) * np.linalg.norm(target_vec)))
+    exp = 2
+    div = math.pi / 6
+    return (angle_radians / div) ** exp
+
+
 def classify_tree(
-        original_tree: nx.Graph,
+        starting_tree: nx.Graph,
         successors: Dict[str, List[str]],
         classification_config: Dict[str, Dict[str, Any]],
+        starting_node="0",
+        starting_cost=0,
 ):
+    """
+    Creates every valid classification for a tree based on the rules in classification.yaml
+
+    Terminology:
+        starting_* - function was called with these parameters
+        curr_* - node which is temporarily considered root node in while loop
+        child_* - nodes and their attributes which are children of curr
+    """
     global trees_thrown_out
-    """ Creates every valid classification for a tree based on the rules in classification.yaml """
-    initial_cost = get_total_cost_in_tree(original_tree, successors)
+
     # queue contains the tree currently being worked on, and the current steps to work on
     tree_variations_queue = PriorityQueue()
-    tree_variations_queue.put((initial_cost, original_tree, ["0"]))
-    final_trees = []
+    tree_variations_queue.put((starting_cost, starting_tree, [starting_node], set()))
+
+    print(starting_cost, starting_tree, starting_node)
     cost_hack = 0
 
+    # While there are any tree variations in queue iterate over them
     while not tree_variations_queue.empty():
-        # print()
-        # print(list(map(lambda x: f"next={x[1]}, cost={x[2]}", list(tree_variations_queue.queue))))
-        cost, tree, (current_node_id, *rest_node_ids) = tree_variations_queue.get()
-        node = tree.nodes[current_node_id]
-        # print(f"Current={current_node_id} ({node['split_classification']}), rest={rest_node_ids}")
-        node_point = get_point(node)
-        if node['split_classification'] in classification_config:
-            children_in_rules = classification_config[node['split_classification']]['children'].copy()
-            successor_ids = successors.get(current_node_id, [])
-            adjust_for_unaccounted_children = len(successor_ids) - len(children_in_rules)
+        curr_cost, curr_tree, next_node_id_list, curr_classifications_used = tree_variations_queue.get()
+
+        # If there is a tree variation which has no next nodes in list, then return it if it is a valid tree.
+        # Sine tree variations is a priority queue this must be the best possible (lowest cost) tree
+        if len(next_node_id_list) == 0:
+            if is_valid_tree(curr_tree, classification_config, successors, starting_node):
+                return [(curr_cost, curr_tree)]
+            else:
+                trees_thrown_out += 1
+                continue
+
+        # Divide next node list into curr node id, and rest which still need to be checked
+        (curr_node_id, *rest_node_ids) = next_node_id_list
+        curr_node = curr_tree.nodes[curr_node_id]
+        curr_classification = curr_node['split_classification']
+        curr_node_point = get_point(curr_node)
+        # print(f"In 'while' cost={curr_cost}, current_node_id={curr_node_id}, classification={curr_classification}, rest={rest_node_ids}")
+
+        # Only handle if current classification (i.e. Bronchus/RB3, etc) is actually in classification config
+        if curr_classification in classification_config:
+
+            # If there are more children than in the config then extend list to account for all of them
+            children_in_rules: List[Optional[str]] = [
+                child for child in classification_config[curr_classification]['children']
+                if child not in curr_classifications_used
+            ]
+            # The ids as strings of nodes which succeed current node
+            successor_ids: List[str] = successors.get(curr_node_id, [])
+            adjust_for_unaccounted_children: int = len(successor_ids) - len(children_in_rules)
             children_in_rules.extend([None] * adjust_for_unaccounted_children)
+
+            # Defines list of all permutations of children including their cost
+            # e.g. [(34.3, [('3', 'Bronchus')]) cost and the permutation where the node id specifies which
+            # classification should be used
             cost_with_perm: List[Tuple[int, List[Tuple[str, str]]]] = []
             for perm in set(itertools.permutations(children_in_rules, r=len(successor_ids))):
-                successors_with_permutations = list(zip(successor_ids, perm))
+                successors_with_permutations: List[Tuple[str, str]] = list(zip(successor_ids, perm))
+
+                # Create a list of all descendants for each children, this then can be used to check whether any
+                # of them share descendants when this list has non unique members
                 descendant_list = sum([
                     list(classification_config.get(p, {}).get('deep_descendants', set())) + ([] if p is None else [p])
                     for _, p in successors_with_permutations], [])
-                # print(f"perm={perm}, descendants={descendant_list} => {successors_with_permutations}")
                 permutation_shares_descendants = len(descendant_list) != len(set(descendant_list))
                 if permutation_shares_descendants:
                     continue
-                curr_cost = cost
+
+                # Then check whether all children config rules have vectors defined, if not just take the best
+                perm_cost = curr_cost
                 # TODO: Change back to all
-                all_classifications_with_vectors = any(
+                do_all_classifications_have_vectors = all(
                     classification in classification_config
                     and 'vector' in classification_config.get(classification, {})
                     for _, classification in successors_with_permutations
                 )
-                # print(all_classifications_with_vectors)
-                if all_classifications_with_vectors:
+
+                # Calculate cost of current permutation
+                if do_all_classifications_have_vectors:
                     for child_id, classification in successors_with_permutations:
-                        child_node = tree.nodes[child_id]
+                        child_node = curr_tree.nodes[child_id]
                         child_point = get_point(child_node)
-                        vec = child_point - node_point
+                        vec = child_point - curr_node_point
                         if classification in classification_config:
-                            # curr_cost -= child_node['cost']
-                            target_vec = np.array(classification_config[classification]['vector'])
-                            # target_vec *= np.linalg.norm(vec) / np.linalg.norm(target_vec)
-                            curr_cost += math.acos((vec @ target_vec) / (np.linalg.norm(vec) * np.linalg.norm(target_vec)))
-                cost_with_perm.append((curr_cost, successors_with_permutations))
-                if not all_classifications_with_vectors:
+                            target_vec = classification_config[classification]['vector']
+                            # perm_cost += cost_exponential_diff_function(vec, target_vec)
+                            perm_cost += math.acos((vec @ target_vec) / (np.linalg.norm(vec) * np.linalg.norm(target_vec)))
+                cost_with_perm.append((perm_cost, successors_with_permutations))
+
+                # Only add first permutation if not all children have vectors
+                if not do_all_classifications_have_vectors:
+                    # print("Break since not all classifications have vectors")
                     break
+
+            # Sort by cost, so we evaluate low cost first
             cost_with_perm.sort(key=lambda k: k[0])
-            # print("cost_with_perm:", *map(lambda s: f"\n\t{s}", cost_with_perm))
+
+            # If cost_with_perm is not empty
             if cost_with_perm:
-                for curr_cost, successors_with_permutations in cost_with_perm:
+                for perm_cost, successors_with_permutations in cost_with_perm:
                     # print("successors with permutations:", successors_with_permutations)
-                    new_tree = tree.copy()
+                    perm_tree = curr_tree.copy()
                     for child_id, classification in successors_with_permutations:
                         if classification is not None:
-                            new_tree.nodes[child_id]['split_classification'] = classification
+                            perm_tree.nodes[child_id]['split_classification'] = classification
                     next_nodes = rest_node_ids.copy() + [
                         child_id for child_id, classification in successors_with_permutations
                         if classification in classification_config
                     ]
-                    if len(next_nodes) == 0:
-                        if is_valid_tree(new_tree, classification_config, successors):
-                            final_trees.append((curr_cost, new_tree))
-                            return final_trees
-                        else:
-                            trees_thrown_out += 1
-                    else:
-                        cost_hack += 0.000001
-                        tree_variations_queue.put((curr_cost+cost_hack, new_tree, next_nodes))
-                    if classification_config[node['split_classification']]['take_best']:
-                        # print("Breaking for node", node['split_classification'], "since it is specified as take_best")
+                    if classification_config[curr_node['split_classification']]['take_best']:
+                        # print(f"Take best {curr_node['split_classification']}")
+                        # curr_tree = tree.copy()
+                        for child_node_id in successors[curr_node_id]:
+                            # print(f"Next node {child_node_id}")
+                            perm_cost, perm_tree = classify_tree(perm_tree, successors, classification_config,
+                                                                 child_node_id, perm_cost + cost_hack)[0]
+                        tree_variations_queue.put((perm_cost, perm_tree, next_nodes, set()))
                         break
-            elif is_valid_tree(tree, classification_config, successors):
-                final_trees.append((cost, tree))
-                break
-    return final_trees
+                    cost_hack += 0.000001
+                    tree_variations_queue.put((perm_cost+cost_hack, perm_tree, next_nodes, set()))
+                    # print("Breaking for node", node['split_classification'], "since it is specified as take_best")
+            else:
+                # print("WEIRD ELSE?")
+                tree_variations_queue.put((curr_cost, curr_tree, [], set()))
+
+
+def merge_tree_into(tree_into, tree_other):
+    for node_id in tree_into.nodes:
+        node = tree_into.nodes[node_id]
+        other_node = tree_other.nodes[node_id]
+        if node["split_classification"][0] == 'c':
+            node["split_classification"] = other_node["split_classification"]
 
 
 def is_valid_tree(
@@ -190,6 +248,9 @@ def add_defaults_to_classification_config(classification_config):
     for cid in classification_config:
         for key, val in defaults.items():
             classification_config[cid][key] = classification_config[cid].get(key, copy.deepcopy(val))
+    for cid in classification_config:
+        if "vector" in classification_config[cid]:
+            classification_config[cid]["vector"] = np.array(classification_config[cid]["vector"])
 
 
 def add_default_split_classification_id_to_tree(tree: nx.Graph):

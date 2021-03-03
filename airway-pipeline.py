@@ -54,10 +54,14 @@ def parse_args(defaults):
                         help="print stdout and stderr directly")
     parser.add_argument("-c", "--clean", action="store_true", default=defaults['clean'],
                         help="cleans given stage directories before running them")
+    parser.add_argument("--profile", action="store_true", default=defaults["profile"],
+                        help="profile modules with cProfile to see which parts are taking long")
     # TODO: Possibly implement these:
     # parser.add_argument("-i", "--interactive", help="run script for single patient without creating subprocess")
     # parser.add_argument("-s", "--stages", help="print a detailed description for each stage and exit")
     # parser.add_argument("-d", "--dependencies", help="create all given stages including their dependencies")
+    # parser.add_argument("-D", "--dependents", help="create all given stages including their dependents")
+    # dependency=all predecessor stages to this one, dependant=stages requiring this one (find better names)
     args = parser.parse_args()
     if args.path in defaults['paths']:
         args.path = defaults['paths'][args.path]
@@ -80,7 +84,7 @@ def validate_args(args):
 
 def parse_defaults():
     defaults = {"path": None, "workers": 4, "force": False, "single": False,
-                "all": False, "verbose": False, "clean": False}
+                "all": False, "verbose": False, "clean": False, "profile": False}
     defaults_path = base_path / "defaults.yaml"
     if defaults_path.exists():
         with open(defaults_path) as config_file:
