@@ -104,7 +104,8 @@ plane.active_material = mat
 
 # Change default screen
 # bpy.context.window.screen = bpy.data.screens['3D View Full']
-bpy.context.window.screen = bpy.data.screens['Airway']
+if 'Airway' in bpy.data.screens:
+    bpy.context.window.screen = bpy.data.screens['Airway']
 
 
 def get_areas_by_type(context, type):
