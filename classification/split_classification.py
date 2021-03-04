@@ -205,7 +205,7 @@ def is_valid_tree(
         required_descendants.discard(classification)
         curr_descendants = set()
         if classification in classification_config:
-            curr_descendants = set(classification_config[classification]['descendants'])
+            curr_descendants = set(classification_config[classification].get('descendants', []))
         required_descendants |= curr_descendants
 
         # Recursively iterate over each node and require each node to be valid

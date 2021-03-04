@@ -5,6 +5,7 @@ import networkx as nx
 import yaml
 
 from classification.clustering import generate_pdf_report
+from classification.split_classification import is_valid_tree
 from util.util import get_data_paths_from_args
 
 
@@ -21,16 +22,25 @@ def get_input():
 
 def main():
     output_path, trees, classification_config, render_path = get_input()
-    print(render_path)
+
+    clustering_end_nodes = [c for c in classification_config if "clustering_endnode" in c and c['clustering_endnode']]
     content = ["# Airway Auto-Generated Data Quality Evaluation\n"]
     for index, tree in enumerate(trees, 1):
         patient = tree.graph['patient']
+        successors = dict(nx.bfs_successors(tree, '0'))
         img_path = Path(render_path) / str(patient) / 'left_upper_lobe0.png'
         content.append(f"![{patient}]({img_path})\n\n")
         content.append(f"#### {index}. Patient {patient}\n\n")
         total_cost = sum(tree.nodes[node_id]["cost"] for node_id in tree.nodes)
         content.append(f"Total cost: {total_cost:.2f}\n\n")
         content.append(f"Total nodes: {len(tree.nodes)}\n\n")
+        classifications_in_tree = {tree.nodes[node_id]["split_classification"] for node_id in tree.nodes}
+        is_valid = is_valid_tree(tree, classification_config, successors)
+        content.append(f"Tree is **{'valid' if is_valid else 'invalid'}**\n\n")
+
+        end_nodes = set(clustering_end_nodes)
+        end_nodes.discard(classifications_in_tree)
+        content.append(f"Missing segments: {', '.join(end_nodes)}\n\n")
 
         content.append("\n")
 
