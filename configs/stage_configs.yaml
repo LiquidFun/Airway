@@ -46,6 +46,11 @@ stage-11:
   inputs: [stage-10, stage-62]
   groups: [cluster, clustering]
   per_patient: False
+stage-12:
+  script: classification/angle_analysis.py
+  inputs: [stage-10]
+  groups: [angles, angle_analysis]
+  per_patient: False
 
 # --- Analysis --- #
 stage-30:
@@ -76,6 +81,12 @@ stage-34:
   script: analysis/create_color_masks.py
   inputs: [stage-02, stage-03, stage-10]
   groups: [color_mask, color_masks]
+stage-35:
+  script: analysis/data_quality_evaluation.py
+  inputs: [stage-10, stage-62]
+  groups: [quality]
+  per_patient: False
+
 
 
 # --- 3D Objects --- #

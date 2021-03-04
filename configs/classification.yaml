@@ -150,8 +150,17 @@ RMLLobes:
 # --- Right Upper Lobe --- #
 RUpperLobe:
     vector: [-13.5, -1.0, -18.0]
-    children: [RB1, RB2, RB3]
+    children: [RB1, RB2, RB3, RB1+2, RB2+3]
+    descendants: [RB1, RB2, RB3]
     # take_best: True
+
+RB1+2:
+    children: [RB1, RB2]
+    descendants: [RB1, RB2]
+
+RB2+3:
+    children: [RB2, RB3]
+    descendants: [RB2, RB3]
 
 RB1:
     vector: [-23.0, -5.0, -1.0]

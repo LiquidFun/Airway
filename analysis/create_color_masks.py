@@ -27,8 +27,8 @@ def fill_color_mask_with_bfs(for_point, color_mask, curr_color, model, distance_
     print(f"Added {curr_color}")
 
 
-def find_legal_point(node, distances, target_distance):
-    p = (round(node['x']), round(node['y']), round(node['z']))
+def find_legal_point(node, distances, target_distance=None):
+    p = get_point(node)
     queue = Queue()
     queue.put(p)
     visited = {p}
@@ -36,7 +36,7 @@ def find_legal_point(node, distances, target_distance):
         for adj in map(tuple, adjacent(queue.get())):
             if adj not in visited:
                 if adj in distances:
-                    if distances[adj] == target_distance:
+                    if target_distance is None or distances[adj] == target_distance:
                         return adj
                 visited.add(adj)
                 queue.put(adj)
@@ -98,7 +98,8 @@ def main():
         parent_dist = distance_mask[get_point(parent_node)] + parent_node['group_size']
         for s in successors:
             succ_node = tree.nodes[s]
-            point = get_point(succ_node)
+            # point = get_point(succ_node)
+            point = find_legal_point(succ_node, distance_mask)
             # point = find_legal_point(node, distances, node["group"])
             succ_radius = succ_node['group_size'] / 2
             nodes_visit_order.append((succ_node, point, curr_color, succ_radius, parent_dist))

@@ -32,12 +32,9 @@ def get_point(node):
     return np.array([node['x'], node['y'], node['z']])
 
 
-def cost_exponential_diff_function(curr_vec: np.array, target_vec: np.array):
+def cost_exponential_diff_function(curr_vec: np.array, target_vec: np.array, exp=2, div=math.pi/3):
     angle_radians = np.arccos((curr_vec @ target_vec) / (np.linalg.norm(curr_vec) * np.linalg.norm(target_vec)))
     global_angles.append(angle_radians)
-    exp = 1
-    # div = math.pi / 6
-    div = 1
     return (angle_radians / div) ** exp
 
 
@@ -134,7 +131,7 @@ def classify_tree(
                         vec = child_point - curr_node_point
                         if classification in classification_config:
                             target_vec = classification_config[classification]['vector']
-                            perm_cost += cost_exponential_diff_function(vec, target_vec)
+                            perm_cost += cost_exponential_diff_function(vec, target_vec, 1, 1)
                             # perm_cost += math.acos((vec @ target_vec) / (np.linalg.norm(vec) * np.linalg.norm(target_vec)))
                 cost_with_perm.append((perm_cost, successors_with_permutations))
 
