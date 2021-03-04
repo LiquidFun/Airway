@@ -29,44 +29,42 @@ def get_input():
     return output_data_path, trees, classification_config, render_path
 
 
+def generate_pdf_report(folder_path: Path, file_name_without_ending: str, content: str):
+    with open(Path(folder_path) / f"{file_name_without_ending}.md", 'w') as file:
+        file.write(content)
+
+    with open(Path(folder_path) / f"{file_name_without_ending}.md", 'r') as file:
+        md = markdown.markdown(file.read())
+        md = md.replace('<img', '<img width="600"')
+        with open(Path(folder_path) / f"{file_name_without_ending}.html", "w", encoding="utf-8", errors="xmlcharrefreplace") as html_file:
+            html_file.write(md)
+
+    a = HTML(Path(folder_path) / f"{file_name_without_ending}.html")
+    a.write_pdf(Path(folder_path) / f"{file_name_without_ending}.pdf", presentational_hints=True)
+
+
 def main():
     output_path, trees, classification_config, render_path = get_input()
     print(render_path)
     clustering = {c: defaultdict(lambda: []) for c in classify_for}
-    with open(Path(output_path) / "clustering_report.md", 'w') as file:
-        file.write("# Airway Auto-Generated Clustering Report\n")
-        for tree in trees:
-            successors = dict(nx.bfs_successors(tree, '0'))
-            clusters = cluster(tree, successors, classification_config)
-            # patient = tree.graph['patient']
-            # print(patient)
-            # print(cluster_name)
-            for start_node, curr_cluster in clusters.items():
-                clustering[start_node][curr_cluster].append(tree)
-        for start_node, curr_clustering in clustering.items():
-            file.write(f"## Clustering of {start_node}\n")
-            for key, trees in sorted(curr_clustering.items(), key=lambda k: -len(k[1])):
-                for tree in trees:
-                    patient = tree.graph['patient']
-                    img_path = Path(render_path) / str(patient) / 'left_upper_lobe0.png'
-                    file.write(f"![{patient}]({img_path})\n")
-                    file.write(f"### ^ Example patient {patient}\n")
-                    break
-                file.write(f"### {len(trees)} patients with this structure:\n")
-                file.write(key + "\n")
-
-    with open(Path(output_path) / "clustering_report.md", 'r') as file:
-        md = markdown.markdown(file.read())
-        md = md.replace('<img', '<img width="600"')
-        # for cc_key, cc in classification_config.items():
-        #     if "color" in cc:
-        #         col = cc["color"]
-        #         md = md.replace(cc_key, f'<p style="color:{col}>"{cc_key}</p>')
-        with open(Path(output_path) / "clustering_report.html", "w", encoding="utf-8", errors="xmlcharrefreplace") as html_file:
-            html_file.write(md)
-
-    a = HTML(Path(output_path) / "clustering_report.html")
-    a.write_pdf(Path(output_path) / "clustering_report.pdf", presentational_hints=True)
+    content = ["# Airway Auto-Generated Clustering Report\n"]
+    for tree in trees:
+        successors = dict(nx.bfs_successors(tree, '0'))
+        clusters = cluster(tree, successors, classification_config)
+        for start_node, curr_cluster in clusters.items():
+            clustering[start_node][curr_cluster].append(tree)
+    for start_node, curr_clustering in clustering.items():
+        content.append(f"## Clustering of {start_node}\n")
+        for key, trees in sorted(curr_clustering.items(), key=lambda k: -len(k[1])):
+            for tree in trees:
+                patient = tree.graph['patient']
+                img_path = Path(render_path) / str(patient) / 'bronchus0.png'
+                content.append(f"![{patient}]({img_path})\n")
+                content.append(f"### ^ Example patient {patient}\n")
+                break
+            content.append(f"### {len(trees)} patients with this structure:\n")
+            content.append(key + "\n")
+    generate_pdf_report(output_path, "clustering_report", "".join(content))
 
 
 def cluster(tree, successors, classification_config):

@@ -85,7 +85,7 @@ bpy.context.scene.render.resolution_percentage = 100
 bpy.ops.mesh.primitive_plane_add()
 plane = bpy.data.objects['Plane']
 plane.hide = True
-plane.scale = (22, 22, 1)
+plane.scale = (22, 80, 1)
 plane.location = (0, 20, 40)
 
 bpy.context.scene.world.horizon_color = (0, 0, 0)

@@ -131,7 +131,8 @@ def classify_tree(
                         vec = child_point - curr_node_point
                         if classification in classification_config:
                             target_vec = classification_config[classification]['vector']
-                            perm_cost += cost_exponential_diff_function(vec, target_vec, 1, 1)
+                            child_node["cost"] = float(cost_exponential_diff_function(vec, target_vec, 1, 1))
+                            perm_cost += child_node["cost"]
                             # perm_cost += math.acos((vec @ target_vec) / (np.linalg.norm(vec) * np.linalg.norm(target_vec)))
                 cost_with_perm.append((perm_cost, successors_with_permutations))
 
@@ -270,11 +271,11 @@ def add_default_split_classification_id_to_tree(tree: nx.Graph):
 
 def add_cost_by_level_in_tree(tree, successors):
     def recursive_add_cost(curr_id='0', cost=1000000.0):
-        tree.nodes[curr_id]['cost'] = 0
+        tree.nodes[curr_id]['cost'] = float(0.0)
         for child_id in successors.get(curr_id, []):
             recursive_add_cost(child_id, cost/2)
     recursive_add_cost()
-    tree.nodes['0']['cost'] = 0
+    tree.nodes['0']['cost'] = float(0.0)
 
 
 def get_total_cost_in_tree(tree, successors):

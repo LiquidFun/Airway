@@ -31,7 +31,7 @@ command = [
 # When running blender in background add -b flag and output path for frame 0
 if run_in_background:
     command.extend([
-        '-o', output_data_path / "left_upper_lobe#",
+        '-o', output_data_path / "bronchus#",
         '-f', '0',
         '-b',
     ])
