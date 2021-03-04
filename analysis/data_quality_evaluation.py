@@ -26,11 +26,13 @@ def main():
     for index, tree in enumerate(trees, 1):
         patient = tree.graph['patient']
         img_path = Path(render_path) / str(patient) / 'left_upper_lobe0.png'
-        content.append(f"![{patient}]({img_path})\n")
-        content.append(f"## ^ {index} Patient {patient}\n")
+        content.append(f"![{patient}]({img_path})\n\n")
+        content.append(f"#### {index}. Patient {patient}\n\n")
         total_cost = sum(tree.nodes[node_id]["cost"] for node_id in tree.nodes)
-        content.append(f"#### Total cost: {total_cost:.2f}\n")
-        content.append(f"#### Total nodes: {len(tree.nodes)}\n")
+        content.append(f"Total cost: {total_cost:.2f}\n\n")
+        content.append(f"Total nodes: {len(tree.nodes)}\n\n")
+
+        content.append("\n")
 
     generate_pdf_report(output_path, "data_quality_evaluation", "".join(content))
 
