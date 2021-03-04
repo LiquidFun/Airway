@@ -27,7 +27,7 @@ def fill_color_mask_with_bfs(for_point, color_mask, curr_color, model, distance_
     print(f"Added {curr_color}")
 
 
-def find_legal_point(node, distances, target_distance=None):
+def find_legal_point(node, distances):
     p = get_point(node)
     queue = Queue()
     queue.put(p)
@@ -35,9 +35,8 @@ def find_legal_point(node, distances, target_distance=None):
     while not queue.empty():
         for adj in map(tuple, adjacent(queue.get())):
             if adj not in visited:
-                if adj in distances:
-                    if target_distance is None or distances[adj] == target_distance:
-                        return adj
+                if distances[adj] != 0:
+                    return adj
                 visited.add(adj)
                 queue.put(adj)
 
