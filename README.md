@@ -5,9 +5,9 @@ Using a rule-based approach to the classification yields reasonable results as t
 
 Specifically the left upper lobe (in the below image marked as, red, blue and gold) has been used as research focus as there are unusual split structures worth looking into according to Dr. Rolf Oerter.
 
-![](./visualization/images/bronchus-classification.png)
+![](./media/images/bronchus-classification.png)
 
-![](./visualization/images/left_upper_lobe0.png)
+![](./media/images/left_upper_lobe0.png)
 
 Example visualisation of split detection, rendered with blender.
 
@@ -116,22 +116,22 @@ Stage 90 is the website which displays information for each patient including th
 
 
 
-![](./visualization/images/distance-to-top.png)
+![](./media/images/distance-to-top.png)
 
-![](./visualization/images/tree-only.png)
+![](./media/images/tree-only.png)
 
-![](./visualization/images/lobe-visualization2.png)
+![](./media/images/lobe-visualization2.png)
 
-![](./visualization/images/tree-with-annotations.png)
+![](./media/images/tree-with-annotations.png)
 
 ## Example trees for patient 3183090
 
-![](./visualization/images/3183090-tree.png)
-![](./visualization/images/lobe-2-3183090.graphml.png)
-![](./visualization/images/lobe-3-3183090.graphml.png)
-![](./visualization/images/lobe-4-3183090.graphml.png)
-![](./visualization/images/lobe-5-3183090.graphml.png)
-![](./visualization/images/lobe-6-3183090.graphml.png)
+![](./media/images/3183090-tree.png)
+![](./media/images/lobe-2-3183090.graphml.png)
+![](./media/images/lobe-3-3183090.graphml.png)
+![](./media/images/lobe-4-3183090.graphml.png)
+![](./media/images/lobe-5-3183090.graphml.png)
+![](./media/images/lobe-6-3183090.graphml.png)
 
 # Credits & Thanks to
 

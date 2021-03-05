@@ -9,7 +9,7 @@ from plistlib import Dict
 
 import yaml
 
-from util.util import get_patient_name
+from airway.util.util import get_patient_name
 
 
 def run():

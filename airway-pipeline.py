@@ -20,8 +20,8 @@ from datetime import datetime
 import yaml
 from tqdm import tqdm
 
-from util.color import Color
-from util.util import get_patient_name
+from airway.util.color import Color
+from airway.util.util import get_patient_name
 
 col = Color()
 

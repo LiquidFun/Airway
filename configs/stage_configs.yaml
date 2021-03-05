@@ -8,64 +8,64 @@ defaults:
 
 # --- Tree Generation --- #
 stage-01:
-  script: image_processing/save_images_as_npz.py
+  script: airway/image_processing/save_images_as_npz.py
   inputs: [raw_airway]
   groups: [tree]
 stage-02:
-  script: image_processing/remove_all_0_layers.py
+  script: airway/image_processing/remove_all_0_layers.py
   inputs: [stage-01]
   groups: [tree]
 stage-03:
-  script: tree_extraction/bfs_distance_method.py
+  script: airway/tree_extraction/bfs_distance_method.py
   inputs: [stage-02]
   groups: [tree]
 stage-04:
-  script: tree_extraction/create_tree.py
+  script: airway/tree_extraction/create_tree.py
   inputs: [stage-03, stage-02]
   groups: [tree]
 stage-05:
-  script: tree_extraction/compose_tree.py
+  script: airway/tree_extraction/compose_tree.py
   inputs: [stage-04, stage-02]
   groups: [tree]
 stage-06:
-  script: tree_extraction/post_processing.py
+  script: airway/tree_extraction/post_processing.py
   inputs: [stage-05]
   groups: [tree, post]
 stage-07:
-  script: tree_extraction/separate_lobes.py
+  script: airway/tree_extraction/separate_lobes.py
   inputs: [stage-06]
   groups: [tree, post]
 
 # --- Classification --- #
 stage-10:
-  script: classification/split_classification.py
+  script: airway/classification/split_classification.py
   inputs: [stage-07]
   groups: [classification]
 stage-11:
-  script: classification/clustering.py
+  script: airway/classification/clustering.py
   inputs: [stage-10, stage-62]
-  groups: [cluster, clustering]
+  groups: [cluster, clustering, reports]
   per_patient: False
 stage-12:
-  script: classification/angle_analysis.py
+  script: airway/classification/angle_analysis.py
   inputs: [stage-10]
   groups: [angles, angle_analysis]
   per_patient: False
 
 # --- Analysis --- #
 stage-30:
-  script: visualization/plot_dist_to_first_split.py
+  script: airway/visualization/plot_dist_to_first_split.py
   inputs: [stage-07]
   groups: [analysis]
   per_patient: False
   args: [False]
 stage-31:
-  script: analysis/analyze_tree.py
+  script: airway/analysis/analyze_tree.py
   inputs: [stage-07]
   per_patient: False
   groups: [analysis]
 stage-32:
-  script: analysis/plot_connected_lobes_status.py
+  script: airway/analysis/plot_connected_lobes_status.py
   inputs: [stage-07]
   groups: [analysis]
   per_patient: False
@@ -73,33 +73,33 @@ stage-32:
   interactive_args:
     lobes: [True, True]
 stage-33:
-  script: analysis/metadata.py
+  script: airway/analysis/metadata.py
   inputs: [raw_airway]
   groups: [analysis, metadata]
   per_patient: False
 stage-34:
-  script: analysis/create_color_masks.py
+  script: airway/analysis/create_color_masks.py
   inputs: [stage-02, stage-03, stage-10]
   groups: [color_mask, color_masks]
 stage-35:
-  script: analysis/data_quality_evaluation.py
+  script: airway/analysis/data_quality_evaluation.py
   inputs: [stage-10, stage-62]
-  groups: [quality]
+  groups: [quality, reports]
   per_patient: False
 
 
 
 # --- 3D Objects --- #
 stage-60:
-  script: obj_generation/gen_obj.py
+  script: airway/obj_generation/gen_obj.py
   inputs: [stage-02, stage-03, stage-34]
   groups: [3d, obj]
 stage-61:
-  script: obj_generation/gen_split_obj.py
+  script: airway/obj_generation/gen_split_obj.py
   inputs: [stage-07, stage-05, stage-02]
   groups: [3d, obj, 3dsplits]
 stage-62:
-  script: visualization/run_blender.py
+  script: airway/visualization/blender/run_blender.py
   inputs: [stage-60, stage-61, stage-10, stage-02]
   groups: [render]
   args: [True]
@@ -109,15 +109,15 @@ stage-62:
 
 # --- Visualisation --- #
 stage-70:
-  script: image_processing/generate_bronchus_coords.py
+  script: airway/image_processing/generate_bronchus_coords.py
   inputs: [stage-02]
   groups: [vis]
 stage-71:
-  script: visualization/generate_2d_tree.py
+  script: airway/visualization/generate_2d_tree.py
   inputs: [stage-07]
   groups: [vis]
 stage-72:
-  script: visualization/plot_splits.py
+  script: airway/visualization/plot_splits.py
   inputs: [stage-70, stage-03, stage-04, stage-05, stage-06]
   groups: [vis]
   args: [False]
@@ -128,6 +128,6 @@ stage-72:
 
 # --- Website --- #
 stage-90:
-  script: visualization/generate_2d_tree.py
+  script: airway/visualization/generate_2d_tree.py
   inputs: [stage-72]
   groups: [website]
