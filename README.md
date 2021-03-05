@@ -5,9 +5,9 @@ Using a rule-based approach to the classification yields reasonable results as t
 
 Specifically the left upper lobe (in the below image marked as, red, blue and gold) has been used as research focus as there are unusual split structures worth looking into according to Dr. Rolf Oerter.
 
-![](./media/images/bronchus-classification.png)
+![](./media/images/bronchus_left_and_right_colored.png)
 
-![](./media/images/left_upper_lobe0.png)
+![](./media/images/bronchus_left_and_right_colored2.png)
 
 Example visualisation of split detection, rendered with blender.
 

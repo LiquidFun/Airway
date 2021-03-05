@@ -31,7 +31,7 @@ def main():
     for index, tree in enumerate(trees, 1):
         patient = tree.graph['patient']
         successors = dict(nx.bfs_successors(tree, '0'))
-        img_path = Path(render_path) / str(patient) / 'left_upper_lobe0.png'
+        img_path = Path(render_path) / str(patient) / 'bronchus0.png'
         content.append(f"![{patient}]({img_path})\n\n")
         content.append(f"#### {index}. Patient {patient}\n\n")
 

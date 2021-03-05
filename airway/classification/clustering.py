@@ -58,7 +58,7 @@ def main():
         for key, trees in sorted(curr_clustering.items(), key=lambda k: -len(k[1])):
             for tree in trees:
                 patient = tree.graph['patient']
-                img_path = Path(render_path) / str(patient) / 'left_upper_lobe0.png'
+                img_path = Path(render_path) / str(patient) / 'bronchus0.png'
                 content.append(f"![{patient}]({img_path})\n")
                 content.append(f"### ^ Example patient {patient}\n")
                 break
