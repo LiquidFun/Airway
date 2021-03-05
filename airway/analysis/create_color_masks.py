@@ -94,7 +94,7 @@ def main():
     curr_color = 1
     for (parent_index, successors) in nx.bfs_successors(tree, first_node):
         parent_node = tree.nodes[parent_index]
-        parent_dist = distance_mask[get_point(parent_node)] + parent_node['group_size']
+        parent_dist = distance_mask[find_legal_point(parent_node, distance_mask)] + parent_node['group_size']
         for s in successors:
             succ_node = tree.nodes[s]
             # point = get_point(succ_node)
