@@ -22,10 +22,11 @@ def run():
         for stage_name, configs in stage_configs.items():
             for name, args in configs.get('interactive_args', {}).items():
                 if name in vis_name_to_config:
-                    print("ERROR: Interactive name {name} already exists!")
-                    sys.exit(1)
-                vis_name_to_config[name] = {'script': configs['script'],  'args': args,
-                                            'inputs': configs['inputs'], 'output': stage_name, }
+                    sys.exit(f"ERROR: Interactive name {name} already exists!")
+                vis_name_to_config[name] = {
+                    'script': configs['script'], 'args': args, 'per_patient': configs.get("per_patient", False),
+                    'inputs': configs['inputs'], 'output': stage_name,
+                }
 
     defaults_path = base_path / "defaults.yaml"
     if defaults_path.exists():
@@ -59,7 +60,9 @@ def run():
 
             curr_patient_id = keyword_to_patient_id[str(args.id).capitalize()]
 
-            output_patient_path = Path(path) / config['output'] / curr_patient_id
+            output_patient_path = Path(path) / config['output']
+            if config['per_patient']:
+                output_patient_path /= curr_patient_id
             input_patient_paths = [p / curr_patient_id for p in input_paths]
 
             subprocess_args = list(map(str, [

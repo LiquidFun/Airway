@@ -25,9 +25,9 @@ from airway.util.util import get_patient_name
 
 col = Color()
 
-reqVersion = (3, 6)  # because of concurrent.futures and f-strings
-currVersion = (sys.version_info.major, sys.version_info.minor)
-assert currVersion >= reqVersion, "ERROR: Your python is too old. Minimum: 3.6"
+required_version = (3, 6)  # because of concurrent.futures and f-strings
+current_version = (sys.version_info.major, sys.version_info.minor)
+assert current_version >= required_version, "ERROR: Your python is too old. Minimum: 3.6"
 
 errors = {}  # used for collecting errors while executing parallel tasks
 

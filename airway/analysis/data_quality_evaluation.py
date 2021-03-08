@@ -1,3 +1,5 @@
+import subprocess
+import sys
 from pathlib import Path
 from typing import List
 
@@ -7,6 +9,9 @@ import yaml
 from airway.classification.clustering import generate_pdf_report
 from airway.classification.split_classification import is_valid_tree
 from airway.util.util import get_data_paths_from_args
+
+
+file_name = "data_quality_evaluation"
 
 
 def get_input():
@@ -22,6 +27,9 @@ def get_input():
 
 def main():
     output_path, trees, classification_config, render_path = get_input()
+    if sys.argv[4].lower() == "true":
+        subprocess.Popen(["xdg-open", f"{output_path / f'{file_name}.pdf'}"])
+        sys.exit()
 
     clustering_end_nodes = [
         c for c, k in classification_config.items()
@@ -49,7 +57,7 @@ def main():
 
         content.append("\n")
 
-    generate_pdf_report(output_path, "data_quality_evaluation", "".join(content))
+    generate_pdf_report(output_path, file_name, "".join(content))
 
 
 if __name__ == "__main__":

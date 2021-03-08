@@ -1,3 +1,6 @@
+import os
+import subprocess
+import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import Tuple, List, Dict
@@ -46,6 +49,10 @@ def generate_pdf_report(folder_path: Path, file_name_without_ending: str, conten
 def main():
     output_path, trees, classification_config, render_path = get_input()
     print(render_path)
+    print(sys.argv)
+    if sys.argv[4].lower() == "true":
+        subprocess.Popen(["xdg-open", f"{output_path / 'clustering_report.pdf'}"])
+        sys.exit()
     clustering = {c: defaultdict(lambda: []) for c in classify_for}
     content = ["# Airway Auto-Generated Clustering Report\n"]
     for tree in trees:
@@ -94,4 +101,5 @@ def cluster(tree, successors, classification_config):
 
 
 if __name__ == "__main__":
+
     main()

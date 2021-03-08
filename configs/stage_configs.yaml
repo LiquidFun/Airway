@@ -55,6 +55,9 @@ stage-11:
   groups: [cluster, clustering, reports]
   per_patient: False
   description: Clusters the previously created classifications
+  args: [False]
+  interactive_args:
+    cluster: [True]
 stage-12:
   script: airway/classification/angle_analysis.py
   inputs: [stage-10]
@@ -102,6 +105,9 @@ stage-35:
   groups: [quality, reports]
   description: Creates a PDF document showing a render of each patient and their various scores
   per_patient: False
+  args: [False]
+  interactive_args:
+    quality: [True]
 
 
 
