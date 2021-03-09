@@ -78,7 +78,7 @@ def validate_args(args):
             stdout=True, tabs=1, end='')
         question = input()
         if question.lower() not in ['yes', 'y']:
-            log("User questions their (life-)decisions! Aborting!", stdout=True, add_time=True)
+            log("User questions their (life-)choices! Aborting!", stdout=True, add_time=True)
             sys.exit(0)
 
 

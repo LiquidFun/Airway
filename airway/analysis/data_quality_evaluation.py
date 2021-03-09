@@ -49,7 +49,7 @@ def main():
         content.append(f"Total nodes: {len(tree.nodes)}\n\n")
 
         is_valid = is_valid_tree(tree, classification_config, successors)
-        content.append(f"Tree is **{'valid' if is_valid else 'invalid'}**\n\n")
+        content.append(f"Tree is **{'valid' if is_valid else 'invalid'}** (follows given rule-set)\n\n")
 
         classifications_in_tree = {tree.nodes[node_id]["split_classification"] for node_id in tree.nodes}
         missing_end_node = set(clustering_end_nodes) - classifications_in_tree

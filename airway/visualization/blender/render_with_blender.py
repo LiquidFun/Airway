@@ -1,8 +1,10 @@
 import sys
 import math
+import tempfile
 from pathlib import Path
-
 import re
+
+import yaml
 
 # Internal import to access blender functionalities
 import bpy
@@ -16,6 +18,10 @@ skeleton_path = argv[1]
 split_path = argv[2]
 tree_path = argv[3]
 model_path = argv[4]
+
+classification_config_path = Path(sys.argv[0]).parents[0] / "configs" / "classification.yaml"
+with open(classification_config_path, "r") as file:
+    classification_config = yaml.load(file.read(), yaml.FullLoader)
 
 
 def load_obj(path):
@@ -154,57 +160,105 @@ def add_to_group(group_name, objects):
             group.objects.link(obj)
 
 
-def normalize(vertices):
+def normalize(vertices, center=True):
     global np_model
     import numpy as np
     vertices = np.array(vertices)
+    print(vertices)
     if np_model is None:
         np_model = np.load(model_path)['arr_0']
     reference_shape = np.array(np_model.shape)
     rot_mat = np.array([[0, 0, -1], [0, -1, 0], [-1, 0, 0]])
     # Shift to middle of the space
-    vertices -= np.array(reference_shape) / 2
+    if center:
+        vertices -= np.array(reference_shape) / 2
+    print(vertices)
     # Scale to [-10..10]
     vertices *= 20 / np.max(reference_shape)
+    print(vertices)
     # If available: transform
     # Note: since this is applied afterwards, points can be out of [-10..10]
     if rot_mat is not None:
         vertices = vertices @ np.transpose(rot_mat)
+    print(vertices)
     return vertices
 
 
-def reload_cubes(context, show_all_nodes):
-    global previous_reload_all_cubes
+splits_reference = None
+
+
+def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
+    global previous_reload_all_cubes, splits_reference
+    import networkx as nx
     previous_reload_all_cubes = show_all_nodes
+    reference_locations = []
+
+    # _, tmpfilepath = tempfile.mkstemp(suffix=".obj", prefix="airway_reference_splits")
+    # tmpfile = open(tmpfilepath, 'w')
+
     show_names_in_current_screen()
     for _, cube in cubes:
         bpy.data.objects.remove(cube, do_unlink=True)
     cubes.clear()
     group_cubes.clear()
     tree = load_tree()
-    for node_id in tree.nodes:
-        node = tree.nodes[node_id]
-        location = tuple(normalize([node['x'], node['y'], node['z']]))
-        classification = node['split_classification']
-        is_gt_classification = False
-        if 'split_classification_gt' in node:
-            if node['split_classification_gt'] != "":
-                is_gt_classification = True
-                classification = node['split_classification_gt']
-        if show_all_nodes or not re.match(r"c\d+", classification):
-            bpy.ops.mesh.primitive_cube_add(radius=0.02, location=location)
-            selected = bpy.context.selected_objects[0]
-            selected.name = classification
-            if re.match(r"LB\d(\+\d)*[a-c]*i*", selected.name):
-                selected.name = selected.name[1:]
-            selected.show_name = True
-            cubes.append((node_id, selected))
-            if is_gt_classification:
-                group_cubes.append(selected)
+    for parent_id, child_ids in nx.bfs_successors(tree, "0"):
+        parent_node = tree.nodes[parent_id]
+        parent_location = normalize([parent_node['x'], parent_node['y'], parent_node['z']])
+        for child_id in child_ids:
+            node = tree.nodes[child_id]
+            print("Node coords:", [node['x'], node['y'], node['z']])
+            location = normalize([node['x'], node['y'], node['z']])
+            classification = node['split_classification']
+            is_gt_classification = False
+            if 'split_classification_gt' in node:
+                if node['split_classification_gt'] != "":
+                    is_gt_classification = True
+                    classification = node['split_classification_gt']
+            if show_all_nodes or not re.match(r"c\d+", classification):
+                bpy.ops.mesh.primitive_cube_add(radius=0.02, location=tuple(location))
+                selected = bpy.context.selected_objects[0]
+                selected.name = classification
+                if re.match(r"LB\d(\+\d)*[a-c]*i*", selected.name):
+                    selected.name = selected.name[1:]
+                selected.show_name = True
+                cubes.append((child_id, selected))
+                if show_reference_nodes:
+                    try:
+                        vec = normalize(classification_config[classification]['vector'], False)
+                        target_location = vec + parent_location
+                        print(parent_location, vec, target_location)
+                        for loc in [parent_location, target_location]:
+                            reference_locations.append(f"v {' '.join(map(lambda s: f'{s:.3f}', loc))}\n")
+                    except KeyError:
+                        pass
+                if is_gt_classification or show_reference_nodes:
+                    group_cubes.append(selected)
+    if show_reference_nodes:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".obj", prefix="airway_reference_splits") as tmpfile:
+            # print(tmpfile.name)
+            tmpfile.write("# Vertices\n")
+            for reference_location in reference_locations:
+                tmpfile.write(reference_location)
+            tmpfile.write("\n# Lines\n")
+            for index in range(1, len(reference_locations)+1, 2):
+                tmpfile.write(f"l {index} {index+1}\n")
+            tmpfile.flush()
+            if splits_reference is not None:
+                bpy.data.objects.remove(splits_reference)
+            splits_reference = load_obj(tmpfile.name)
+            splits_reference.rotation_euler = (0, 0, 0)
+            splits_reference.name = "splits_reference"
+            bpy.data.objects['splits_reference'].select = True
+            group_cubes.append(splits_reference)
+    else:
+        if splits_reference is not None:
+            splits_reference.hide = True
+        bpy.data.objects['splits'].select = True
+
     for _, cube in cubes:
         cube.select = True
     add_to_group("manually_classified", group_cubes)
-    bpy.data.objects['splits'].select = True
     return {'FINISHED'}
 
 
@@ -215,6 +269,16 @@ class ClassificationReloader(bpy.types.Operator):
 
     def execute(self, context):
         reload_cubes(context, show_all_nodes=False)
+        return {"FINISHED"}
+
+
+class GroundTruthReloader(bpy.types.Operator):
+    """Tooltip"""
+    bl_idname = "view3d.airway_reload_ground_truth"
+    bl_label = "Airway: reload ground_truth"
+
+    def execute(self, context):
+        reload_cubes(context, show_all_nodes=False, show_reference_nodes=True)
         return {"FINISHED"}
 
 
@@ -252,5 +316,6 @@ class ClassificationSaver(bpy.types.Operator):
 
 bpy.utils.register_class(ClassificationReloader)
 bpy.utils.register_class(FullClassificationReloader)
+bpy.utils.register_class(GroundTruthReloader)
 bpy.utils.register_class(ClassificationSaver)
 # print("Registered class")

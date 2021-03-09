@@ -330,7 +330,7 @@ def main():
     show_classification_vectors(classified_tree, successors)
     nx.write_graphml(classified_tree, output_path)
 
-    print("Angles found: ", ' '.join(map(lambda x: f"{x/math.pi*180:.2f}°", sorted(global_angles))))
+    # print("Angles found: ", ' '.join(map(lambda x: f"{x/math.pi*180:.2f}°", sorted(global_angles))))
 
 
 if __name__ == "__main__":
