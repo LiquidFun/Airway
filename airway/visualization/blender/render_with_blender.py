@@ -82,7 +82,8 @@ camera.hide = True
 
 # Set rendering options
 bpy.context.scene.render.engine = "CYCLES"
-bpy.context.scene.cycles.samples = 128
+# bpy.context.scene.cycles.samples = 128
+bpy.context.scene.cycles.samples = 256
 bpy.context.scene.render.resolution_x = 1600
 bpy.context.scene.render.resolution_y = 1600
 bpy.context.scene.render.resolution_percentage = 100
