@@ -39,7 +39,7 @@ Bronchus:
 # --- Left Bronchus --- #
 LBronchus:
     children: [LUpperLobe, LLowerLobe]
-    descendants: [LUpperLobe, LLowerLobe, Lingular]
+    descendants: [LUpperLobe, LLowerLobe, Lingula]
     vector: [70.5, 8.0, 60.0]
     # take_best: True
 
@@ -47,11 +47,11 @@ LBronchus:
 
 # --- Left upper lobe --- #
 LUpperLobe:
-    children: [Lingular, LB1+2+3, LB1+2, LB3]
+    children: [Lingula, LB1+2+3, LB1+2, LB3]
     descendants: [LB1, LB2, LB3]
     vector: [-15.5, -9.0, 22.5]
     # take_best: True
-Lingular:
+Lingula:
     children: [LB4, LB5]
     vector: [23.5, -19.0, 16.5]
 LB1+2+3:
