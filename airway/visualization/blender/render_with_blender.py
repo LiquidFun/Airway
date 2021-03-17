@@ -235,7 +235,7 @@ def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
                         target_location = vec + parent_location
                         print(parent_location, vec, target_location)
                         for loc in [parent_location, target_location]:
-                            reference_locations.append("v " + ' '.join(map(lambda s: f'{s:.3f}', loc)) + "\n")
+                            reference_locations.append("v " + ' '.join(map(lambda s: '{:.3f}'.format(s), loc)) + "\n")
                     except KeyError:
                         pass
                 if is_gt_classification or show_reference_nodes:
