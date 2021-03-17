@@ -9,6 +9,8 @@ import yaml
 # Internal import to access blender functionalities
 import bpy
 
+# Careful python version is 3.5 here, no f-strings!
+
 # Handle sys args
 argv = sys.argv
 argv = argv[argv.index("--") + 1:]
@@ -233,7 +235,7 @@ def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
                         target_location = vec + parent_location
                         print(parent_location, vec, target_location)
                         for loc in [parent_location, target_location]:
-                            reference_locations.append(f"v {' '.join(map(lambda s: f'{s:.3f}', loc))}\n")
+                            reference_locations.append("v " + ' '.join(map(lambda s: f'{s:.3f}', loc)) + "\n")
                     except KeyError:
                         pass
                 if is_gt_classification or show_reference_nodes:
@@ -246,7 +248,7 @@ def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
                 tmpfile.write(reference_location)
             tmpfile.write("\n# Lines\n")
             for index in range(1, len(reference_locations)+1, 2):
-                tmpfile.write(f"l {index} {index+1}\n")
+                tmpfile.write("l {} {}\n".format(index, index+1))
             tmpfile.flush()
             if splits_reference is not None:
                 bpy.data.objects.remove(splits_reference)
