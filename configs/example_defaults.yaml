@@ -25,3 +25,7 @@ path: /path/to/data
 workers: 4
 force: True
 single: False
+
+# May be specified to use a different executable for 
+# blender (such as /usr/bin/blender or /snap/bin/blender)
+blender: blender

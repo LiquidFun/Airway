@@ -6,17 +6,6 @@ import networkx as nx
 
 from airway.util.util import get_data_paths_from_args
 
-# checks if a file is already opened by a other process #
-# def hasHandle(fpath):
-#    for proc in psutil.process_iter():
-#        try:
-#            for item in proc.open_files():
-#                if fpath == item.path:
-#                    return True
-#        except Exception:
-#            pass
-#    return False
-
 
 def get_value_from_model(coord, reduced_model):
     return reduced_model[coord[0], coord[1], coord[2]]
@@ -57,9 +46,9 @@ def get_lobe(coords, reduced_model):
             if lobe_paths.get(lobe_path_len[0]) > lobe_path_len[1]:
                 lobe_paths.update({lobe_path_len[0]: lobe_path_len[1]})
 
-    # if more than MAXPATHLEN pixel between split and lobe set lobe number to 0
-    MAXPATHLEN = 24
-    if lobe_paths.get(min(lobe_paths, key=lobe_paths.get)) > MAXPATHLEN:
+    # if more than maximum_path_length pixel between split and lobe set lobe number to 0
+    maximum_path_length = 24
+    if lobe_paths.get(min(lobe_paths, key=lobe_paths.get)) > maximum_path_length:
         return 0
     else:
         return min(lobe_paths, key=lobe_paths.get)
@@ -183,9 +172,9 @@ def get_children(graph, node):
     return children
 
 
-def set_attribute_to_node(graph, filt, target):
+def set_attribute_to_node(graph, filter_by_value_attribute, target):
     """ 
-    set_attribute_to_node(graph, filter, target) set or update existing atributes to
+    set_attribute_to_node(graph, filter, target) set or update existing attributes to
     a node filtered by filter.
 
     graph -> a graph
@@ -195,8 +184,8 @@ def set_attribute_to_node(graph, filt, target):
     """
     graph = graph.copy()
 
-    def filter_for_attrib(node):
-        return graph.nodes[node][filt[0]] == filt[1]
+    def filter_for_attrib(node_id):
+        return graph.nodes[node_id][filter_by_value_attribute[0]] == filter_by_value_attribute[1]
 
     view = nx.subgraph_view(graph, filter_node=filter_for_attrib)
 
@@ -217,12 +206,11 @@ def main():
         coord_attributes_file_path = tree_input_data_path / "coord_attributes.npz"
         edge_attributes_file_path = tree_input_data_path / "edge_attributes.npz"
     else:
-        sys.exit(1)
+        sys.exit(f"ERROR: either {tree_input_data_path} or {output_data_path} do not exist!")
 
     if not reduced_model_data_path.exists():
-        print("ERROR: stage-02 needed")
         print(reduced_model_data_path)
-        sys.exit(-1)
+        sys.exit("ERROR: stage-02 needed")
 
     reduced_model = np.load(reduced_model_data_path / "reduced_model.npz")['arr_0']
     print(np.unique(reduced_model))
@@ -238,7 +226,6 @@ def main():
     # create empty graphs
     graph = nx.Graph(patient=int(patient_id))
     # compose graphs
-    # assert False, "Crashes not here"
     dic_coords = create_nodes(graph, np_coord, np_coord_attributes, reduced_model)
     dic_edges = create_edges(graph, np_edges, dic_coords, np_edges_attributes)
 

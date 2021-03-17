@@ -57,10 +57,13 @@ def make_obj_smooth(obj, iterations=10, factor=2):
 
 
 # Delete default cube
-bpy.ops.object.delete()
-lamp = bpy.data.objects['Lamp']
-bpy.context.scene.objects.unlink(lamp)
-bpy.data.objects.remove(lamp)
+# bpy.ops.object.delete()
+
+for object_name in ["Cube", "Lamp", "Light"]:
+    if object_name in bpy.data.objects:
+        current_object = bpy.data.objects[object_name]
+        bpy.context.scene.objects.unlink(current_object)
+        bpy.data.objects.remove(current_object)
 
 # Import bronchus
 bpy.ops.import_scene.obj(filepath=bronchus_path)
