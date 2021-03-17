@@ -4,8 +4,6 @@ import tempfile
 from pathlib import Path
 import re
 
-import yaml
-
 # Internal import to access blender functionalities
 import bpy
 
@@ -22,8 +20,7 @@ tree_path = argv[3]
 model_path = argv[4]
 
 classification_config_path = Path(sys.argv[0]).parents[0] / "configs" / "classification.yaml"
-with open(classification_config_path, "r") as file:
-    classification_config = yaml.load(file.read(), yaml.FullLoader)
+classification_config = None
 
 
 def load_obj(path):
@@ -194,8 +191,10 @@ splits_reference = None
 
 
 def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
-    global previous_reload_all_cubes, splits_reference
+    global previous_reload_all_cubes, splits_reference, classification_config
     import networkx as nx
+    import yaml
+
     previous_reload_all_cubes = show_all_nodes
     reference_locations = []
 
@@ -230,6 +229,9 @@ def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
                 selected.show_name = True
                 cubes.append((child_id, selected))
                 if show_reference_nodes:
+                    if classification_config is None:
+                        with open(classification_config_path, "r") as file:
+                            classification_config = yaml.load(file.read(), yaml.FullLoader)
                     try:
                         vec = normalize(classification_config[classification]['vector'], False)
                         target_location = vec + parent_location
