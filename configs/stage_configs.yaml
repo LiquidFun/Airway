@@ -10,37 +10,37 @@ defaults:
 stage-01:
   script: airway/image_processing/save_images_as_npz.py
   inputs: [raw_airway]
-  groups: [tree]
+  groups: [model, tree]
   description: Creates compressed numpy 3D models from raw DICOM data
 stage-02:
   script: airway/image_processing/remove_all_0_layers.py
   inputs: [stage-01]
-  groups: [tree]
+  groups: [reduced_model, tree]
   description: Removes empty slices from 3D model to reduce size
 stage-03:
   script: airway/tree_extraction/bfs_distance_method.py
   inputs: [stage-02]
-  groups: [tree]
+  groups: [voxel_grouping, tree]
   description: Iterates over tree with BFS, calculating groups
 stage-04:
   script: airway/tree_extraction/create_tree.py
   inputs: [stage-03, stage-02]
-  groups: [tree]
+  groups: [tree_creation, tree]
   description: Using the groups created before, only leaves actual splits and marks their parents
 stage-05:
   script: airway/tree_extraction/compose_tree.py
   inputs: [stage-04, stage-02]
-  groups: [tree]
+  groups: [graphml, tree]
   description: Using the splits and parents it creates a standardised graphml file for further use
 stage-06:
   script: airway/tree_extraction/post_processing.py
   inputs: [stage-05]
-  groups: [tree, post]
+  groups: [post_processing, tree, post]
   description: Removes a lot of improbable nodes through various heuristics in split tree
 stage-07:
   script: airway/tree_extraction/separate_lobes.py
   inputs: [stage-06]
-  groups: [tree, post]
+  groups: [lobe_separation, tree, post]
   description: Separates lobes for further analysis creating a .graphml file for each
 
 # --- Classification --- #
@@ -52,7 +52,7 @@ stage-10:
 stage-11:
   script: airway/classification/clustering.py
   inputs: [stage-10, stage-62]
-  groups: [cluster, clustering, reports]
+  groups: [clustering, cluster, reports]
   per_patient: False
   description: Clusters the previously created classifications
   args: [False]
@@ -61,7 +61,7 @@ stage-11:
 stage-12:
   script: airway/classification/angle_analysis.py
   inputs: [stage-10]
-  groups: [angles, angle_analysis]
+  groups: [angle_analysis, angles, angle]
   per_patient: False
   description: Prints an analysis of the classification and prints all vectors/angles for each patient
 
@@ -69,7 +69,7 @@ stage-12:
 stage-30:
   script: airway/visualization/plot_dist_to_first_split.py
   inputs: [stage-07]
-  groups: [analysis]
+  groups: [distance_to_first_split, analysis]
   per_patient: False
   args: [False]
   description: Creates a plot which displays distance to both splits in LB1+2+3 (part-segment in left upper lobe)
@@ -78,11 +78,11 @@ stage-31:
   inputs: [stage-07]
   per_patient: False
   description: Tries to classify the left upper lobe segments LB1+2+3 (deprecated due to stage-11)
-  groups: [analysis]
+  groups: [left_upper_lobe_analysis, analysis]
 stage-32:
   script: airway/analysis/plot_connected_lobes_status.py
   inputs: [stage-07]
-  groups: [analysis]
+  groups: [plot_lobe_connectivity, analysis]
   per_patient: False
   args: [False]
   description: Calculates whether all lobes in each tree are connected with each other
@@ -91,18 +91,18 @@ stage-32:
 stage-33:
   script: airway/analysis/metadata.py
   inputs: [raw_airway]
-  groups: [analysis, metadata]
+  groups: [metadata, analysis]
   description: Creates markdown table with all available metadata for each patient
   per_patient: False
 stage-34:
   script: airway/analysis/create_color_masks.py
   inputs: [stage-02, stage-03, stage-10]
-  groups: [color_mask, color_masks]
+  groups: [color_masks, color_mask]
   description: Given the classification of the segments it tries to guess the voxels for that segment and colors them
 stage-35:
   script: airway/analysis/data_quality_evaluation.py
   inputs: [stage-10, stage-62]
-  groups: [quality, reports]
+  groups: [quality_report, quality, reports]
   description: Creates a PDF document showing a render of each patient and their various scores
   per_patient: False
   args: [False]
@@ -115,17 +115,17 @@ stage-35:
 stage-60:
   script: airway/obj_generation/gen_obj.py
   inputs: [stage-02, stage-03, stage-34]
-  groups: [3d, obj]
+  groups: [bronchus_object, 3d, obj]
   description: Creates .obj files for use in software like blender
 stage-61:
   script: airway/obj_generation/gen_split_obj.py
   inputs: [stage-07, stage-05, stage-02]
-  groups: [3d, obj, 3dsplits]
+  groups: [split_object, 3d, obj, 3dsplits]
   description: Creates .obj files for the splits for use in software like blender
 stage-62:
   script: airway/visualization/blender/run_blender.py
   inputs: [stage-60, stage-61, stage-10, stage-02]
-  groups: [render]
+  groups: [rendering, render]
   args: [True]
   description: Displays the blender rendering results interactively or renders the bronchus from the front
   interactive_args:
@@ -136,16 +136,16 @@ stage-62:
 stage-70:
   script: airway/image_processing/generate_bronchus_coords.py
   inputs: [stage-02]
-  groups: [vis]
+  groups: [bronchus_coordinates, vis]
   description: Creates bronchus coordinates for
 stage-71:
   script: airway/visualization/generate_2d_tree.py
   inputs: [stage-07]
-  groups: [vis]
+  groups: [plot_flat_tree, vis]
 stage-72:
   script: airway/visualization/plot_splits.py
   inputs: [stage-70, stage-03, stage-04, stage-05, stage-06]
-  groups: [vis]
+  groups: [plot_post_processing, vis]
   args: [False]
   description: Plots progression from stages 4 to 5 to 6, showing what was colored and which nodes were removed
   interactive_args:

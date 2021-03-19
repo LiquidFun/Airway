@@ -10,9 +10,10 @@
 import sys
 import os
 import argparse
+import textwrap
 from pathlib import Path
 from queue import Queue
-from typing import Dict, List
+from typing import Dict, List, Any
 import subprocess
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
@@ -38,7 +39,9 @@ log_path = base_path / "logs" / f"log_{datetime.now().strftime('%Y-%m-%d_%H:%M:%
 
 def parse_args(defaults):
     parser = argparse.ArgumentParser()
-    parser.add_argument("stages", nargs="+", type=str, help="list of stages to calculate (e.g. 1, 2, 3, tree, vis)")
+    parser.add_argument("stages", nargs="*", type=str,
+                        help="list of stages to calculate (e.g. 1, 2, 3, tree, vis). "
+                             "If left empty, all stages will be listed with a short description.")
     parser.add_argument("-P", "--path", default=defaults["path"], help="airway data path")
     parser.add_argument("-w", "--workers", type=int, default=defaults["workers"],
                         help="number of parallel workers (threads)")
@@ -54,9 +57,9 @@ def parse_args(defaults):
                         help="print stdout and stderr directly")
     parser.add_argument("-c", "--clean", action="store_true", default=defaults['clean'],
                         help="cleans given stage directories before running them")
-    parser.add_argument("--profile", action="store_true", default=defaults["profile"],
-                        help="profile modules with cProfile to see which parts are taking long")
     # TODO: Possibly implement these:
+    # parser.add_argument("--profile", action="store_true", default=defaults["profile"],
+    #                    help="profile modules with cProfile to see which parts are taking long")
     # parser.add_argument("-i", "--interactive", help="run script for single patient without creating subprocess")
     # parser.add_argument("-s", "--stages", help="print a detailed description for each stage and exit")
     # parser.add_argument("-d", "--dependencies", help="create all given stages including their dependencies")
@@ -107,6 +110,9 @@ def main():
     assert stage_configs_path.exists(), "ERROR: Stage configs path does not exist!"
     with open(stage_configs_path) as stage_configs_file:
         stage_configs: Dict = yaml.load(stage_configs_file, yaml.FullLoader)
+        if not args.stages:
+            list_all_stages(stage_configs)
+            sys.exit(0)
         # Link keyword (eg. '1', '17', 'tree', 'vis', etc.) to stages (eg. 'raw_airway', 'stage-01', 'stage-31', etc.)
         keyword_to_stages: Dict[str, List[str]] = {"all": []}
         for stage_name, stage_config in stage_configs.items():
@@ -146,7 +152,7 @@ def main():
                 if s in keyword_to_stages:
                     stages_to_process |= {keyword for keyword in keyword_to_stages[s]}
 
-        assert all([isinstance(a, str) for a in stages_to_process]), "ERROR: Not all keywords are strings"
+        assert all(isinstance(a, str) for a in stages_to_process), "ERROR: Not all keywords are strings"
 
         # Root stage has no entry in configs, so ignore it
         root_stage = "raw_airway"
@@ -194,6 +200,18 @@ def main():
     log(f"Finished in {col.green(str(datetime.now() - start_time))}", stdout=True, add_time=True)
 
 
+def list_all_stages(stage_configs: Dict[str, Any]):
+    log(f"Listing all stages", stdout=True, add_time=True)
+    for stage_config_name, params in stage_configs.items():
+        if stage_config_name in ['defaults']:
+            continue
+        optional_keyword = f" ({col.cyan(params['groups'][0])})" if len(params.get('groups', [])) > 0 else ''
+        log(f"{col.green(stage_config_name)}{optional_keyword}: ", stdout=True, tabs=1)
+        log(f"- Input stages: [{', '.join(map(col.blue, params.get('inputs', '')))}]", stdout=True, tabs=1)
+        log('- ' + '\n  '.join(textwrap.wrap(params.get('description', ''), width=50)), stdout=True, tabs=1)
+        log('', stdout=True, tabs=1)
+
+
 def stage(
         stage_name: str,
         *,  # Arguments below must be keyword args
@@ -207,7 +225,7 @@ def stage(
         patients: List[str],  # TODO add desc
         per_patient: bool,
         list_patients: bool,  # TODO add desc
-        verbose: bool, # TODO add desc
+        verbose: bool,  # TODO add desc
         **_,  # Ignore kwargs
     ):
     """Meta function for calculating most stages in parallel.

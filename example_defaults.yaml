@@ -1,0 +1,48 @@
+# Path should define a keyword defined in paths.
+# This will be used as the default path
+path: local
+paths:
+    local: /path/to/local_data/
+    remote: /path/to/remote_data/
+
+# Here path is a keyword which has to be in paths,
+# this allows easy use of multiple paths by using
+# the -P flag in either script to specify
+#
+# ./airway-pipeline.py -P remote 
+# or
+# ./airway-vis.py -P remote 
+#
+# when you want to work on the remote data path
+# without having to write out the entire path.
+# Remove 'remote' if you only have a single data location.
+# You may also define as many as you need.
+# 
+# The reason for this is to have a small file sample on
+# local machine on an SSD for easy debugging, and then
+# the full data on a remote NAS. Allowing easy switching
+# between paths.
+
+
+# Number of threads to be used, note that each patient
+# only ever gets 1 thread, so all paralelization is per
+# patient. Increase this if you have more threads.
+workers: 8
+
+# Whether data should be overwritten by rerunning stages
+# generally useful to set it to True, but for safety 
+# False is used as default
+force: False
+
+# Whether only a single patient should computed all
+# the time. Generally no reason to change this.
+single: False
+
+# May be specified to use a different executable for 
+# blender (such as /usr/bin/blender or /snap/bin/blender)
+# Note that currently only blender <=2.79 works, as the
+# scripting API was changed in 2.80, the project was not yet
+# changed to account for this. So if you can, install
+# an older version of blender using snap (e.g. blender-tpaw).
+# Will not be needed if you never use blender in this project.
+blender: blender
