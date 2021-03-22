@@ -137,11 +137,12 @@ stage-70:
   script: airway/image_processing/generate_bronchus_coords.py
   inputs: [stage-02]
   groups: [bronchus_coordinates, vis]
-  description: Creates bronchus coordinates for
+  description: Creates bronchus coordinates for further visualisation steps
 stage-71:
   script: airway/visualization/generate_2d_tree.py
   inputs: [stage-07]
   groups: [plot_flat_tree, vis]
+  description: Creates flattened 2D plots for the split tree
 stage-72:
   script: airway/visualization/plot_splits.py
   inputs: [stage-70, stage-03, stage-04, stage-05, stage-06]
@@ -151,6 +152,14 @@ stage-72:
   interactive_args:
     bronchus: [True, True]
     splits: [True, False]
+stage-73:
+  script: airway/visualization/plot_lobes.py
+  inputs: [stage-70, stage-04]
+  groups: [plot_pyplot_lobes, vis]
+  args: [False]
+  description: A
+  interactive_args:
+    pyplot_splits: [True]
 
 
 # --- Website --- #

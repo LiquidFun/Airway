@@ -24,7 +24,7 @@ def run():
                 if name in vis_name_to_config:
                     sys.exit(f"ERROR: Interactive name {name} already exists!")
                 vis_name_to_config[name] = {
-                    'script': configs['script'], 'args': args, 'per_patient': configs.get("per_patient", False),
+                    'script': configs['script'], 'args': args, 'per_patient': configs.get("per_patient", True),
                     'inputs': configs['inputs'], 'output': stage_name,
                 }
 

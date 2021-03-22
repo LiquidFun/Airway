@@ -99,7 +99,8 @@ def save_images_as_npz(raw_data_path, processed_data_path):
         print(f"\tType {u} appeared {c:,} times")
 
     # Print sums of the model for easier debugging
-    print(f"Non-empty voxels:\t {np.count_nonzero(model):,} out of {np.size(model):,} total voxels (shape={np.shape(model)})")
+    print(f"Non-empty voxels:\t {np.count_nonzero(model):,} "
+          f"out of {np.size(model):,} total voxels (shape={np.shape(model)})")
     # print("Model sum: %d" % np.sum(model))
     # Save as numpy binary file to given location
     np.savez_compressed(processed_data_path / "model", model)

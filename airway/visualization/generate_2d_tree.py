@@ -55,7 +55,6 @@ lobe_list = list(input_data_path.glob('*.graphml'))
 for filepath in lobe_list:
     lobe = str(filepath.name)
     # Read file and convert it to diected graph
-    #graph = ig.Graph.Read_GraphML(os.path.join(input, filepath[0]))
     graph = ig.Graph.Read_GraphML(str(filepath))
     graph.to_directed(mutual=False)
 
@@ -83,63 +82,3 @@ for filepath in lobe_list:
         number_of_nodes = len(graph.vs)
         picture_size = (2000 + 3 * number_of_nodes, 1000 + number_of_nodes)  # (3500,1500)
     ig.plot(graph, os.path.join(output_data_path, lobe) + '.png', layout=layout, bbox=picture_size)
-
-
-# All patients
-'''
-
-patient_input_folder = [d for d in os.listdir(input) if os.path.isdir(os.path.join(input, d))]
-
-lobe_color_dict = {
-    0: "grey",
-    1: "grey",
-    2: "yellow",
-    3: "blue",
-    4: "green",
-    5: "red",
-    6: "purple"
-}
-
-edge_width_dict = {
-    0: 1,
-    1: 2,
-    2: 3,
-    3: 4,
-    4: 5,
-    5: 6,
-    6: 7,
-    7: 8,
-    8: 9,
-    9: 10
-}
-
-
-
-lobe_list = ['tree','simplified-tree', 'lobe-2', 'lobe-3', 'lobe-4', 'lobe-5', 'lobe-6']
-for patient in patient_input_folder:
-    patient_output_folder = os.path.join(output,patient)
-    if not os.path.isdir(patient_output_folder):
-        os.mkdir(patient_output_folder)
-    input_path = os.path.join(input,patient)
-
-    os.chdir(input_path)
-    for lobe in lobe_list:
-        filename = glob.glob(lobe+'*')
-        if filename:
-            graph = ig.Graph.Read_GraphML(os.path.join(input_path, filename[0]))
-            graph.to_directed(mutual=False)
-            graph.vs["label"] = graph.vs["id"]
-            graph.vs["color"] = [lobe_color_dict[lobe] for lobe in graph.vs["lobe"]]
-            graph.vs["size"] = 30
-            graph.es["arrow_size"] = 0
-            graph.es["width"] = [edge_width_dict[math.floor(int(element)/27)] if element < 270 else edge_width_dict[9] for element in graph.es["weight"]]
-            roots = [0]
-            if lobe in ['lobe-2', 'lobe-3', 'lobe-4', 'lobe-5', 'lobe-6']:
-                roots = [index for index in range(0, len(graph.vs)) if graph.degree(index, mode="in")==0 or index==0]
-            layout = graph.layout_reingold_tilford(root = roots)
-            picture_size = (800,480)
-            if lobe in ['tree', 'simplified-tree']:
-                number_of_nodes = len(graph.vs)
-                picture_size = (2000+3*number_of_nodes,1000+number_of_nodes) #(3500,1500)
-            ig.plot(graph, os.path.join(patient_output_folder, lobe)+'.png', layout=layout, bbox=picture_size)
-'''

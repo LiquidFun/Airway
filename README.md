@@ -138,7 +138,7 @@ These are required for certain visualisation stages (although the project will s
 
 Note that currently only blender version 2.79 is supported (or slightly older), as the scripting API changes often.
 
-Now configure the defaults, rename `example_defaults.yaml` to `defaults.yaml` 
+Now configure the defaults, copy and rename `example_defaults.yaml` to `defaults.yaml` 
 (in the root folder of the project) and change the path in the file to where you have put the data.
 You may ignore the other parameters for now, although feel free to read the comments there and adjust
 them as needed (especially number of workers/threads).
@@ -191,7 +191,7 @@ It may take a couple of hours for everything, depending on how many patients you
 If you don't have some dependencies installed you can still safely run it, and only those stages will crash.
 Open the `./log` file and search for `STDERR` if you want to see the errors listed by `airway-pipeline.py`.
 
-By default, four patients will be calculated in parallel (8 workers are used).
+By default, eight patients will be calculated in parallel (8 workers are used).
 If you have more CPU threads, simply increase the number of workers:
 
 `./airway-pipeline.py 1 2 3 -w 32` or change the default in the config file (`defaults.yaml`).
@@ -202,10 +202,12 @@ To see the results you may open blender interactively like this:
 
 This loads the bronchus model with the correct materials for the segments.
 
-You can also see the various files created by the stages. 
+You can also see the various files created by the stages:
 * `stage-62`: renders based on the lung
 * `stage-10`: which contain `.graphml` files describing the tree structure, 
   and the classifications created by the algorithm.
+* `stage-35`: creates a pdf with renders for each patient
+* `stage-11`: creates a pdf with the found clusters of the various structures 
 
 # More images
 
@@ -214,8 +216,6 @@ You can also see the various files created by the stages.
 ![](./media/images/tree-only.png)
 
 ![](./media/images/lobe-visualization2.png)
-
-![](./media/images/tree-with-annotations.png)
 
 ## Example trees for patient 3183090
 
