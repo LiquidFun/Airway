@@ -167,7 +167,6 @@ def normalize(vertices, center=True):
     global np_model
     import numpy as np
     vertices = np.array(vertices)
-    print(vertices)
     if np_model is None:
         np_model = np.load(model_path)['arr_0']
     reference_shape = np.array(np_model.shape)
@@ -175,15 +174,12 @@ def normalize(vertices, center=True):
     # Shift to middle of the space
     if center:
         vertices -= np.array(reference_shape) / 2
-    print(vertices)
     # Scale to [-10..10]
     vertices *= 20 / np.max(reference_shape)
-    print(vertices)
     # If available: transform
     # Note: since this is applied afterwards, points can be out of [-10..10]
     if rot_mat is not None:
         vertices = vertices @ np.transpose(rot_mat)
-    print(vertices)
     return vertices
 
 
@@ -212,7 +208,7 @@ def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
         parent_location = normalize([parent_node['x'], parent_node['y'], parent_node['z']])
         for child_id in child_ids:
             node = tree.nodes[child_id]
-            print("Node coords:", [node['x'], node['y'], node['z']])
+            # print("Node coords:", [node['x'], node['y'], node['z']])
             location = normalize([node['x'], node['y'], node['z']])
             classification = node['split_classification']
             is_gt_classification = False
@@ -235,7 +231,7 @@ def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
                     try:
                         vec = normalize(classification_config[classification]['vector'], False)
                         target_location = vec + parent_location
-                        print(parent_location, vec, target_location)
+                        # print(parent_location, vec, target_location)
                         for loc in [parent_location, target_location]:
                             reference_locations.append("v " + ' '.join(map(lambda s: '{:.3f}'.format(s), loc)) + "\n")
                     except KeyError:

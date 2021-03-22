@@ -139,13 +139,12 @@ LB8:
 RBronchus:
     children: [RUpperLobe, RMLLobes]
     vector: [28.5, 5.0, -23.0]
-    # take_best: True
-    # clustering_endnode: True
+    descendants: [RUpperLobe, RMiddleLobe, RLowerLobe]
 
 RMLLobes:
     children: [RMiddleLobe, RLowerLobe, RB6]
+    descendants: [RMiddleLobe, RLowerLobe, RB6]
     vector: [46.5, 10.0, -9.0]
-    #descendants: [RB6, RB7, RB8, RB9, RB10]
 
 
 
@@ -208,7 +207,8 @@ RB5:
 # --- Right Lower Lobe --- #
 RLowerLobe:
     vector: [34.0, 2.0, -7.5]
-    children: [RB7, RB8+9+10, RB6]
+    children: [RB6, RB7+8+9+10, RB7, RB8+9+10]
+    descendants: [RB7, RB8, RB9, RB10]
 
 RB6:
     vector: [8.0, 15.0, -12.0]
@@ -220,9 +220,13 @@ RB7:
     color: 11aa11
     clustering_endnode: True
 
+RB7+8+9+10:
+    vector: [19.0, 1.5, -8.0]
+    children: [RB7, RB8, RB9+10, RB9, RB10, RB8+9+10]
+
 RB8+9+10:
     vector: [19.0, 1.5, -8.0]
-    children: [RB8, RB9+10]
+    children: [RB8, RB9, RB10, RB9+10]
 
 RB8:
     vector: [14.5, -3.0, -11.5]

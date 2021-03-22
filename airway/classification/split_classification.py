@@ -33,7 +33,8 @@ def get_point(node):
 
 
 def cost_exponential_diff_function(curr_vec: np.array, target_vec: np.array, exp=2, div=math.pi/3):
-    angle_radians = np.arccos((curr_vec @ target_vec) / (np.linalg.norm(curr_vec) * np.linalg.norm(target_vec)))
+    angle_pre_arccos = (curr_vec @ target_vec) / (np.linalg.norm(curr_vec) * np.linalg.norm(target_vec))
+    angle_radians = np.arccos(np.clip(angle_pre_arccos, -1, 1))
     global_angles.append(angle_radians)
     return (angle_radians / div) ** exp
 

@@ -157,9 +157,9 @@ stage-73:
   inputs: [stage-70, stage-04]
   groups: [plot_pyplot_lobes, vis]
   args: [False]
-  description: A
+  description: Plots splits with bronchus or lobes in pyplot (slow)
   interactive_args:
-    pyplot_splits: [True]
+    matplotlib_splits: [True]
 
 
 # --- Website --- #

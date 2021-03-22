@@ -168,13 +168,13 @@ def build_evolution_of_tree(template):
     return template.replace("%treeEvolution", l)
 
 
-def build_links(template):
+def build_links(current_template):
     """
     link generation, takes the template, returns the altered template
     """
 
     fs_link = "<br><a href=\"fullscreen-bronchus.html\" target=\"_blank\">view bronchus in fullscreen</a>"
-    template = template.replace("%fullBronchusLink", fs_link)
+    current_template = current_template.replace("%fullBronchusLink", fs_link)
 
     obj_archive, obj_size = create_object_archive(
         str(target_path) + "/" + pat_id + "-objects",
@@ -191,13 +191,13 @@ def build_links(template):
     graph_link = "<a href=\"{}\">download all trees (zipped graphml {} KiB)</a>".format(
         Path(graph_archive).name, round(graph_size / 1024, 1))
 
-    template = template.replace("%objectDownload", obj_link)
-    template = template.replace("%graphDownload", graph_link)
+    current_template = current_template.replace("%objectDownload", obj_link)
+    current_template = current_template.replace("%graphDownload", graph_link)
 
-    return template
+    return current_template
 
 
-def build_footer(template):
+def build_footer(current_template):
     """
     Writes footer to template
     """
@@ -205,7 +205,7 @@ def build_footer(template):
     f += "<tr><td>Systembiologie</td></tr>\n"
     f += "<tr><td>Institut für Informatik - Universität Rostock</td></tr>\n"
     f += "</table>\n"
-    return template.replace("%footer", f)
+    return current_template.replace("%footer", f)
 
 
 def save_website(website, website_path):
@@ -239,12 +239,12 @@ def create_object_archive(object_download_name, obj_path):
     return name, size
 
 
-def simplifiy_object_files():
+def simplify_object_files():
     """
     Using the external tool obj-simplify to erase redundancies from obj-model files.
-    It is a precompiled binary for Linux, therefor it only works on Linux based systems.
+    It is a precompiled binary for Linux, therefore it only works on Linux based systems.
 
-    With the use of obj-simplify the obj-files wille be 20+% less in space consumption.
+    With the use of obj-simplify the obj-files will be 20+% less in space consumption.
     """
 
     objs_path = str(base_path) + "/website/bin/obj-simplify"
@@ -268,7 +268,7 @@ def simplifiy_object_files():
                     encoding="utf-8")
                 print(ret_val.stdout)
                 sys.stderr.write(ret_val.stderr)
-            except CalledProcessError:
+            except subprocess.CalledProcessError:
                 print("\nobj-simplify could not be executed, copying files instead\n")
                 copy_files(obj_path, target_path, glob="*on*.obj")
     else:
@@ -297,69 +297,70 @@ def copy_js(dst_dir, js_dir=base_path + "/website/js/"):
             shutil.copy(j, target)
 
 
-###### main ######
-source_path = Path(sys.argv[1])
-target_path = Path(sys.argv[2])
-pat_id = source_path.parts[-1]
+if __name__ == "__main__":
+    source_path = Path(sys.argv[1])
+    target_path = Path(sys.argv[2])
+    pat_id = source_path.parts[-1]
 
-# stage 7 (graphml-trees) needed
-tree_path = source_path.parents[1].joinpath("stage-07/" + pat_id)
+    # stage 7 (graphml-trees) needed
+    tree_path = source_path.parents[1].joinpath("stage-07/" + pat_id)
 
-if not tree_path.is_dir():
-    sys.stderr.write("ERROR: stage-07 needed")
-    sys.stderr.write(str(tree_path))
-    sys.exit(-1)
+    if not tree_path.is_dir():
+        sys.stderr.write("ERROR: stage-07 needed")
+        sys.stderr.write(str(tree_path))
+        sys.exit(-1)
 
-# stage 10 (calssification) needed
-classification_path = Path(str(source_path.parents[1]) + "/stage-10/classification.csv")
+    # stage 10 (classification) needed
+    classification_path = source_path.parents[1] / "stage-10" / "classification.csv"
 
-if not classification_path.exists():
-    sys.stderr.write("ERROR: stage-10 needed")
-    sys.stderr.write(str(metadata_path))
-    sys.exit(-1)
-else:
-    classification = pd.read_csv(str(classification_path))
+    # stage 11 (metadata) needed
+    metadata_path = source_path.parents[1] / "stage-11" / "metadata.csv"
 
-# stage 11 (metadata) needed
-metadata_path = Path(str(source_path.parents[1]) + "/stage-11/metadata.csv")
+    if not classification_path.exists():
+        sys.stderr.write("ERROR: stage-10 needed")
+        sys.stderr.write(str(metadata_path))
+        sys.exit(-1)
+    else:
+        classification = pd.read_csv(str(classification_path))
 
-if not metadata_path.exists():
-    sys.stderr.write("ERROR: stage-11 needed")
-    sys.stderr.write(str(metadata_path))
-    sys.exit(-1)
-else:
-    metadata = pd.read_csv(str(metadata_path))
+    if not metadata_path.exists():
+        sys.stderr.write("ERROR: stage-11 needed")
+        sys.stderr.write(str(metadata_path))
+        sys.exit(-1)
+    else:
+        metadata = pd.read_csv(str(metadata_path))
 
-# stage 21 (obj) needed
-obj_path = Path(str(source_path.parents[1]) + "/stage-21/" + pat_id)
+    # stage 21 (obj) needed
+    obj_path = source_path.parents[1] / "stage-21" / pat_id
 
-if not obj_path.exists():
-    sys.stderr.write("ERROR: stage-21 needed")
-    sys.stderr.write(str(obj_path))
-    sys.exit(-1)
+    if not obj_path.exists():
+        sys.stderr.write("ERROR: stage-21 needed")
+        sys.stderr.write(str(obj_path))
+        sys.exit(-1)
 
-# stage 23 (2d plots) needed
-plot_path = Path(str(source_path.parents[1]) + "/stage-23/" + pat_id)
+    # stage 23 (2d plots) needed
+    plot_path = source_path.parents[1] / "stage-23" / pat_id
 
-if not plot_path.exists():
-    sys.stderr.write("ERROR: stage-21 needed")
-    sys.stderr.write(str(obj_path))
-    sys.exit(-1)
+    if not plot_path.exists():
+        sys.stderr.write("ERROR: stage-23 needed")
+        sys.stderr.write(str(obj_path))
+        sys.exit(-1)
 
-# build website
-print("Building website for Patient {}".format(pat_id))
-copy_style(str(target_path.parents[0]) + "/style.css")
-copy_js(str(target_path.parents[0]) + "/js/")
-template = load_template()
-template = build_header(template)
-template = build_pat_menu(template)
-template = build_pictures(template)
-template = build_evolution_of_tree(template)
-template = build_description(template)
-template = build_links(template)
-template = build_footer(template)
-simplifiy_object_files()
-copy_files(Path(base_path + "/website/"), target_path, glob="fullscreen-*.html")
-copy_files(Path(base_path + "/website/"), target_path.parents[0], glob="index*.html")
-copy_files(Path(base_path + "/website/"), target_path.parents[0], glob="*.png")
-save_website(template, str(target_path) + "/" + pat_id + ".html")
+    # build website
+    print("Building website for Patient {}".format(pat_id))
+    copy_style(str(target_path.parents[0]) + "/style.css")
+    copy_js(str(target_path.parents[0]) + "/js/")
+    template = load_template()
+    template = build_header(template)
+    template = build_pat_menu(template)
+    template = build_pictures(template)
+    template = build_evolution_of_tree(template)
+    template = build_description(template)
+    template = build_links(template)
+    template = build_footer(template)
+    simplify_object_files()
+    copy_files(Path(base_path + "/website/"), target_path, glob="fullscreen-*.html")
+    copy_files(Path(base_path + "/website/"), target_path.parents[0], glob="index*.html")
+    copy_files(Path(base_path + "/website/"), target_path.parents[0], glob="*.png")
+    save_website(template, str(target_path) + "/" + pat_id + ".html")
+

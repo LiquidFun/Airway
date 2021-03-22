@@ -7,7 +7,7 @@ import networkx as nx
 from airway.util.parsing import parse_map_coord_to_distance
 from airway.util.util import get_data_paths_from_args
 
-plt.rcParams.update({'font.size': 4})
+plt.rcParams.update({'font.size': 7})
 
 # |>--><-><-><-><-><->-<|
 # |>- Parse arguments -<|
@@ -48,7 +48,6 @@ colors_map = {
     8: "#ff0000",
 }
 
-
 # |>--><-><-><-><-><--<|
 # |>- Create figures -<|
 # |>--><-><-><-><-><--<|
@@ -85,11 +84,11 @@ if show_bronchus:
 
     for i in range(len(xs)):
         try:
-            colors.append(1.0-distances[arr[0][i], arr[1][i], arr[2][i]])
+            colors.append(1.0 - distances[arr[0][i], arr[1][i], arr[2][i]])
         except:
             colors.append(0)
 
-    ax1.scatter(xs, ys, zs, s=.1,  alpha=.2, c=colors)
+    ax1.scatter(xs, ys, zs, s=.1, alpha=.2, c=colors)
 
 # |>--><-><-><-><-><-><-><-><-><-><-><-><-><--<|
 # |>- Draw split tree before post processing -<|
@@ -129,7 +128,10 @@ for ax, file in axis_stage_file:
     nodes_per_axis.append(len(graph.nodes()))
 
     # Add nodes
-    x = []; y = []; z = []; c = []
+    x = []
+    y = []
+    z = []
+    c = []
     for data in graph.nodes.data():
         x.append(-data[1]['x'])
         y.append(data[1]['y'])
@@ -138,7 +140,10 @@ for ax, file in axis_stage_file:
     ax.scatter(y, z, x, s=1, c=c)
 
     # Add edges
-    x = []; y = []; z = []; c = []
+    x = []
+    y = []
+    z = []
+    c = []
     for fr, to in graph.edges():
         f = graph.nodes[fr]
         t = graph.nodes[to]
@@ -150,7 +155,6 @@ for ax, file in axis_stage_file:
     for xe, ye, ze, ce in zip(x, y, z, c):
         ax.plot(ye, ze, xe, c=ce, linewidth=.5)
 
-
 # |>-<-><-><-><-><-<|
 # |>- Format axes -<|
 # |>-<-><-><-><-><-<|
@@ -160,30 +164,33 @@ ax_titles = [
     (ax2, f"After composing"),
     (ax3, f"After node-removal (post-processing)"),
     (ax4, f"After recoloring (post-processing)"),
-] 
+]
 
 for index, (ax, title) in enumerate(ax_titles):
-    ax.set_title(title + f" (n={nodes_per_axis[index]})\n[axis in mm]", y=0.85)
 
-    #ax.set_xlabel("mm")
-    #ax.set_ylabel("mm")
-    #ax.set_zlabel("mm")
+    # ax.set_xlabel("mm")
+    # ax.set_ylabel("mm")
+    # ax.set_zlabel("mm")
     ax.pbaspect = [1.0, 1.0, 1.0]
     ax.autoscale()
     ax.view_init(30, 0)
 
-    xticks=np.arange(xs.min(), xs.max(), 50)
+    xticks = np.arange(xs.min(), xs.max(), 50)
     ax.set_xticks(xticks)
-    ax.set_xticklabels((xticks/2).round())
+    ax.set_xticklabels((xticks / 2).round())
 
-    yticks=np.arange(ys.min(), ys.max(), 50)
+    yticks = np.arange(ys.min(), ys.max(), 50)
     ax.set_yticks(yticks)
-    ax.set_yticklabels((yticks/2).round())
+    ax.set_yticklabels((yticks / 2).round())
 
-    zticks=np.arange(zs.min(), zs.max(), 50)
+    zticks = np.arange(zs.min(), zs.max(), 50)
     ax.set_zticks(zticks)
-    ax.set_zticklabels(-(zticks/2).round())
+    ax.set_zticklabels(-(zticks / 2).round())
     ax.zaxis.labelpad = 10
+
+    # Comment these for a clean view
+    # ax.axis("off")
+    ax.set_title(f"{title} (n={nodes_per_axis[index]})\n[axis in mm]", y=0.85)
 
     ax.grid(False)
 
@@ -193,9 +200,14 @@ for index, (ax, title) in enumerate(ax_titles):
 
 plt.subplots_adjust(left=0.0, right=1.0, bottom=0.0, top=1.0)
 
+for index, (ax, _) in enumerate(ax_titles):
+    extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+    fig.savefig(output_data_path / f'{index}_progression.png', bbox_inches=extent, dpi=300, transparent=True)
+
+
 # Save as image
 # plt.tight_layout(pad=10)
-plt.savefig(output_data_path / "splits.png", dpi=300)
+plt.savefig(output_data_path / "splits.png", dpi=300, transparent=True)
 
 if show_plot:
     plt.show()
