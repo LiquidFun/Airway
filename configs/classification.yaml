@@ -38,10 +38,9 @@ Bronchus:
 
 # --- Left Bronchus --- #
 LBronchus:
-    children: [LUpperLobe, LLowerLobe]
+    children: [LUpperLobe, LLowerLobe, Lingula]
     descendants: [LUpperLobe, LLowerLobe, Lingula]
     vector: [70.5, 8.0, 60.0]
-    # take_best: True
 
 
 
@@ -99,13 +98,12 @@ LB6:
     clustering_endnode: True
 LB7+8+9+10:
     vector: [35.5, -2.0, 13.5]
-    children: [LB7+8, LB9+10, LB9, LB10]
+    children: [LB7+8, LB9+10, LB9, LB10, LB7, LB8]
     # children: [LB7+8, LB7, LB8, LB9+10, LB9, LB10] # doesn't work correctly
-    descendants: [LB7+8, LB9, LB10]
+    descendants: [LB7, LB8, LB9, LB10]
 LB9+10:
     vector: [12.0, 3.5, 2.5]
     children: [LB9, LB10]
-    clustering_endnode: True
     descendants: [LB9, LB10]
 LB7+8:
     vector: [10.0, -4.0, 19.0]
@@ -124,9 +122,11 @@ LB10:
 LB7:
     vector: [10.0, -6.5, 10.0]
     color: ffc200
+    clustering_endnode: True
 LB8:
     vector: [10.0, -6.5, 10.0]
     color: ffc200
+    clustering_endnode: True
 
 
 
@@ -223,18 +223,20 @@ RB7:
 RB7+8+9+10:
     vector: [19.0, 1.5, -8.0]
     children: [RB7, RB8, RB9+10, RB9, RB10, RB8+9+10]
+    descendants: [RB7, RB8, RB9, RB10]
 
 RB8+9+10:
     vector: [19.0, 1.5, -8.0]
-    children: [RB8, RB9, RB10, RB9+10]
+    children: [RB8, RB9+10, RB9, RB10]
+    descendants: [RB8, RB9, RB10]
 
 RB8:
-    vector: [14.5, -3.0, -11.5]
+    vector: [14.0, 8.0, -4.5]
     color: ffdd00
     clustering_endnode: True
 
 RB9+10:
-    vector: [9.0, 7.5, -0.5]
+    vector: [7.0, 0.0, -11.0]
     children: [RB9, RB10]
     descendants: [RB9, RB10]
 

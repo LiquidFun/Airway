@@ -216,7 +216,8 @@ def is_valid_tree(
 
         # Tree is valid only if all descendants have been removed in the recursive steps above
         if not required_descendants.isdisjoint(curr_descendants):
-            print(f"Invalid because {required_descendants} and {curr_descendants} are not disjoint")
+            print(f"Invalid because {required_descendants} is required as descendant, but is not available."
+                  f" Descendants: {curr_descendants} for node {classification}")
             return False
         return True
 
@@ -312,14 +313,15 @@ def main():
     # print(f"All trees: {len(all_trees)}")
     all_trees.sort(key=lambda x: x[0])
     validated_trees = []
+    print(f"Invalid trees thrown out: {trees_thrown_out}")
+    print(f"All trees: {len(all_trees)}")
     for cost, curr_tree in all_trees:
         if is_valid_tree(curr_tree, classification_config, successors):
             validated_trees.append((cost, curr_tree))
-    print(f"Invalid trees thrown out: {trees_thrown_out}")
     print(f"Valid trees: {len(validated_trees)}")
-    for curr_cost, curr_tree in validated_trees:
-        all_classifications = get_all_classifications_in_tree(curr_tree, successors)
-        print(f"Cost={curr_cost:.2f}, {'B1+2 is in tree' if 'LB1+2' in all_classifications else ''}")
+    # for curr_cost, curr_tree in validated_trees:
+    #     all_classifications = get_all_classifications_in_tree(curr_tree, successors)
+    #     print(f"Cost={curr_cost:.2f}, {'B1+2 is in tree' if 'LB1+2' in all_classifications else ''}")
     # print('\n'.join(map(lambda a: f"{a[0]}: {a[1]}", validated_trees_with_cost)))
 
     try:
