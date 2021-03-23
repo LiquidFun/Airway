@@ -46,7 +46,7 @@ LBronchus:
 
 # --- Left upper lobe --- #
 LUpperLobe:
-    children: [Lingula, LB1+2+3, LB1+2, LB3]
+    children: [Lingula, LB1+2+3, LB1+2, LB3, LB1, LB2]
     descendants: [LB1, LB2, LB3]
     vector: [-15.5, -9.0, 22.5]
     # take_best: True
@@ -151,7 +151,7 @@ RMLLobes:
 # --- Right Upper Lobe --- #
 RUpperLobe:
     vector: [-13.5, -1.0, -18.0]
-    children: [RB1, RB2, RB3, RB1+2, RB2+3]
+    children: [RB1, RB2, RB3, RB1+2, RB2+3, RB1+3, RB3b]
     descendants: [RB1, RB2, RB3]
     # take_best: True
 
@@ -161,12 +161,12 @@ RB1+2:
     vector: [-4.0, -11.0, -6.0]
 
 RB2+3:
-    children: [RB2, RB3]
+    children: [RB2, RB3, RB3b]
     descendants: [RB2, RB3]
     vector: [5.0, -2.0, -7.0]
 
 RB1+3:
-    children: [RB1, RB3]
+    children: [RB1, RB3, RB3b]
     descendants: [RB1, RB3]
     vector: [-4.0, -11.0, -6.0]
 
@@ -183,6 +183,10 @@ RB2:
 RB3:
     vector: [8.5, -18.5, -12.5]
     color: 6FB0FF
+    clustering_endnode: True
+
+RB3b:
+    vector: [0, 0, -20]
     clustering_endnode: True
 
 

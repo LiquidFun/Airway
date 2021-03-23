@@ -25,8 +25,15 @@ def get_input():
     return output_data_path, trees, classification_config, render_path
 
 
+def get_ignored_patients():
+    with open(Path().cwd() / 'defaults.yaml', 'r') as file:
+        defaults = yaml.load(file.read(), Loader=yaml.FullLoader)
+    return set(defaults.get('ignore_patients', []))
+
+
 def main():
     output_path, trees, classification_config, render_path = get_input()
+    ignored_patients = get_ignored_patients()
     if sys.argv[4].lower() == "true":
         subprocess.Popen(["xdg-open", f"{output_path / f'{file_name}.pdf'}"])
         sys.exit()
@@ -41,7 +48,8 @@ def main():
         successors = dict(nx.bfs_successors(tree, '0'))
         img_path = Path(render_path) / str(patient) / 'bronchus0.png'
         content.append(f"![{patient}]({img_path})\n\n")
-        content.append(f"#### {index}. Patient {patient}\n\n")
+        formatting_if_ignored = "~~" if patient in ignored_patients else ""
+        content.append(f"#### {index}. {formatting_if_ignored}Patient {patient}{formatting_if_ignored}\n\n")
 
         total_cost = sum(tree.nodes[node_id]["cost"] for node_id in tree.nodes)
         content.append(f"Total cost: {total_cost:.2f}\n\n")
