@@ -125,7 +125,7 @@ def main():
     print(color_hex_codes)
 
     def sort_function(entry):
-        return distance_mask[find_legal_point(entry[1], distance_mask)]
+        return distance_mask[entry[1]]
     nodes_visit_order_sorted_by_depth = sorted(nodes_visit_order, key=sort_function, reverse=True)
 
     for node, point, curr_color, radius, parent_dist in nodes_visit_order_sorted_by_depth:
