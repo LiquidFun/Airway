@@ -235,12 +235,12 @@ RB8+9+10:
     descendants: [RB8, RB9, RB10]
 
 RB8:
-    vector: [14.0, 8.0, -4.5]
+    vector: [14.5, -3.0, -11.5]
     color: ffdd00
     clustering_endnode: True
 
 RB9+10:
-    vector: [7.0, 0.0, -11.0]
+    vector: [9.0, 7.5, -0.5]
     children: [RB9, RB10]
     descendants: [RB9, RB10]
 
