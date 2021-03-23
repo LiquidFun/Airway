@@ -28,8 +28,9 @@ def fill_color_mask_with_bfs(for_point, color_mask, curr_color, model, distance_
             # If the current voxel is already closer to root, then only let it propagate upwards, and not downwards
             # This avoids coloring adjacent branches fully
             propagate_upwards_only = dist <= distance_mask[curr] or distance_mask[adj] <= distance_mask[curr]
-            if not_yet_colored and is_bronchus and not_visited and below_min_dist and propagate_upwards_only:
-                color_mask[adj] = curr_color
+            if not_yet_colored and is_bronchus and not_visited and propagate_upwards_only:
+                if below_min_dist:
+                    color_mask[adj] = curr_color
                 queue.put(adj)
                 visited.add(adj)
     print(f"Added {curr_color}")
@@ -123,7 +124,11 @@ def main():
         # fill_color_mask_with_bfs(point, color_mask, curr_color, model, distance_mask)
     print(color_hex_codes)
 
-    for node, point, curr_color, radius, parent_dist in reversed(nodes_visit_order):
+    def sort_function(entry):
+        return distance_mask[find_legal_point(entry[1], distance_mask)]
+    nodes_visit_order_sorted_by_depth = sorted(nodes_visit_order, key=sort_function, reverse=True)
+
+    for node, point, curr_color, radius, parent_dist in nodes_visit_order_sorted_by_depth:
         fill_color_mask_with_bfs(point, color_mask, curr_color, model, distance_mask, parent_dist)
 
     print("Colors:")
