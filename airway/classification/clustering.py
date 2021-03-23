@@ -1,17 +1,13 @@
-import os
 import subprocess
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Tuple, List, Dict
+from typing import List
 
-import markdown
 import networkx as nx
 import yaml
-from weasyprint import HTML
 
-from airway.util.util import get_data_paths_from_args
-
+from airway.util.util import get_data_paths_from_args, generate_pdf_report, get_ignored_patients
 
 # classify_for = ["Trachea"]
 classify_for = ["LLowerLobe", "LUpperLobe", "RMiddleLobe", "RUpperLobe", "RLowerLobe"]
@@ -27,23 +23,11 @@ def get_input():
             if "clustering_endnode" not in cc_dict:
                 cc_dict["clustering_endnode"] = False
     trees: List[nx.Graph] = []
+    ignored_patients = get_ignored_patients()
     for tree_path in Path(tree_input_path).glob('*/tree.graphml'):
-        trees.append(nx.read_graphml(tree_path))
+        if tree_path.parent.name not in ignored_patients:
+            trees.append(nx.read_graphml(tree_path))
     return output_data_path, trees, classification_config, render_path
-
-
-def generate_pdf_report(folder_path: Path, file_name_without_ending: str, content: str):
-    with open(Path(folder_path) / f"{file_name_without_ending}.md", 'w') as file:
-        file.write(content)
-
-    with open(Path(folder_path) / f"{file_name_without_ending}.md", 'r') as file:
-        md = markdown.markdown(file.read())
-        md = md.replace('<img', '<img width="600"')
-        with open(Path(folder_path) / f"{file_name_without_ending}.html", "w", encoding="utf-8", errors="xmlcharrefreplace") as html_file:
-            html_file.write(md)
-
-    a = HTML(Path(folder_path) / f"{file_name_without_ending}.html")
-    a.write_pdf(Path(folder_path) / f"{file_name_without_ending}.pdf", presentational_hints=True)
 
 
 def main():

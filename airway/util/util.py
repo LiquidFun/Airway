@@ -2,7 +2,11 @@ import sys
 from pathlib import Path
 import random
 import string
-from typing import List
+from typing import List, Set
+
+import markdown
+import yaml
+from weasyprint import HTML
 
 
 def get_data_paths_from_args(outputs=1, inputs=1):
@@ -35,3 +39,23 @@ def get_patient_name(patient_id):
 def get_keyword_to_patient_ids(stage_configs):
     for stage_config in stage_configs:
         print(stage_config)
+
+
+def generate_pdf_report(folder_path: Path, file_name_without_ending: str, content: str):
+    with open(Path(folder_path) / f"{file_name_without_ending}.md", 'w') as file:
+        file.write(content)
+
+    with open(Path(folder_path) / f"{file_name_without_ending}.md", 'r') as file:
+        md = markdown.markdown(file.read())
+        md = md.replace('<img', '<img width="600"')
+        with open(Path(folder_path) / f"{file_name_without_ending}.html", "w", encoding="utf-8", errors="xmlcharrefreplace") as html_file:
+            html_file.write(md)
+
+    a = HTML(Path(folder_path) / f"{file_name_without_ending}.html")
+    a.write_pdf(Path(folder_path) / f"{file_name_without_ending}.pdf", presentational_hints=True)
+
+
+def get_ignored_patients() -> Set[str]:
+    with open(Path().cwd() / 'defaults.yaml', 'r') as file:
+        defaults = yaml.load(file.read(), Loader=yaml.FullLoader)
+    return set(map(str, defaults.get('ignore_patients', [])))

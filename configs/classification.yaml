@@ -23,10 +23,10 @@
 Trachea:
     children: [Bronchus]
     take_best: True
-    # color: cadeca
     color: ffffff
 Bronchus:
     children: [LBronchus, RBronchus]
+    descendants: [LBronchus, RBronchus]
     vector: [176.0, 53.0, -9.0]
     take_best: True
 
@@ -49,7 +49,6 @@ LUpperLobe:
     children: [Lingula, LB1+2+3, LB1+2, LB3, LB1, LB2]
     descendants: [LB1, LB2, LB3]
     vector: [-15.5, -9.0, 22.5]
-    # take_best: True
 Lingula:
     children: [LB4, LB5]
     vector: [23.5, -19.0, 16.5]
@@ -153,10 +152,9 @@ RUpperLobe:
     vector: [-13.5, -1.0, -18.0]
     children: [RB1, RB2, RB3, RB1+2, RB2+3, RB1+3, RB3b]
     descendants: [RB1, RB2, RB3]
-    # take_best: True
 
 RB1+2:
-    children: [RB1, RB2]
+    children: [RB1, RB2, RB3b]
     descendants: [RB1, RB2]
     vector: [-4.0, -10.0, -6.0] # TODO fix vector
 
@@ -187,7 +185,6 @@ RB3:
 
 RB3b:
     vector: [0, 0, -20]
-    clustering_endnode: True
 
 
 
@@ -195,7 +192,6 @@ RB3b:
 RMiddleLobe:
     vector: [17.5, -21.5, -13.5]
     children: [RB4, RB5]
-    # take_best: True
 
 RB4:
     color: f6c460
@@ -211,7 +207,7 @@ RB5:
 # --- Right Lower Lobe --- #
 RLowerLobe:
     vector: [34.0, 2.0, -7.5]
-    children: [RB6, RB7+8+9+10, RB7, RB8+9+10]
+    children: [RB6, RB7+8+9+10, RB7, RB8+9+10, RB8, RB9+10]
     descendants: [RB7, RB8, RB9, RB10]
 
 RB6:

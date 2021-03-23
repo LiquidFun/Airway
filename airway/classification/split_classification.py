@@ -117,8 +117,7 @@ def classify_tree(
 
                 # Then check whether all children config rules have vectors defined, if not just take the best
                 perm_cost = curr_cost
-                # TODO: Change back to all
-                do_all_classifications_have_vectors = all(
+                do_all_classifications_have_vectors = any(
                     classification in classification_config
                     and 'vector' in classification_config.get(classification, {})
                     for _, classification in successors_with_permutations

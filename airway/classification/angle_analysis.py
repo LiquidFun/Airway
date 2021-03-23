@@ -7,7 +7,7 @@ import yaml
 import numpy as np
 
 from airway.classification.split_classification import cost_exponential_diff_function
-from airway.util.util import get_data_paths_from_args
+from airway.util.util import get_data_paths_from_args, get_ignored_patients
 from airway.util.color import Color
 
 col = Color()
@@ -19,8 +19,11 @@ def get_input():
     with open(config_path) as config_file:
         classification_config = yaml.load(config_file, yaml.FullLoader)
     trees: List[nx.Graph] = []
+    ignored_patients = get_ignored_patients()
+    print(ignored_patients)
     for tree_path in Path(tree_input_path).glob('*/tree.graphml'):
-        trees.append(nx.read_graphml(tree_path))
+        if tree_path.parent.name not in ignored_patients:
+            trees.append(nx.read_graphml(tree_path))
     return output_data_path, trees, classification_config
 
 
@@ -53,7 +56,8 @@ def format_vec(vec):
 
 
 def get_angle(vec, ref_vec):
-    return np.arccos((vec @ ref_vec) / (np.linalg.norm(vec) * np.linalg.norm(ref_vec)))
+    pre_arccos_angle = np.clip((vec @ ref_vec) / (np.linalg.norm(vec) * np.linalg.norm(ref_vec)), -1, 1)
+    return np.arccos(pre_arccos_angle)
 
 
 def get_formatted_angle(vec, ref_vec):
@@ -76,7 +80,6 @@ def main():
             print(f"ref:\t{format_vec(ref_vec)}")
         except KeyError:
             ref_vec = None
-            pass
         print(f"avg:\t{format_vec(avg)}")
         for vector in sorted(vectors, key=lambda x: get_angle(x, ref_vec)):
             print(f'\t{format_vec(vector)} {"" if ref_vec is None else get_formatted_angle(vector, ref_vec)}')

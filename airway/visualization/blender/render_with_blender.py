@@ -135,7 +135,7 @@ def show_names_in_current_screen():
 # Import skeleton object
 skeleton = load_obj(skeleton_path)
 make_obj_smooth(skeleton, 2, 2)
-skeleton.hide = True
+# skeleton.hide = True
 skeleton.hide_render = True
 skeleton.hide_select = True
 
@@ -220,6 +220,7 @@ def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
                 bpy.ops.mesh.primitive_cube_add(radius=0.02, location=tuple(location))
                 selected = bpy.context.selected_objects[0]
                 selected.name = classification
+                selected.hide_render = True
                 if re.match(r"LB\d(\+\d)*[a-c]*i*", selected.name):
                     selected.name = selected.name[1:]
                 selected.show_name = True

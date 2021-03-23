@@ -6,10 +6,8 @@ from typing import List
 import networkx as nx
 import yaml
 
-from airway.classification.clustering import generate_pdf_report
 from airway.classification.split_classification import is_valid_tree
-from airway.util.util import get_data_paths_from_args
-
+from airway.util.util import get_data_paths_from_args, generate_pdf_report, get_ignored_patients
 
 file_name = "data_quality_evaluation"
 
@@ -25,12 +23,6 @@ def get_input():
     return output_data_path, trees, classification_config, render_path
 
 
-def get_ignored_patients():
-    with open(Path().cwd() / 'defaults.yaml', 'r') as file:
-        defaults = yaml.load(file.read(), Loader=yaml.FullLoader)
-    return set(defaults.get('ignore_patients', []))
-
-
 def main():
     output_path, trees, classification_config, render_path = get_input()
     ignored_patients = get_ignored_patients()
@@ -44,12 +36,12 @@ def main():
     ]
     content = ["# Airway Auto-Generated Data Quality Evaluation\n"]
     for index, tree in enumerate(trees, 1):
-        patient = tree.graph['patient']
+        patient = str(tree.graph['patient'])
         successors = dict(nx.bfs_successors(tree, '0'))
-        img_path = Path(render_path) / str(patient) / 'bronchus0.png'
+        img_path = Path(render_path) / patient / 'bronchus0.png'
         content.append(f"![{patient}]({img_path})\n\n")
-        formatting_if_ignored = "~~" if patient in ignored_patients else ""
-        content.append(f"#### {index}. {formatting_if_ignored}Patient {patient}{formatting_if_ignored}\n\n")
+        formatting_if_ignored = "(ignored due to bad data)" if patient in ignored_patients else ""
+        content.append(f"#### {index}. Patient {patient} {formatting_if_ignored}\n\n")
 
         total_cost = sum(tree.nodes[node_id]["cost"] for node_id in tree.nodes)
         content.append(f"Total cost: {total_cost:.2f}\n\n")
