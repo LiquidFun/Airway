@@ -10,5 +10,6 @@ igraph
 tqdm
 Markdown
 WeasyPrint
+pytest
 # python-igraph doesn't build
 # py2cytoscape - doesn't work since python-igraph fails to build when installing with pip
