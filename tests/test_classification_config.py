@@ -31,7 +31,7 @@ def test_accumulated_segments(classification_config):
     for classification, config in classification_config.items():
         if "+" in classification:
             prefix = classification[:2]
-            for segment_num in map(int, classification[2:].split('+')):
+            for segment_num in classification[2:].split('+'):
                 assert f"{prefix}{segment_num}" in config.get('children', [])
 
 

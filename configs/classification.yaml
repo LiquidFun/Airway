@@ -100,7 +100,7 @@ LB7+8+9+10:
     children: [LB7+8, LB9+10, LB9+9b+10, LB9, LB10, LB7, LB8]
     descendants: [LB7, LB8, LB9, LB10]
 LB9+9b+10:
-    vector: [12.0, 3.5, 2.5]
+    vector: [13.0, 3.5, 2.5]
     children: [LB9, LB10, LB9+10, LB9b]
     descendants: [LB9, LB10]
 LB9+10:
