@@ -5,12 +5,7 @@ from typing import Tuple
 import numpy as np
 
 
-def adjacent(coord, moore_neighborhood=False):
-    """ Returns a numpy array of adjacent coordinates to the given coordinate
-
-    By default von Neumann neighborhood which returns only coordinates sharing a face (6 coordinates)
-    Moore neighborhood returns all adjacent coordinates sharing a at least a vertex (26 coordinates)
-    """
+def _adjacent(coord, moore_neighborhood=False):
     d = [-1, 0, 1]
 
     def condition(manhattan_dist):
@@ -20,7 +15,21 @@ def adjacent(coord, moore_neighborhood=False):
             return manhattan_dist == 1
 
     directions = [np.array([x, y, z]) for x in d for y in d for z in d if condition(np.sum(np.abs([x, y, z])))]
-    return [coord + direction for direction in directions]
+    return np.array([coord + direction for direction in directions])
+
+
+# Pre-compute for faster operations
+adjacent_6 = _adjacent(np.array([0, 0, 0]), False)
+adjacent_26 = _adjacent(np.array([0, 0, 0]), True)
+
+
+def adjacent(coord, moore_neighborhood=False):
+    """ Returns a numpy array of adjacent coordinates to the given coordinate
+
+    By default von Neumann neighborhood which returns only coordinates sharing a face (6 coordinates)
+    Moore neighborhood returns all adjacent coordinates sharing a at least a vertex (26 coordinates)
+    """
+    return coord + (adjacent_26 if moore_neighborhood else adjacent_6)
 
 
 def get_numpy_sphere(radius, hollow=False):

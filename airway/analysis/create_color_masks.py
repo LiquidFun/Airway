@@ -2,7 +2,7 @@
 
 """
 import random
-from queue import Queue
+from queue import Queue, PriorityQueue
 from typing import Tuple
 
 import numpy as np
@@ -34,6 +34,19 @@ def fill_color_mask_with_bfs(for_point, color_mask, curr_color, model, distance_
                 queue.put(adj)
                 visited.add(adj)
     print(f"Added {curr_color}")
+
+
+def fill_color_with_priority_queue(node_properties, model, distance_mask, color_mask):
+    queue = PriorityQueue()
+    for node, point, curr_color, radius, parent_dist in node_properties:
+        queue.put((-distance_mask[point], parent_dist, point))
+        color_mask[point] = curr_color
+    while not queue.empty():
+        _, min_dist, curr_point = queue.get()
+        for adj in map(tuple, adjacent(curr_point)):
+            if color_mask[adj] == 0 and model[adj] == 1 and min_dist < distance_mask[adj]:
+                queue.put((-distance_mask[adj], min_dist, adj))
+                color_mask[adj] = color_mask[curr_point]
 
 
 def find_legal_point(node, distances):
@@ -128,8 +141,9 @@ def main():
         return distance_mask[entry[1]]
     nodes_visit_order_sorted_by_depth = sorted(nodes_visit_order, key=sort_function, reverse=True)
 
-    for node, point, curr_color, radius, parent_dist in nodes_visit_order_sorted_by_depth:
-        fill_color_mask_with_bfs(point, color_mask, curr_color, model, distance_mask, parent_dist)
+    # for node, point, curr_color, radius, parent_dist in nodes_visit_order_sorted_by_depth:
+    #    fill_color_mask_with_bfs(point, color_mask, curr_color, model, distance_mask, parent_dist)
+    fill_color_with_priority_queue(nodes_visit_order_sorted_by_depth, model, distance_mask, color_mask)
 
     print("Colors:")
     for color, occ in zip(*np.unique(color_mask, return_counts=True)):
