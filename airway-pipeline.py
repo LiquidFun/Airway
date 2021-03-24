@@ -22,6 +22,7 @@ import yaml
 from tqdm import tqdm
 
 from airway.util.color import Color
+from airway.util.config_parsers import parse_defaults
 from airway.util.util import get_patient_name
 
 col = Color()
@@ -83,16 +84,6 @@ def validate_args(args):
         if question.lower() not in ['yes', 'y']:
             log("User questions their (life-)choices! Aborting!", stdout=True, add_time=True)
             sys.exit(0)
-
-
-def parse_defaults():
-    defaults = {"path": None, "workers": 4, "force": False, "single": False,
-                "all": False, "verbose": False, "clean": False, "profile": False}
-    defaults_path = base_path / "defaults.yaml"
-    if defaults_path.exists():
-        with open(defaults_path) as config_file:
-            defaults.update(yaml.load(config_file, yaml.FullLoader))
-    return defaults
 
 
 def main():

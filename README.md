@@ -1,4 +1,6 @@
-# Showcase
+# Airway
+
+![Python package](https://github.com/LiquidFun/Airway/actions/workflows/python-package.yml/badge.svg)
 
 Anatomical segmentation and classification of human lung bronchus up to segmental/tertiary bronchi 
 based on high-resolution computed tomography (HRCT) image masks created by Synapse 3D.

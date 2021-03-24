@@ -65,6 +65,8 @@ def cluster(tree, successors, classification_config):
         nonlocal cluster_name
         try:
             classification = tree.nodes[curr_id]["split_classification"]
+            if classification not in classification_config:
+                return
             cluster_name += ('    ' * tabs) + classification + '\n'
             if classification_config[classification]['clustering_endnode']:
                 return
