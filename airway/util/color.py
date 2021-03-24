@@ -43,5 +43,3 @@ class Color:
 
     def filter_color_codes(self, text):
         return self._filter_pattern.sub("", text)
-
-

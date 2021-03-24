@@ -50,7 +50,8 @@ for axis in [0, 1, 2]:
         remove_back_index -= 1
 
     # Remove those layers
-    model = np.delete(model, list(range(remove_front_index-1)) + list(range(remove_back_index+2, len(sums))), axis=(axis+1)%3)
+    model = np.delete(model, list(range(remove_front_index-1)) +
+                      list(range(remove_back_index+2, len(sums))), axis=(axis+1) % 3)
     sums = np.sum(np.sum(model, axis=axis), axis=(axis+1) % 2)
     # print(sums)
     print(' -> ', model.shape, end=' ')

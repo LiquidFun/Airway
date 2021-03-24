@@ -158,7 +158,7 @@ for group, prev_group_index in prev_group.items():
 
 # Build minimal tree
 minimal_tree = {(0, 0): (0, 0)}
-edge_area_per_group_id = {(0, 0) : [1]}
+edge_area_per_group_id = {(0, 0): [1]}
 
 # print("="*50)
 # print("succesor_count: ", successor_count)

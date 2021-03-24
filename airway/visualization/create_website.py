@@ -363,4 +363,3 @@ if __name__ == "__main__":
     copy_files(Path(base_path + "/website/"), target_path.parents[0], glob="index*.html")
     copy_files(Path(base_path + "/website/"), target_path.parents[0], glob="*.png")
     save_website(template, str(target_path) + "/" + pat_id + ".html")
-

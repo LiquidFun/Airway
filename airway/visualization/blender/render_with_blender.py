@@ -67,7 +67,7 @@ for object_name in ["Cube", "Lamp", "Light"]:
 # Import bronchus
 bpy.ops.import_scene.obj(filepath=bronchus_path)
 bronchus = bpy.data.objects['bronchus']
-make_obj_smooth(bronchus) # Smooth before hiding select, as otherwise it doesnt work?
+make_obj_smooth(bronchus)  # Smooth before hiding select, as otherwise it doesnt work?
 bronchus.hide_select = True
 
 

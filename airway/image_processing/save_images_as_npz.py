@@ -48,7 +48,7 @@ def save_images_as_npz(raw_data_path, processed_data_path):
 
         # Initialize model. Note that we do this in this unusual location
         # instead of outside the loop because the count of the images_files
-        # is not known before the loop. Therefore this should only be 
+        # is not known before the loop. Therefore this should only be
         # initialized on the first run of the loop.
         if total_sum == 0:
             model = np.zeros((len(image_files), 512, 512), dtype=np.int8)
@@ -56,7 +56,7 @@ def save_images_as_npz(raw_data_path, processed_data_path):
         for index, image_name in enumerate(image_files):
             image_path = abs_folder_path / image_name
 
-            # Read the data and save the pixel_array which will have a 
+            # Read the data and save the pixel_array which will have a
             # shape of around (700, 512, 512), the 512s being consistent.
             im = pydicom.dcmread(image_path).pixel_array
 
@@ -64,7 +64,7 @@ def save_images_as_npz(raw_data_path, processed_data_path):
             # -1000 and 0 as "value" we can normalize the image by adding
             # 10000 to every value. Then clipping every value to 0 and lobe_id.
             # Then we add this matrix to the model. This causes all pixels
-            # of that type to have that id. This being implemented in 
+            # of that type to have that id. This being implemented in
             # completely in numpy speeds it up at least ten-fold. Note
             # that in case later types are at the same coordinates these
             # will be overwritten.

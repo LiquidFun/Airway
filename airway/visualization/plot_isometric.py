@@ -11,8 +11,10 @@ try:
 except:
     patient_id = "3127679"
 
+
 def get_image_num(filename):
-    return int(filename.replace('.npz', '').replace("IMG",''))
+    return int(filename.replace('.npz', '').replace("IMG", ''))
+
 
 model = []
 
@@ -31,4 +33,3 @@ for axis, name in enumerate(["top-to-bottom", "front-to-back", "right-to-left"])
     plt.imshow(np.sum(model, axis=axis))
     plt.savefig(os.path.join(visualizations_dir, name+"-heatmap.png"))
     plt.show()
-

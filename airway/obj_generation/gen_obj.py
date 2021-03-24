@@ -31,7 +31,7 @@ def generate_obj(output_data_path: Path,
                  color_to_rgb_tuple: Dict[int, Tuple[float, float, float]] = {},
                  rot_mat: np.ndarray = None,
                  num_decimal_digits: int = 2
-             ):
+                 ):
     """Saves a .obj obj_file given the model, the accepted types and a name
 
     output_data_path is a pathlib Path, this is the full path the obj_file will be saved as

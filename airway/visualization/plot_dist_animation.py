@@ -24,7 +24,7 @@ for index, group in enumerate(groups):
     ys = []
     zs = []
     curr_colors = []
-    for t in group: 
+    for t in group:
         xlim[0] = min(xlim[0], t[1])
         xlim[1] = max(xlim[1], t[1])
         ylim[0] = min(ylim[0], t[2])
