@@ -1,7 +1,6 @@
 from pathlib import Path
 import yaml
 
-
 config_path = Path().cwd() / "config"
 
 
@@ -30,7 +29,7 @@ def parse_stage_configs():
 def parse_defaults():
     defaults = {"path": None, "workers": 4, "force": False, "single": False,
                 "all": False, "verbose": False, "clean": False, "profile": False}
-    defaults_path = base_path / "defaults.yaml"
+    defaults_path = Path.cwd() / "defaults.yaml"
     if defaults_path.exists():
         with open(defaults_path) as config_file:
             defaults.update(yaml.load(config_file, yaml.FullLoader))
