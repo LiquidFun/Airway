@@ -133,7 +133,6 @@ def classify_tree(
                             target_vec = classification_config[classification]['vector']
                             child_node["cost"] = float(cost_exponential_diff_function(vec, target_vec, 1, 1))
                             perm_cost += child_node["cost"]
-                            # perm_cost += math.acos((vec @ target_vec) / (np.linalg.norm(vec) * np.linalg.norm(target_vec)))
                 cost_with_perm.append((perm_cost, successors_with_permutations))
 
                 # Only add first permutation if not all children have vectors

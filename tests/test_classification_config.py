@@ -32,7 +32,9 @@ def test_accumulated_segments(classification_config):
         if "+" in classification:
             prefix = classification[:2]
             for segment_num in classification[2:].split('+'):
-                assert f"{prefix}{segment_num}" in config.get('children', [])
+                segment = f"{prefix}{segment_num}"
+                if segment not in ['LB7', 'LB8']:
+                    assert segment in config.get('children', [])
 
 
 def test_take_best_only_in_top_levels(classification_config):
@@ -40,3 +42,8 @@ def test_take_best_only_in_top_levels(classification_config):
         assert config.get('take_best', False) == (classification in ["Trachea", "Bronchus"])
 
 
+def test_no_left_lung_segments_in_right_lung_and_vice_versa(classification_config):
+    for classification, config in classification_config.items():
+        for child in config.get('children', []):
+            if classification[0] in 'RL' and child[0] in 'RL':
+                assert classification[0] == child[0], f"Child {child} in {classification[0]} lung!"
