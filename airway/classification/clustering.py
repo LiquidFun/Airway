@@ -46,14 +46,15 @@ def main():
             clustering[start_node][curr_cluster].append(tree)
     for start_node, curr_clustering in clustering.items():
         content.append(f"## Clustering of {start_node}\n")
-        for key, trees in sorted(curr_clustering.items(), key=lambda k: -len(k[1])):
-            for tree in trees:
+        for key, trees_in_cluster in sorted(curr_clustering.items(), key=lambda k: -len(k[1])):
+            for tree in trees_in_cluster:
                 patient = tree.graph['patient']
                 img_path = Path(render_path) / str(patient) / 'bronchus0.png'
                 content.append(f"![{patient}]({img_path})\n")
                 content.append(f"### ^ Example patient {patient}\n")
                 break
-            content.append(f"### {len(trees)} patients with this structure:\n")
+            percent = f"{len(trees_in_cluster)/len(trees)*100:.1f}%"
+            content.append(f"### {len(trees_in_cluster)} ({percent}) patients with this structure:\n")
             content.append(key + "\n")
     generate_pdf_report(output_path, "clustering_report", "".join(content))
 

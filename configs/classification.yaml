@@ -38,7 +38,7 @@ Bronchus:
 
 # --- Left Bronchus --- #
 LBronchus:
-    children: [LUpperLobe, LLowerLobe, Lingula]
+    children: [LUpperLobe, LLowerLobe, Lingula, LB6]
     descendants: [LUpperLobe, LLowerLobe, Lingula]
     vector: [70.5, 8.0, 60.0]
 
