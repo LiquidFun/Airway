@@ -1,11 +1,14 @@
-# Airway
-
 ![Python package](https://github.com/LiquidFun/Airway/actions/workflows/python-package.yml/badge.svg)
+
+# Airway
 
 Anatomical segmentation and classification of human lung bronchus up to segmental/tertiary bronchi 
 based on high-resolution computed tomography (HRCT) image masks created by Synapse 3D.
-Using a rule-based approach to the classification yields reasonable results as this approach does
-not differ all that much in comparison to what a surgeon does.
+A rule-based approach is taken for classification, where the most cost-effective tree is found according
+to their angle deviations by defined vectors.
+
+Here, a pipeline is implemented which, given a formatted input data structure, can create the anatomical segmentations, clusters of similar anatomy, and
+the visualisations presented below. 
 
 This project is work in progress and is being actively developed! Be aware that stuff may change.
 
@@ -26,8 +29,7 @@ The required file structure is explained below.
 # Data
 
 We use a pipeline based approach to calculate the raw data. With the help of
-`airway-pipeline.py` you are able to calculate each step (called stages) separately or
-all at once. 
+`airway-pipeline.py` you are able to calculate each step (called stages).
 
 To get the pipeline to work you need to define and format the first input stage, which is then
 used to create all other stages.
@@ -36,9 +38,9 @@ for your use case:
 
 * `raw_data` is the structure as created by Synapse 3D and cannot be
 directly used as input. We used the script in `scripts/separate-bronchus-files.sh`
-to create `raw_airway`:
-* `raw_airway` is the same data as `raw_data`, but has been reformatted. This was our
-input stage for the pipeline. See the DATADIR graphic below for more details on the file structure.
+to create `raw_airway`. The format of it is still described in the `DATADIR` graphic below for reference.
+* `raw_airway` is the same data as `raw_data`, but the directory structure has been reformatted. This was our
+input stage for the pipeline. See the `DATADIR` graphic below for more details on the file structure.
   The `IMG\d` files contain single slices for the CT scan, where -10000 was used for empty, and the rest 
   were various values between -1000 to 1000. We assumed -10000 to be empty, and everything else to be
   a voxel of that type, as we already had segmented data.
@@ -54,6 +56,12 @@ The ~800 is variable and depends on the patient, the 512×512 is the slice dimen
   as otherwise nothing will really work in the rest of the project. 
   See `airway/image_processing/save_images_as_npz.py` for reference if you decide to use this stage as input.
 
+  
+Note that the slice thickness for our data was 0.5 mm in all directions. 
+Currently, the pipeline assumes this is always the case. 
+It will work fairly well for different, but equal, thicknesses in all directions (e.g. 0.25 mm × 0.25 mm × 0.25 mm), 
+although some results may wary. 
+Different thicknesses in multiple directions (e.g. 0.8 mm × 0.8 mm × 3 mm) will likely not work well at all.
 
 
 | Category | Encoding |
@@ -68,7 +76,7 @@ The ~800 is variable and depends on the patient, the 512×512 is the slice dimen
 | Vein | 7 |
 | Artery | 8 |
 
-The data looks like the graphic below. Note that if you use `stage-01` as input you do not need 
+The directory structure for the data structure is described below. Note that if you use `stage-01` as input you do not need 
 `raw_data` or `raw_airway` at all.
 
 ```
@@ -134,7 +142,7 @@ After cloning install the required pip packages:
 
 ```pip3 install -r requirements.txt```
 
-These are required for certain visualisation stages (although the project will safely work without):
+These are required for most visualisation stages (although most stuff will work without):
 
 ```apt install blender python3-igraph```
 

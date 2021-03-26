@@ -2,7 +2,8 @@ import subprocess
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
+import re
 
 import networkx as nx
 import yaml
@@ -11,6 +12,7 @@ from airway.util.util import get_data_paths_from_args, generate_pdf_report, get_
 
 # classify_for = ["Trachea"]
 classify_for = ["LLowerLobe", "LUpperLobe", "RMiddleLobe", "RUpperLobe", "RLowerLobe"]
+latex_tables_for = set(classify_for) - {"RMiddleLobe"}
 # classify_for = ["LLowerLobe", "LUpperLobe"]
 
 
@@ -30,6 +32,40 @@ def get_input():
     return output_data_path, trees, classification_config, render_path
 
 
+def get_latex_table(cluster_trees: List[Tuple[str, List[nx.Graph]]], patient_count: int):
+    table = ""
+
+    class LatexBlock:
+        def __init__(self, block_type: str, after_begin: str = ""):
+            self.block_type = block_type
+            self.after_begin = after_begin
+
+        def __enter__(self):
+            nonlocal table
+            table += f"\\begin{{{self.block_type}}}{self.after_begin}\n"
+
+        def __exit__(self, exc_type, exc_value, exc_traceback):
+            nonlocal table
+            table += f"\\end{{{self.block_type}}}\n"
+
+    with LatexBlock("table", "[hbpt]"):
+        table += "\\centering\n"
+        with LatexBlock("tabular", f"{{{'|'.join(['c']*len(cluster_trees))}}}"):
+            table += ' & '.join([
+                f"{len(trees)} ({len(trees) / patient_count * 100:.1f}\\%) patients" for _, trees in cluster_trees
+            ]) + "\\\\\n" + "\\hline\n"
+            for index, (clustering, _) in enumerate(cluster_trees, 1):
+                with LatexBlock("minipage", "[t]{1.6in}"):
+                    with LatexBlock("verbatim"):
+                        table += clustering
+                table += "&\n" if index != len(cluster_trees) else "\\\\\n"
+        formatted_key = '_'.join(re.findall("[A-Z][a-z]*", cluster_trees[0][0].split('\n')[0].strip())).lower()
+        formatted_key = ("left" if formatted_key[0] == "l" else "right") + formatted_key[1:]
+        table += f"\\caption{{The three most common clusters for the \\textbf{{{formatted_key.replace('_', ' ')}}}}}\n"
+        table += f"\\label{{tab:{formatted_key}}}\n"
+    return table
+
+
 def main():
     output_path, trees, classification_config, render_path = get_input()
     print(render_path)
@@ -38,31 +74,37 @@ def main():
         subprocess.Popen(["xdg-open", f"{output_path / 'clustering_report.pdf'}"])
         sys.exit()
     clustering = {c: defaultdict(lambda: []) for c in classify_for}
-    content = ["# Airway Auto-Generated Clustering Report\n"]
+    html_content = ["# Airway Auto-Generated Clustering Report\n"]
+    latex_content = []
     for tree in trees:
         successors = dict(nx.bfs_successors(tree, '0'))
         clusters = cluster(tree, successors, classification_config)
         for start_node, curr_cluster in clusters.items():
             clustering[start_node][curr_cluster].append(tree)
     for start_node, curr_clustering in clustering.items():
-        content.append(f"## Clustering of {start_node}\n")
-        for key, trees_in_cluster in sorted(curr_clustering.items(), key=lambda k: -len(k[1])):
-            for tree in trees_in_cluster:
-                patient = tree.graph['patient']
-                img_path = Path(render_path) / str(patient) / 'bronchus0.png'
-                content.append(f"![{patient}]({img_path})\n")
-                content.append(f"### ^ Example patient {patient}\n")
-                break
+        html_content.append(f"## Clustering of {start_node}\n")
+        sorted_curr_clustering = sorted(curr_clustering.items(), key=lambda k: -len(k[1]))
+        if start_node in latex_tables_for:
+            latex_content.append(get_latex_table(sorted_curr_clustering[:3], patient_count=len(trees)))
+        for key, trees_in_cluster in sorted_curr_clustering:
+            patient = trees_in_cluster[0].graph['patient']
+            img_path = Path(render_path) / str(patient) / 'bronchus0.png'
+            html_content.append(f"![{patient}]({img_path})\n")
+            html_content.append(f"### ^ Example patient {patient}\n")
             percent = f"{len(trees_in_cluster)/len(trees)*100:.1f}%"
-            content.append(f"### {len(trees_in_cluster)} ({percent}) patients with this structure:\n")
-            content.append(key + "\n")
-    generate_pdf_report(output_path, "clustering_report", "".join(content))
+            html_content.append(f"### {len(trees_in_cluster)} ({percent}) patients with this structure:\n")
+            html_content.append(key + "\n")
+    generate_pdf_report(output_path, "clustering_report", "".join(html_content))
+
+    with open(output_path / "clustering_tables.tex", 'w') as file:
+        for table in latex_content:
+            file.write(table)
 
 
 def cluster(tree, successors, classification_config):
     cluster_start_nodes = [n for n in tree.nodes if tree.nodes[n]["split_classification"] in classify_for]
 
-    def rec_cluster(curr_id, tabs=1):
+    def rec_cluster(curr_id, tabs=0):
         nonlocal cluster_name
         try:
             classification = tree.nodes[curr_id]["split_classification"]
