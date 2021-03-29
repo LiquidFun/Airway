@@ -5,7 +5,7 @@ import os
 import argparse
 import subprocess
 from pathlib import Path
-from plistlib import Dict
+from typing import Dict
 
 import yaml
 

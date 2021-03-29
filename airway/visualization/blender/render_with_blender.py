@@ -9,6 +9,9 @@ import bpy
 
 # Careful python version is 3.5 here, no f-strings!
 
+# Check blender version, need to handle <2.80 and >=2.80 differently
+is_blender279 = bpy.app.version < (2, 80)
+
 # Handle sys args
 argv = sys.argv
 argv = argv[argv.index("--") + 1:]
@@ -23,11 +26,32 @@ classification_config_path = Path(sys.argv[0]).parents[0] / "configs" / "classif
 classification_config = None
 
 
+def select(obj, active=False):
+    if is_blender279:
+        obj.select = True
+        if active:
+            bpy.context.scene.objects.active = obj
+    else:
+        obj.select_set(True)
+        if active:
+            bpy.context.view_layer.objects.active = obj
+
+
+def hide(obj, viewport=False, selection=False, render=False):
+    if is_blender279:
+        obj.hide = viewport
+    else:
+        obj.hide_viewport = viewport
+    obj.hide_render = render
+    obj.hide_select = selection
+
+
 def load_obj(path):
     """Loads .obj file and returns the object"""
     name = Path(path).name.replace(".obj", "")
     bpy.ops.import_scene.obj(filepath=path)
-    bpy.data.meshes[name].show_double_sided = True
+    if is_blender279:
+        bpy.data.meshes[name].show_double_sided = True
     return bpy.data.objects[name]
 
 
@@ -41,8 +65,7 @@ def make_obj_smooth(obj, iterations=10, factor=2):
 
     # Recalculate normals
     bpy.ops.object.select_all(action='DESELECT')
-    obj.select = True
-    bpy.context.scene.objects.active = obj
+    select(obj, True)
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.normals_make_consistent(inside=False)
@@ -61,14 +84,15 @@ def make_obj_smooth(obj, iterations=10, factor=2):
 for object_name in ["Cube", "Lamp", "Light"]:
     if object_name in bpy.data.objects:
         current_object = bpy.data.objects[object_name]
-        bpy.context.scene.objects.unlink(current_object)
+        if is_blender279:
+            bpy.context.scene.objects.unlink(current_object)
         bpy.data.objects.remove(current_object)
 
 # Import bronchus
 bpy.ops.import_scene.obj(filepath=bronchus_path)
 bronchus = bpy.data.objects['bronchus']
 make_obj_smooth(bronchus)  # Smooth before hiding select, as otherwise it doesnt work?
-bronchus.hide_select = True
+hide(bronchus, selection=True)
 
 
 # Define deg to rad function
@@ -80,7 +104,7 @@ def rad(degrees):
 camera = bpy.data.objects['Camera']
 camera.location = (0, 16, 0)
 camera.rotation_euler = (rad(90), 0, rad(-180))
-camera.hide = True
+hide(camera, viewport=True)
 
 # Set rendering options
 bpy.context.scene.render.engine = "CYCLES"
@@ -93,12 +117,17 @@ bpy.context.scene.render.resolution_percentage = 100
 # Add lighting plane, move it and hide it
 bpy.ops.mesh.primitive_plane_add()
 plane = bpy.data.objects['Plane']
-plane.hide = True
+hide(plane, viewport=True)
 plane.scale = (22, 80, 1)
 plane.location = (0, 20, 40)
 
-bpy.context.scene.world.horizon_color = (0, 0, 0)
-bpy.context.scene.cycles.film_transparent = True
+if is_blender279:
+    bpy.context.scene.world.horizon_color = (0, 0, 0)
+    bpy.context.scene.cycles.film_transparent = True
+else:
+    bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = (0, 0, 0, 1)
+    bpy.context.scene.render.film_transparent = True
+
 
 # Set the material for the lighting plane
 mat_name = "LightMat"
@@ -122,27 +151,27 @@ def get_areas_by_type(context, type):
 
 
 def show_names_in_current_screen():
-    for view3d_area in get_areas_by_type(bpy.context, 'VIEW_3D'):
-        view_space = view3d_area.spaces[0]
-        view_space.show_only_render = False
-        view_space.show_floor = False
-        view_space.show_axis_x = False
-        view_space.show_axis_y = False
-        view_space.show_axis_z = False
-        view_space.cursor_location = (0, 0, 1000)
+    if is_blender279:
+        for view3d_area in get_areas_by_type(bpy.context, 'VIEW_3D'):
+            view_space = view3d_area.spaces[0]
+            view_space.show_only_render = False
+            view_space.show_floor = False
+            view_space.show_axis_x = False
+            view_space.show_axis_y = False
+            view_space.show_axis_z = False
+            view_space.cursor_location = (0, 0, 1000)
 
 
 # Import skeleton object
 skeleton = load_obj(skeleton_path)
 make_obj_smooth(skeleton, 2, 2)
 # skeleton.hide = True
-skeleton.hide_render = True
-skeleton.hide_select = True
+hide(skeleton, render=True, selection=True)
 
 # Import splits object
 splits = load_obj(split_path)
 splits_no_post_processing = load_obj(split_path.replace("splits.obj", "splits_no_post_processing.obj"))
-splits_no_post_processing.hide = True
+hide(splits_no_post_processing, viewport=True)
 
 cubes = []
 group_cubes = []
@@ -157,10 +186,11 @@ def load_tree():
 
 
 def add_to_group(group_name, objects):
-    group = bpy.data.groups.get(group_name, bpy.data.groups.new(group_name))
-    for obj in objects:
-        if obj.name not in group.objects:
-            group.objects.link(obj)
+    if is_blender279:
+        group = bpy.data.groups.get(group_name, bpy.data.groups.new(group_name))
+        for obj in objects:
+            if obj.name not in group.objects:
+                group.objects.link(obj)
 
 
 def normalize(vertices, center=True):
@@ -217,10 +247,13 @@ def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
                     is_gt_classification = True
                     classification = node['split_classification_gt']
             if show_all_nodes or not re.match(r"c\d+", classification):
-                bpy.ops.mesh.primitive_cube_add(radius=0.02, location=tuple(location))
+                if is_blender279:
+                    bpy.ops.mesh.primitive_cube_add(radius=0.02, location=tuple(location))
+                else:
+                    bpy.ops.mesh.primitive_cube_add(size=0.02, location=tuple(location))
                 selected = bpy.context.selected_objects[0]
                 selected.name = classification
-                selected.hide_render = True
+                hide(selected, render=True)
                 if re.match(r"LB\d(\+\d)*[a-c]*i*", selected.name):
                     selected.name = selected.name[1:]
                 selected.show_name = True
@@ -254,15 +287,18 @@ def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
             splits_reference = load_obj(tmpfile.name)
             splits_reference.rotation_euler = (0, 0, 0)
             splits_reference.name = "splits_reference"
-            bpy.data.objects['splits_reference'].select = True
+            if is_blender279:
+                select(bpy.data.objects['splits_reference'])
             group_cubes.append(splits_reference)
     else:
         if splits_reference is not None:
-            splits_reference.hide = True
-        bpy.data.objects['splits'].select = True
+            hide(splits_reference, viewport=True)
+        if is_blender279:
+            select(bpy.data.objects['splits'])
 
-    for _, cube in cubes:
-        cube.select = True
+    if is_blender279:
+        for _, cube in cubes:
+            select(cube)
     add_to_group("manually_classified", group_cubes)
     return {'FINISHED'}
 
