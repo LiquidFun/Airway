@@ -104,7 +104,8 @@ def rad(degrees):
 camera = bpy.data.objects['Camera']
 camera.location = (0, 16, 0)
 camera.rotation_euler = (rad(90), 0, rad(-180))
-camera.lens = 35
+if not is_blender279:
+    camera.data.lens = 35
 hide(camera, viewport=True)
 
 # Set rendering options
