@@ -55,13 +55,13 @@ def get_latex_table(cluster_trees: List[Tuple[str, List[nx.Graph]]], patient_cou
                 f"{len(trees)} ({len(trees) / patient_count * 100:.1f}\\%) patients" for _, trees in cluster_trees
             ]) + "\\\\\n" + "\\hline\n"
             for index, (clustering, _) in enumerate(cluster_trees, 1):
-                with LatexBlock("minipage", "[t]{1.6in}"):
+                with LatexBlock("minipage", "[t]{1.65in}"):
                     with LatexBlock("verbatim"):
                         table += clustering
                 table += "&\n" if index != len(cluster_trees) else "\\\\\n"
         formatted_key = '_'.join(re.findall("[A-Z][a-z]*", cluster_trees[0][0].split('\n')[0].strip())).lower()
         formatted_key = ("left" if formatted_key[0] == "l" else "right") + formatted_key[1:]
-        table += f"\\caption{{The three most common clusters for the \\textbf{{{formatted_key.replace('_', ' ')}}}}}\n"
+        table += f"\\caption{{The three most common clusters for the \\textbf{{{formatted_key.replace('_', ' ')}}}.}}\n"
         table += f"\\label{{tab:{formatted_key}}}\n"
     return table
 
