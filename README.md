@@ -2,7 +2,7 @@
 
 # Airway
 
-Anatomical segmentation and classification of human lung bronchus up to segmental/tertiary bronchi 
+Anatomical classification of human lung bronchus up to segmental/tertiary bronchi 
 based on high-resolution computed tomography (HRCT) image masks created by Synapse 3D.
 A rule-based approach is taken for classification, where the most cost-effective tree is found according
 to their angle deviations by defined vectors.
@@ -15,9 +15,9 @@ This project is work in progress and is being actively developed! Be aware that 
 An example can be seen below, the 18 segments of the lung are automatically annotated in 
 the voxel model (the labels are added manually though).
 
-![](./media/images/AnnotatedLung.png)
+![](./media/images/AnnotatedLung2.png)
 
-![](./media/images/bronchus_left_and_right_colored2.png)
+![](./media/images/bronchus0.png)
 
 Example visualisation of split detection, rendered with Blender.
 
