@@ -6,21 +6,13 @@ import os
 import numpy as np
 import pydicom
 
+from airway.util.config_parsers import parse_array_encoding
 from airway.util.util import get_data_paths_from_args
 
 # Process arguments supplied
 output_data_path, input_data_path = get_data_paths_from_args()
 
-dir_names_to_id = {
-    "Bronchus": 1,
-    "LeftLowerLobe": 2,
-    "LeftUpperLobe": 3,
-    "RightLowerLobe": 4,
-    "RightMiddleLobe": 5,
-    "RightUpperLobe": 6,
-    "Vein": 7,
-    "Artery": 8,
-}
+dir_names_to_id = parse_array_encoding()
 
 
 def save_images_as_npz(raw_data_path, processed_data_path):

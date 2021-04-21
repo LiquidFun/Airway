@@ -64,6 +64,12 @@ stage-12:
   groups: [angle_analysis, angles, angle]
   per_patient: False
   description: Prints an analysis of the classification and prints all vectors/angles for each patient
+stage-13:
+  script: airway/classification/lobe_validation.py
+  inputs: [stage-10]
+  groups: [lobe-validation, validation, validate]
+  per_patient: False
+  description: Validates the lobe classifications with the ones created by Synapse 3D
 
 # --- Analysis --- #
 stage-30:

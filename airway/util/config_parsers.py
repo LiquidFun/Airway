@@ -1,7 +1,9 @@
 from pathlib import Path
+from typing import Dict
+
 import yaml
 
-config_path = Path().cwd() / "config"
+config_path = Path().cwd() / "configs"
 
 
 def get_dict_from_yaml(curr_config_path: Path):
@@ -24,6 +26,14 @@ def parse_stage_configs():
             if key not in config:
                 config[key] = default_value
     return stage_configs
+
+
+def parse_array_encoding() -> Dict[str, int]:
+    return get_dict_from_yaml(config_path / "array_encoding.yaml")
+
+
+def parse_inverted_array_encoding() -> Dict[int, str]:
+    return {v: k for k, v in parse_array_encoding()}
 
 
 def parse_defaults():
