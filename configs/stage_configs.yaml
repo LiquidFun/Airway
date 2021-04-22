@@ -166,6 +166,11 @@ stage-73:
   description: Plots splits with bronchus or lobes in pyplot (slow)
   interactive_args:
     matplotlib_splits: [True]
+stage-74:
+  script: airway/visualization/generate_2d_tree.py
+  inputs: [stage-05]
+  groups: [plot_flat_tree, vis]
+  description: Creates flattened 2D plots for the split tree
 
 
 # --- Website --- #

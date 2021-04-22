@@ -22,6 +22,7 @@ from airway.util.util import get_data_paths_from_args
 #  store them in variables input and output  #
 ##############################################
 output_data_path, input_data_path = get_data_paths_from_args()
+print(output_data_path)
 
 # Maps lobe number in .graph.ml-file to color in visualization
 lobe_color_dict = {
@@ -54,7 +55,7 @@ edge_width_dict = {
 lobe_list = list(input_data_path.glob('*.graphml'))
 for filepath in lobe_list:
     lobe = str(filepath.name)
-    # Read file and convert it to diected graph
+    # Read file and convert it to directed graph
     graph = ig.Graph.Read_GraphML(str(filepath))
     graph.to_directed(mutual=False)
 
@@ -64,7 +65,7 @@ for filepath in lobe_list:
     graph.vs["size"] = 30
 
     # Setting edge width and disable arrow at end of edges
-    # We found 271 as maximum edge weigth
+    # We found 271 as maximum edge weight
     graph.es["width"] = [edge_width_dict[math.floor(int(element) / 27)] if element < 270 else edge_width_dict[9] for
                          element in graph.es["weight"]]
     graph.es["arrow_size"] = 0
