@@ -10,10 +10,9 @@ import yaml
 
 from airway.util.util import get_data_paths_from_args, generate_pdf_report, get_ignored_patients
 
-# classify_for = ["Trachea"]
 classify_for = ["LLowerLobe", "LUpperLobe", "RMiddleLobe", "RUpperLobe", "RLowerLobe"]
-latex_tables_for = set(classify_for) - {"RMiddleLobe"}
-# classify_for = ["LLowerLobe", "LUpperLobe"]
+latex_tables_for = ["LUpperLobe", "RUpperLobe"]
+assert all(lobe in classify_for for lobe in latex_tables_for)
 
 
 def get_input():
@@ -50,6 +49,10 @@ def get_latex_table(cluster_trees: List[Tuple[str, List[nx.Graph]]], patient_cou
 
     with LatexBlock("table", "[hbpt]"):
         table += "\\centering\n"
+        formatted_key = '_'.join(re.findall("[A-Z][a-z]*", cluster_trees[0][0].split('\n')[0].strip())).lower()
+        formatted_key = ("left" if formatted_key[0] == "l" else "right") + formatted_key[1:]
+        table += f"\\caption{{The three most common clusters for the \\textbf{{{formatted_key.replace('_', ' ')}}}.}}\n"
+        table += f"\\label{{tab:{formatted_key}}}\n"
         with LatexBlock("tabular", f"{{{'|'.join(['c']*len(cluster_trees))}}}"):
             table += ' & '.join([
                 f"{len(trees)} ({len(trees) / patient_count * 100:.1f}\\%) patients" for _, trees in cluster_trees
@@ -59,10 +62,6 @@ def get_latex_table(cluster_trees: List[Tuple[str, List[nx.Graph]]], patient_cou
                     with LatexBlock("verbatim"):
                         table += clustering
                 table += "&\n" if index != len(cluster_trees) else "\\\\\n"
-        formatted_key = '_'.join(re.findall("[A-Z][a-z]*", cluster_trees[0][0].split('\n')[0].strip())).lower()
-        formatted_key = ("left" if formatted_key[0] == "l" else "right") + formatted_key[1:]
-        table += f"\\caption{{The three most common clusters for the \\textbf{{{formatted_key.replace('_', ' ')}}}.}}\n"
-        table += f"\\label{{tab:{formatted_key}}}\n"
     return table
 
 
@@ -74,7 +73,7 @@ def main():
         subprocess.Popen(["xdg-open", f"{output_path / 'clustering_report.pdf'}"])
         sys.exit()
     clustering = {c: defaultdict(lambda: []) for c in classify_for}
-    html_content = ["# Airway Auto-Generated Clustering Report\n"]
+    html_content = ["# Auto-Generated Clustering Report\n"]
     latex_content = []
     for tree in trees:
         successors = dict(nx.bfs_successors(tree, '0'))
@@ -104,7 +103,7 @@ def main():
 def cluster(tree, successors, classification_config):
     cluster_start_nodes = [n for n in tree.nodes if tree.nodes[n]["split_classification"] in classify_for]
 
-    def rec_cluster(curr_id, tabs=0):
+    def rec_cluster(curr_id, tabs=1):
         nonlocal cluster_name
         try:
             classification = tree.nodes[curr_id]["split_classification"]
