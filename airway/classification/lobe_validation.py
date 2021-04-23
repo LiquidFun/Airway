@@ -8,8 +8,6 @@ import yaml
 from airway.util.config_parsers import parse_array_encoding
 from airway.util.util import get_data_paths_from_args, get_ignored_patients
 
-file_name = "data_quality_evaluation"
-
 
 def get_input():
     output_data_path, tree_input_path = get_data_paths_from_args()
@@ -28,7 +26,6 @@ def main():
     encoding = {
         re.sub(r"^([RL])[a-z]+", r"\1", k): v
         for k, v in parse_array_encoding().items()
-        if "Lobe" in k
     }
     decoding = dict(zip(encoding.values(), encoding.keys()))
 

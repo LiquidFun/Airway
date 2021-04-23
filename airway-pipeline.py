@@ -260,8 +260,9 @@ def stage(
         sys.exit(1)
     else:
         input_stage_path = input_stage_paths[0]
-        assert input_stage_path.exists(), f"ERROR: {input_stage_path} does not exist. " \
-                                          f"Calculate the predecessor stage first!"
+        if input_stage_path.name != "raw_airway":
+            assert input_stage_path.exists(), f"ERROR: {input_stage_path} does not exist. " \
+                                              f"Calculate the predecessor stage first!"
         output_stage_path.mkdir(exist_ok=True, parents=True)
 
         # build the list of subprocess-arguments for later use with subprocess.run

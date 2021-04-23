@@ -67,7 +67,7 @@ stage-12:
 stage-13:
   script: airway/classification/lobe_validation.py
   inputs: [stage-10]
-  groups: [lobe-validation, validation, validate]
+  groups: [lobe_validation, validation, validate]
   per_patient: False
   description: Validates the lobe classifications with the ones created by Synapse 3D
 
@@ -122,12 +122,12 @@ stage-60:
   script: airway/obj_generation/gen_obj.py
   inputs: [stage-02, stage-03, stage-34]
   groups: [bronchus_object, 3d, obj]
-  description: Creates .obj files for use in software like blender
+  description: Creates .obj files for use in software like Blender
 stage-61:
   script: airway/obj_generation/gen_split_obj.py
   inputs: [stage-07, stage-05, stage-02]
   groups: [split_object, 3d, obj, 3dsplits]
-  description: Creates .obj files for the splits for use in software like blender
+  description: Creates .obj files for the splits for use in software like Blender
 stage-62:
   script: airway/visualization/blender/run_blender.py
   inputs: [stage-60, stage-61, stage-10, stage-02]

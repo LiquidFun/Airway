@@ -146,7 +146,7 @@ These are required for most visualisation stages (although most stuff will work 
 
 ```apt install blender python3-igraph```
 
-Note that currently only blender version 2.79 is supported (or slightly older), as the scripting API changes often.
+Tested with Blender versions 2.76, 2.79 and 2.82. It should also work in newer versions as the major API change was in 2.80.
 
 Now configure the defaults, copy and rename `example_defaults.yaml` to `defaults.yaml` 
 (in the root folder of the project) and change the path in the file to where you have put the data.

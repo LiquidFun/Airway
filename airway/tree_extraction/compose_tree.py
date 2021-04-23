@@ -224,7 +224,7 @@ def main():
     np_edges_attributes = np.load(edge_attributes_file_path, allow_pickle=True)['arr_0']
 
     # create empty graphs
-    graph = nx.Graph(patient=int(patient_id))
+    graph = nx.Graph(patient=patient_id)
     # compose graphs
     dic_coords = create_nodes(graph, np_coord, np_coord_attributes, reduced_model)
     dic_edges = create_edges(graph, np_edges, dic_coords, np_edges_attributes)

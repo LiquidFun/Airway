@@ -39,10 +39,8 @@ force: False
 single: False
 
 # May be specified to use a different executable for 
-# blender (such as /usr/bin/blender or /snap/bin/blender)
-# Note that currently only blender <=2.79 works, as the
-# scripting API was changed in 2.80, the project was not yet
-# changed to account for this. So if you can, install
-# an older version of blender using snap (e.g. blender-tpaw).
+# Blender (such as /usr/bin/blender or /snap/bin/blender)
+# Both Blender <=2.79 and >=2.80 should work, although if it
+# doesn't you may specify a different version here.
 # Will not be needed if you never use blender in this project.
 blender: blender

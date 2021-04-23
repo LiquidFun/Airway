@@ -53,6 +53,10 @@ def generate_obj(output_data_path: Path,
     rot_mat is a rotation matrix. Each point p=(x,y,z) is rotated by rot_mat @ p or left unchanged if None
     """
 
+    occurrences = np.unique(model)
+    if not all(t in occurrences for t in accepted_types):
+        return
+
     output_data_path = Path(output_data_path)
 
     print(f"Generating {output_data_path} with accepted types of {accepted_types}")
