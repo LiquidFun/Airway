@@ -27,6 +27,7 @@ def main():
         re.sub(r"^([RL])[a-z]+", r"\1", k): v
         for k, v in parse_array_encoding().items()
     }
+    lobe_encoding = {k: v for k, v in encoding.items() if "Lobe" in k}
     decoding = dict(zip(encoding.values(), encoding.keys()))
 
     no_ignored = []
@@ -34,7 +35,7 @@ def main():
     for index, tree in enumerate(trees, 1):
         for node_id in tree.nodes:
             node = tree.nodes[node_id]
-            if node["split_classification"] in encoding:
+            if node["split_classification"] in lobe_encoding:
                 correctly_classified = node["lobe"] == encoding[node['split_classification']]
                 if str(tree.graph['patient']) not in ignored_patients:
                     no_ignored.append(correctly_classified)
@@ -46,7 +47,8 @@ def main():
     def show_stats(lis: List[bool]):
         s = sum(lis)
         t = len(lis)
-        print(f"{s}/{t} = {s/t:%}")
+        print(f"{s}/{t} = {s / t:%}")
+
     print("Without ignored patients:")
     show_stats(no_ignored)
     print("With ignored patients:")

@@ -49,7 +49,11 @@ def hide(obj, viewport=False, selection=False, render=False):
 def load_obj(path):
     """Loads .obj file and returns the object"""
     name = Path(path).name.replace(".obj", "")
-    bpy.ops.import_scene.obj(filepath=path)
+    try:
+        bpy.ops.import_scene.obj(filepath=path)
+    except FileNotFoundError:
+        print(f"File {path} does not exist! Skipping it!")
+        return None
     if is_blender279:
         bpy.data.meshes[name].show_double_sided = True
     return bpy.data.objects[name]
@@ -171,8 +175,8 @@ make_obj_smooth(skeleton, 2, 2)
 hide(skeleton, render=True, selection=True)
 
 # Import splits object
-splits = load_obj(split_path)
 splits_no_post_processing = load_obj(split_path.replace("splits.obj", "splits_no_post_processing.obj"))
+splits = load_obj(split_path)
 hide(splits_no_post_processing, viewport=True)
 
 cubes = []
@@ -256,8 +260,8 @@ def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
                 selected = bpy.context.selected_objects[0]
                 selected.name = classification
                 hide(selected, render=True)
-                if re.match(r"LB\d(\+\d)*[a-c]*i*", selected.name):
-                    selected.name = selected.name[1:]
+                # if re.match(r"LB\d(\+\d)*[a-c]*i*", selected.name):
+                #     selected.name = selected.name[1:]
                 selected.show_name = True
                 cubes.append((child_id, selected))
                 if show_reference_nodes:
@@ -346,8 +350,8 @@ class ClassificationSaver(bpy.types.Operator):
         tree = load_tree()
         for node_id, cube in cubes:
             name = cube.name
-            if re.match(r"B\d(\+\d)*[a-c]*i*", cube.name):
-                name = "L" + name
+            # if re.match(r"B\d(\+\d)*[a-c]*i*", cube.name):
+            #     name = "L" + name
             if name == tree.nodes[node_id]["split_classification"]:
                 tree.nodes[node_id]["split_classification_gt"] = ""
             else:

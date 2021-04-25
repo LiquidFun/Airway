@@ -70,6 +70,12 @@ stage-13:
   groups: [lobe_validation, validation, validate]
   per_patient: False
   description: Validates the lobe classifications with the ones created by Synapse 3D
+stage-14:
+  script: airway/classification/segment_validation.py
+  inputs: [stage-10]
+  groups: [segment_validation, validation, validate]
+  per_patient: False
+  description: Validates the segment classifications with the manually ground truthed ones
 
 # --- Analysis --- #
 stage-30:

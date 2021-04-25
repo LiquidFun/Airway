@@ -32,7 +32,7 @@ workers: 8
 # Whether data should be overwritten by rerunning stages
 # generally useful to set it to True, but for safety 
 # False is used as default
-force: False
+force: True
 
 # Whether only a single patient should computed all
 # the time. Generally no reason to change this.

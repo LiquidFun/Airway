@@ -19,6 +19,7 @@ def print_model_description(model):
 
 
 model = np.load(input_data_path / "model.npz")['arr_0']
+model = model.astype(np.uint8)
 print(model)
 
 print("{} images loaded".format(len(model)))
@@ -37,7 +38,6 @@ print(model.shape, end=' ')
 
 for axis in [0, 1, 2]:
     sums = np.sum(np.sum(model, axis=axis), axis=(axis+1) % 2)
-    # print(sums)
 
     # Track all =0 layers from front from that axis
     remove_front_index = 0
@@ -52,9 +52,11 @@ for axis in [0, 1, 2]:
     # Remove those layers
     model = np.delete(model, list(range(remove_front_index-1)) +
                       list(range(remove_back_index+2, len(sums))), axis=(axis+1) % 3)
-    sums = np.sum(np.sum(model, axis=axis), axis=(axis+1) % 2)
-    # print(sums)
+    validation_sums = np.sum(np.sum(model, axis=axis), axis=(axis+1) % 2)
+    assert np.sum(validation_sums == 0) == 2, "Sums are incorrect!"
     print(' -> ', model.shape, end=' ')
+
+assert all(a > 2 for a in model.shape), f'Model is empty! shape={model.shape}'
 
 print("\n\nAfter reduction:")
 curr_total_sum = print_model_description(model)

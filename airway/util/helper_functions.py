@@ -79,7 +79,9 @@ def find_radius_via_sphere(at_point: Tuple[int, int, int], allowed_types: Set[in
                     return radius
             except IndexError:
                 pass
-    raise Exception(f"ERROR: Within radius of {max_radius} no valid voxels found!")
+    return max_radius
+    # TODO
+    # raise Exception(f"ERROR: Within radius of {max_radius} no valid voxels found!")
 
 
 def adjacent_euclidean(coord, dist=2):
