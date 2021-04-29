@@ -41,6 +41,6 @@ single: False
 # May be specified to use a different executable for 
 # Blender (such as /usr/bin/blender or /snap/bin/blender)
 # Both Blender <=2.79 and >=2.80 should work, although if it
-# doesn't you may specify a different version here.
+# doesn't you may specify a different executable here.
 # Will not be needed if you never use blender in this project.
-blender: blender
+blender: /usr/bin/blender

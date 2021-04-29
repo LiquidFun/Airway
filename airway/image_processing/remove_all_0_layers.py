@@ -53,7 +53,6 @@ for axis in [0, 1, 2]:
     model = np.delete(model, list(range(remove_front_index-1)) +
                       list(range(remove_back_index+2, len(sums))), axis=(axis+1) % 3)
     validation_sums = np.sum(np.sum(model, axis=axis), axis=(axis+1) % 2)
-    assert np.sum(validation_sums == 0) == 2, "Sums are incorrect!"
     print(' -> ', model.shape, end=' ')
 
 assert all(a > 2 for a in model.shape), f'Model is empty! shape={model.shape}'
