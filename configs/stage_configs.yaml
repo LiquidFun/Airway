@@ -123,6 +123,15 @@ stage-35:
 
 
 
+# --- Data Generation --- #
+stage-40:
+  script: airway/data_generation/create_dummy_bronchus.py
+  inputs: [stage-02, stage-07]
+  groups: [dummy_bronchus_mask]
+  description: Creates a dummy bronchus mask from a tree
+
+
+
 # --- 3D Objects --- #
 stage-60:
   script: airway/obj_generation/gen_obj.py

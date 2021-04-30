@@ -75,9 +75,14 @@ def main():
     clustering = {c: defaultdict(lambda: []) for c in classify_for}
     html_content = ["# Auto-Generated Clustering Report\n"]
     latex_content = []
-    for tree in trees:
+    for index, tree in enumerate(trees, 1):
         successors = dict(nx.bfs_successors(tree, '0'))
         clusters = cluster(tree, successors, classification_config)
+        print("===", index, tree.graph['patient'], "===")
+        for c, k in clusters.items():
+            if c == "LUpperLobe":
+                print(k)
+        print()
         for start_node, curr_cluster in clusters.items():
             clustering[start_node][curr_cluster].append(tree)
     for start_node, curr_clustering in clustering.items():
