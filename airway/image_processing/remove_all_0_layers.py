@@ -22,6 +22,13 @@ model = np.load(input_data_path / "model.npz")['arr_0']
 model = model.astype(np.uint8)
 print(model)
 
+unique, counts = np.unique(model, return_counts=True)
+print("\nOccurrences:")
+for u, c in zip(unique, counts):
+    print(f"\tType {u} appeared {c:,} times")
+
+assert len(unique) != 1, f"It looks like the the model only contains {unique[0]}s, aborting!"
+
 print("{} images loaded".format(len(model)))
 
 print("Printing sum as validation as only 0-layers are being removed the sum should not change.")
@@ -59,11 +66,6 @@ assert all(a > 2 for a in model.shape), f'Model is empty! shape={model.shape}'
 
 print("\n\nAfter reduction:")
 curr_total_sum = print_model_description(model)
-
-unique, counts = np.unique(model, return_counts=True)
-print("\nOccurrences:")
-for u, c in zip(unique, counts):
-    print(f"\tType {u} appeared {c:,} times")
 
 if curr_total_sum == old_total_sum:
     np.savez_compressed(output_data_path / "reduced_model", model)

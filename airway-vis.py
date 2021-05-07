@@ -58,7 +58,7 @@ def run():
                 keyword_to_patient_id[str(index)] = patient
                 keyword_to_patient_id[get_patient_name(patient)] = patient
 
-            curr_patient_id = keyword_to_patient_id[str(args.id).capitalize()]
+            curr_patient_id = keyword_to_patient_id[str(args.id)]
 
             output_patient_path = Path(path) / config['output']
             if config['per_patient']:

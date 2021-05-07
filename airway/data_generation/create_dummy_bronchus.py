@@ -63,7 +63,7 @@ def main():
         parent_point = get_point(parent_node)
         for child_id in child_ids:
             child_point = get_point(tree.nodes[child_id])
-            fill_line(model, parent_point, child_point, parent_node['group_size']/2)
+            fill_line(model, parent_point, child_point, max(2, parent_node['group_size']/2))
 
     print(*zip(*np.unique(model, return_counts=True)))
     np.savez_compressed(output_data_path / "model.npz", model)
