@@ -382,7 +382,7 @@ def show_error_statistics():
         log("No errors occurred", stdout=True, add_time=True)
 
 
-if __name__ == "__main__":
+def run():
     previous_mask = os.umask(0o002)
     os.chdir(base_path)
 
@@ -399,3 +399,7 @@ if __name__ == "__main__":
     os.link(log_path, log_link_path)
     log(f'Saved log file to {col.green()}{log_path}{col.reset()} (linked to ./log)', stdout=True, add_time=True)
     os.umask(previous_mask)
+
+
+if __name__ == "__main__":
+    run()

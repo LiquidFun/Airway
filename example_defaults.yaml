@@ -9,9 +9,9 @@ paths:
 # this allows easy use of multiple paths by using
 # the -P flag in either script to specify
 #
-# ./airway-pipeline.py -P remote 
+# ./airway_pipeline.py -P remote
 # or
-# ./airway-vis.py -P remote 
+# ./airway_vis.py -P remote
 #
 # when you want to work on the remote data path
 # without having to write out the entire path.
