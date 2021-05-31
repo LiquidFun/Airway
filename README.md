@@ -5,9 +5,15 @@
   <a href="https://github.com/LiquidFun/Airway/blob/master/LICENSE" title="GPLv3">
     <img src="https://img.shields.io/badge/License-GPLv3-blue.svg">
   </a>
+
   <a href="https://github.com/LiquidFun/Airway/actions/workflows/python-package.yml" title="Python packaging tests">
     <img src="https://github.com/LiquidFun/Airway/actions/workflows/python-package.yml/badge.svg">
   </a>
+
+  <a href="https://github.com/LiquidFun/Airway/actions/workflows/python-publish.yml" title="Upload to PyPI">
+    <img src="https://github.com/LiquidFun/Airway/actions/workflows/python-publish.yml/badge.svg">
+  </a>
+
   <a href="https://github.com/psf/black" title="Code style: Black">
     <img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg">
   </a>
