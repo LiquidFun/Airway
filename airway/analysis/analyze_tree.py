@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from airway.util.util import get_data_paths_from_args
 
-plt.rcParams.update({'font.size': 4})
+plt.rcParams.update({"font.size": 4})
 
 
 def get_graph_edit_distance():
@@ -42,16 +42,10 @@ def create_general_tree_statistics_file(csv_path):
     else:
         Path(csv_path).touch(exist_ok=False)
 
-    with open(csv_path, 'w', newline='') as f:
+    with open(csv_path, "w", newline="") as f:
         csv_writer = csv.writer(f)
 
-        csv_writer.writerow([
-            'patient',
-            'nodes',
-            'edges',
-            'longest_path_length',
-            'maximum_independent_set_length'
-        ])
+        csv_writer.writerow(["patient", "nodes", "edges", "longest_path_length", "maximum_independent_set_length"])
         stat_list = []
         for key, tree in tree_dict.items():
             curr_row = [
@@ -59,7 +53,7 @@ def create_general_tree_statistics_file(csv_path):
                 tree.number_of_nodes(),
                 tree.number_of_edges(),
                 longest_path_length(tree),
-                maximum_independent_set_length(tree)
+                maximum_independent_set_length(tree),
             ]
             stat_list.append(curr_row)
 
@@ -69,40 +63,36 @@ def create_general_tree_statistics_file(csv_path):
 def per_lobe_statistics():
     # closures
     def node_quotient():
-        g = tree_dict.get(str(graph.graph['patient']))
+        g = tree_dict.get(str(graph.graph["patient"]))
         try:
             return g.number_of_nodes() / graph.number_of_nodes()
         except ZeroDivisionError:
             return 0
 
     def edges_quotient():
-        g = tree_dict.get(str(graph.graph['patient']))
+        g = tree_dict.get(str(graph.graph["patient"]))
         try:
             return g.number_of_edges() / graph.number_of_edges()
         except ZeroDivisionError:
             return 0
 
     for lobe in range(2, 7):
-        paths = list(input_data_path.glob('**/lobe-' + str(lobe) + '*.graphml'))
+        paths = list(input_data_path.glob("**/lobe-" + str(lobe) + "*.graphml"))
 
-        with open(output_data_path / f"lobe-{lobe}.csv", 'w', newline='') as f:
+        with open(output_data_path / f"lobe-{lobe}.csv", "w", newline="") as f:
             csv_writer = csv.writer(f)
-            csv_writer.writerow([
-                'patient',
-                'nodes',
-                'edges',
-                'nodeQuotient',
-                'edgeQuotient'
-            ])
+            csv_writer.writerow(["patient", "nodes", "edges", "nodeQuotient", "edgeQuotient"])
             for path in paths:
                 graph = nx.read_graphml(path)
-                csv_writer.writerow([
-                    graph.graph['patient'],
-                    graph.number_of_nodes(),
-                    graph.number_of_edges(),
-                    node_quotient(),
-                    edges_quotient()
-                ])
+                csv_writer.writerow(
+                    [
+                        graph.graph["patient"],
+                        graph.number_of_nodes(),
+                        graph.number_of_edges(),
+                        node_quotient(),
+                        edges_quotient(),
+                    ]
+                )
 
 
 def upper_left_lobe_distance_analysis(plot_path, csv_path):
@@ -139,7 +129,10 @@ def upper_left_lobe_distance_analysis(plot_path, csv_path):
     print(left_lobe_dict)
     for patient_id, nx_lobe in left_lobe_dict.items():
         first_node_index = list(nx_lobe.nodes)[0]
-        def get_coords(node): return node['x'], node['y'], node['z']
+
+        def get_coords(node):
+            return node["x"], node["y"], node["z"]
+
         print(get_coords(nx_lobe.nodes[first_node_index]))
         first_node = nx_lobe.nodes[first_node_index]
         _, succ = next(nx.bfs_successors(nx_lobe, first_node_index))
@@ -147,7 +140,7 @@ def upper_left_lobe_distance_analysis(plot_path, csv_path):
         for s in succ:
             node = nx_lobe.nodes[s]
             print(get_coords(node))
-            if node['x'] - first_node['x'] > 5:
+            if node["x"] - first_node["x"] > 5:
                 print(node, "is likely lingular")
         print()
 
@@ -178,9 +171,9 @@ def get_distance_value(lobe, nodelist, key):
     root = min(nodelist)
     neighbour_list = list(nx.neighbors(lobe, str(root)))
     for neighbour in neighbour_list.copy():
-        if nx.get_node_attributes(lobe, 'level')[neighbour] < nx.get_node_attributes(lobe, 'level')[str(root)]:
+        if nx.get_node_attributes(lobe, "level")[neighbour] < nx.get_node_attributes(lobe, "level")[str(root)]:
             neighbour_list.remove(neighbour)
-        elif lobe.nodes[neighbour]['x'] - lobe.nodes[str(root)]['x'] > 5:
+        elif lobe.nodes[neighbour]["x"] - lobe.nodes[str(root)]["x"] > 5:
             neighbour_list.remove(neighbour)
             print("lingular removed")
         print("neighbour: ", neighbour)
@@ -199,14 +192,14 @@ def get_distance_value(lobe, nodelist, key):
     elif neighbour_count > 3:
         print(key, "Error: more than 3 neighbours detected.")
         for neighbour in neighbour_list:
-            length = lobe[str(root)][neighbour]['weight']
+            length = lobe[str(root)][neighbour]["weight"]
             print("Length: " + str(length))
         dist_value = (-1, -1)
     elif neighbour_count == 2:
         print(key, "2 neighbours detected")
         weight_list = []
         for neighbour in neighbour_list:
-            length = lobe[str(root)][neighbour]['weight']
+            length = lobe[str(root)][neighbour]["weight"]
             print("Length: " + str(length))
             weight_list.append(length)
         dist_value = (weight_list[0], weight_list[1])
@@ -229,15 +222,15 @@ def plot_distance_values(distance_dict, path):
     bars1 = ax.bar(x - width / 2, length1_list, width, label="Length1")
     bars2 = ax.bar(x + width / 2, length2_list, width, label="Length2")
 
-    ax.set_ylabel('Length')
-    ax.set_title('Length of edges of type B candidates')
+    ax.set_ylabel("Length")
+    ax.set_title("Length of edges of type B candidates")
     ax.set_xticks(x)
     ax.set_xticklabels([f"{index+1}. {pat}" for index, pat in zip(x, patients)])
     # ax.set_xticklabels(x + 1)
     ax.legend()
     autolabel(bars1, ax)
     autolabel(bars2, ax)
-    plt.setp(ax.get_xticklabels(), rotation=45, ha='right', rotation_mode='anchor')
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
     fig.tight_layout()
 
     # plt.show()
@@ -248,8 +241,14 @@ def plot_distance_values(distance_dict, path):
 def autolabel(bars, ax):
     for bar in bars:
         height = bar.get_height()
-        ax.annotate('{}'.format(height), xy=(bar.get_x() + bar.get_width() / 2, height), xytext=(0, 3),
-                    textcoords="offset points", ha='center', va='bottom')
+        ax.annotate(
+            "{}".format(height),
+            xy=(bar.get_x() + bar.get_width() / 2, height),
+            xytext=(0, 3),
+            textcoords="offset points",
+            ha="center",
+            va="bottom",
+        )
 
 
 def export_classification_csv(distance_dict, csv_path):
@@ -258,15 +257,17 @@ def export_classification_csv(distance_dict, csv_path):
     else:
         Path(csv_path).touch(exist_ok=False)
 
-    with open(csv_path, 'w', newline='') as f:
+    with open(csv_path, "w", newline="") as f:
         csv_writer = csv.writer(f)
 
-        csv_writer.writerow([
-            'patient',
-            'classification',
-            'length_1',
-            'length_2',
-        ])
+        csv_writer.writerow(
+            [
+                "patient",
+                "classification",
+                "length_1",
+                "length_2",
+            ]
+        )
 
         classification = []
         for key, (l1, l2) in distance_dict.items():
@@ -278,16 +279,16 @@ def export_classification_csv(distance_dict, csv_path):
 
 def get_classification(l1, l2):
     if (l1, l2) == (0, 0):
-        return 'A'
+        return "A"
     else:
-        return 'B'
+        return "B"
 
 
 if __name__ == "__main__":
     output_data_path, input_data_path = get_data_paths_from_args()
 
     # paths to all trees
-    path_list = [pat_dir / "tree.graphml" for pat_dir in input_data_path.glob('*') if pat_dir.is_dir()]
+    path_list = [pat_dir / "tree.graphml" for pat_dir in input_data_path.glob("*") if pat_dir.is_dir()]
 
     lobe_id_to_string = {
         2: "LeftLowerLobe",
@@ -308,7 +309,8 @@ if __name__ == "__main__":
     print("loaded trees: " + str(len(tree_dict.keys())))
 
     # analysers
-    create_general_tree_statistics_file(output_data_path / 'csvTREE.csv')
+    create_general_tree_statistics_file(output_data_path / "csvTREE.csv")
     per_lobe_statistics()
-    upper_left_lobe_distance_analysis(output_data_path / 'type-B-edge-lengths.png',
-                                      output_data_path / 'classification.csv')
+    upper_left_lobe_distance_analysis(
+        output_data_path / "type-B-edge-lengths.png", output_data_path / "classification.csv"
+    )

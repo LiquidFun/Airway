@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
+
 # plt.rcParams.update({'font.size': 6})
 
 from airway.util.util import get_data_paths_from_args
@@ -37,7 +38,7 @@ for index, patient in enumerate(sorted(input_data_path.glob("*"))):
     if graphml_path.exists():
         graph = nx.read_graphml(graphml_path)
         # assert len(graph["0"]) <= 1, "ERROR: More than 1 edge from root node"
-        l = len(graph['0'])
+        l = len(graph["0"])
         if l not in root_children_count:
             root_children_count[l] = 0
         root_children_count[l] += 1
@@ -67,12 +68,12 @@ bar = plt.bar(ind, weights)
 for rect in bar:
     height = rect.get_height()
     ax1.annotate(
-        f'{round(height)}',
+        f"{round(height)}",
         xy=(rect.get_x() + rect.get_width() / 2, height),
         xytext=(0, 3),  # 3 points vertical offset
         textcoords="offset points",
-        ha='center',
-        va='bottom',
+        ha="center",
+        va="bottom",
         fontsize=6,
     )
 plt.savefig(output_data_path / "distance_to_first_split.png")

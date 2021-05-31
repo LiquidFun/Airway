@@ -16,7 +16,7 @@ def get_input():
     output_data_path, tree_input_path, render_path = get_data_paths_from_args(inputs=2)
     classification_config = parse_classification_config()
     trees: List[nx.Graph] = []
-    for tree_path in Path(tree_input_path).glob('*/tree.graphml'):
+    for tree_path in Path(tree_input_path).glob("*/tree.graphml"):
         trees.append(nx.read_graphml(tree_path))
     return output_data_path, trees, classification_config, render_path
 
@@ -29,14 +29,13 @@ def main():
         sys.exit()
 
     clustering_end_nodes = [
-        c for c, k in classification_config.items()
-        if "clustering_endnode" in k and k['clustering_endnode']
+        c for c, k in classification_config.items() if "clustering_endnode" in k and k["clustering_endnode"]
     ]
     content = ["# Airway Auto-Generated Data Quality Evaluation\n"]
     for index, tree in enumerate(trees, 1):
-        patient = str(tree.graph['patient'])
-        successors = dict(nx.bfs_successors(tree, '0'))
-        img_path = Path(render_path) / patient / 'bronchus0.png'
+        patient = str(tree.graph["patient"])
+        successors = dict(nx.bfs_successors(tree, "0"))
+        img_path = Path(render_path) / patient / "bronchus0.png"
         content.append(f"![{patient}]({img_path})\n\n")
         formatting_if_ignored = "(ignored due to bad data)" if patient in ignored_patients else ""
         content.append(f"#### {index}. Patient {patient} {formatting_if_ignored}\n\n")

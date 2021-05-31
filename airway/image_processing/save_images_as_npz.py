@@ -19,7 +19,7 @@ def save_images_as_npz(raw_data_path, processed_data_path):
     """Saves a 3D numpy matrix of the model to $processed_data_path
 
     The matrix has 0 for empty space and dir_names_to_id for each
-    type given. 
+    type given.
     """
 
     # s is just a debug value to print out the sum of all the lobes.
@@ -35,7 +35,7 @@ def save_images_as_npz(raw_data_path, processed_data_path):
     # with the corresponding id marked in that position.
     for folder, lobe_id in dir_names_to_id.items():
         abs_folder_path = raw_data_path / folder
-        image_files = sorted(abs_folder_path.glob('*'), key=lambda f: int(f.name.replace('IMG', '')))
+        image_files = sorted(abs_folder_path.glob("*"), key=lambda f: int(f.name.replace("IMG", "")))
         curr_sum = 0
 
         # Initialize model. Note that we do this in this unusual location
@@ -75,11 +75,11 @@ def save_images_as_npz(raw_data_path, processed_data_path):
             #     im = np.clip(np.add(im, 10000), 1, lobe_id)
             #     model[index] = np.multiply(model[index], im)
 
-            curr_sum += np.sum(im)//lobe_id
+            curr_sum += np.sum(im) // lobe_id
         print(f"{folder} pixel count:\t {curr_sum:,}")
         total_sum += curr_sum
         if total_sum != np.count_nonzero(model):
-            overlapping_coords.append((folder, total_sum-np.count_nonzero(model)))
+            overlapping_coords.append((folder, total_sum - np.count_nonzero(model)))
 
     # Create folders if they do not exist
     if not processed_data_path.exists():
@@ -91,8 +91,10 @@ def save_images_as_npz(raw_data_path, processed_data_path):
         print(f"\tType {u} appeared {c:,} times")
 
     # Print sums of the model for easier debugging
-    print(f"Non-empty voxels:\t {np.count_nonzero(model):,} "
-          f"out of {np.size(model):,} total voxels (shape={np.shape(model)})")
+    print(
+        f"Non-empty voxels:\t {np.count_nonzero(model):,} "
+        f"out of {np.size(model):,} total voxels (shape={np.shape(model)})"
+    )
     # print("Model sum: %d" % np.sum(model))
     # Save as numpy binary file to given location
     np.savez_compressed(processed_data_path / "model", model)

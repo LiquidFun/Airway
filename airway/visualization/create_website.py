@@ -28,7 +28,10 @@ def load_template(template_path=base_path + "/website/template.html"):
     load the html template file from airway repository and returns it
     """
 
-    with open(template_path, "r", ) as template_file:
+    with open(
+        template_path,
+        "r",
+    ) as template_file:
         return template_file.read()
 
 
@@ -37,7 +40,7 @@ def build_header(template):
     replace the corresponding variable in the template file with the header and
     returns the altered template
     """
-    header = "<h1><a href=\"../index.html\">Airway - Database</a></h1>"
+    header = '<h1><a href="../index.html">Airway - Database</a></h1>'
     return template.replace("%header", header)
 
 
@@ -52,7 +55,8 @@ def build_pat_menu(template):
     for pat in sorted(pat_list):
         meta_row = metadata[metadata["PatientID"] == int(pat)].squeeze()
         l += "\n<li><a href=../{}/{}.html><b>{:0=3}</b>..{}({})</a></li>\n".format(
-            pat, pat, meta_row['#'], pat, meta_row['Name'])
+            pat, pat, meta_row["#"], pat, meta_row["Name"]
+        )
     return template.replace("%patMenu", l)
 
 
@@ -63,28 +67,24 @@ def build_description(template):
     """
 
     meta_row = metadata[metadata["PatientID"] == int(pat_id)].squeeze()
-    date = str(meta_row['AcquisitionDate'])
+    date = str(meta_row["AcquisitionDate"])
     if len(date) == 8:  # convert to ISO8601 - YYYY-MM-DD
         date = "{}-{}-{}".format(date[0:4], date[4:6], date[6:8])
 
-    machine = str(meta_row['Manufacturer']) + " "
-    machine += str(meta_row['ManufacturerModelName'])
+    machine = str(meta_row["Manufacturer"]) + " "
+    machine += str(meta_row["ManufacturerModelName"])
 
-    class_row = classification[classification['patient'] == int(pat_id)].squeeze()
+    class_row = classification[classification["patient"] == int(pat_id)].squeeze()
 
     descr = "<table>\n"
-    descr += "<tr><th>NAME:</th><td>{}</td></tr>\n".format(meta_row['Name'])
-    descr += "<tr><th>ID:</th><td>{}</td></tr>\n".format(meta_row['PatientID'])
-    descr += "<tr><th>SEX:</th><td>{}</td></tr>\n".format(meta_row['PatientSex'])
+    descr += "<tr><th>NAME:</th><td>{}</td></tr>\n".format(meta_row["Name"])
+    descr += "<tr><th>ID:</th><td>{}</td></tr>\n".format(meta_row["PatientID"])
+    descr += "<tr><th>SEX:</th><td>{}</td></tr>\n".format(meta_row["PatientSex"])
     descr += "<tr><th>DATE:</th><td>{}</td></tr>\n".format(date)
     descr += "<tr><th>MACHINE:</th><td>{}</td></tr>\n".format(machine)
-    descr += "<tr><th>SLICE-THICKNESS:</th><td>{} mm</td></tr>\n".format(
-        meta_row['SliceThickness'])
-    descr += "<tr><th>HISTORY:</th><td>{}</td></tr>\n".format(
-        meta_row['AdditionalPatientHistory'])
-    descr += "<tr><th>CLASSIFICATION:</th><td>{}</td></tr>\n".format(
-        class_row['classification']
-    )
+    descr += "<tr><th>SLICE-THICKNESS:</th><td>{} mm</td></tr>\n".format(meta_row["SliceThickness"])
+    descr += "<tr><th>HISTORY:</th><td>{}</td></tr>\n".format(meta_row["AdditionalPatientHistory"])
+    descr += "<tr><th>CLASSIFICATION:</th><td>{}</td></tr>\n".format(class_row["classification"])
     descr += "</table>"
 
     return template.replace("%patDescription", descr)
@@ -129,7 +129,7 @@ def build_pictures(template):
         ("lobe-4", "right lower lobe<br>(Bronchus lobaris inferior dexter)"),
         ("lobe-5", "right middle lobe<br>(Bronchus lobaris medius)"),
         ("lobe-6", "right upper lobe<br>(Bronchus lobaris superior dexter)"),
-        ("tree", "complete split tree")
+        ("tree", "complete split tree"),
     ]
     pic_names.reverse()
     l = ""
@@ -142,11 +142,11 @@ def build_pictures(template):
         else:
             descr = ""
         n = "\n<br><b>{}</b><br><br>\n".format(descr)
-        if pic.name.startswith('tree'):
-            s = "<img id='imgBig' src=\"{}\" alt=\"{}\">".format(pic.name, descr)
+        if pic.name.startswith("tree"):
+            s = '<img id=\'imgBig\' src="{}" alt="{}">'.format(pic.name, descr)
         else:
-            s = "<img src=\"{}\" alt=\"{}\">".format(pic.name, descr)
-        l += n + "\n<br><a href=\"{}\">{}</a><br><br><br>\n".format(pic.name, s)
+            s = '<img src="{}" alt="{}">'.format(pic.name, descr)
+        l += n + '\n<br><a href="{}">{}</a><br><br><br>\n'.format(pic.name, s)
         name_counter += 1
     if len(pics) == 0:
         l = "\n<b>No pictures available</b>\n"
@@ -161,8 +161,8 @@ def build_evolution_of_tree(template):
     pics = copy_files(source_path, target_path, glob="*.png")
     l = ""
     for pic in pics:
-        s = "<img id='imgBig' src=\"{}\" alt=\"{}\">".format(pic.name, pic.name)
-        l += "\n<br><a href=\"{}\">{}</a><br>\n".format(pic.name, s)
+        s = '<img id=\'imgBig\' src="{}" alt="{}">'.format(pic.name, pic.name)
+        l += '\n<br><a href="{}">{}</a><br>\n'.format(pic.name, s)
     if len(pics) == 0:
         l = "\n<b>No pictures available.</b>\n"
     return template.replace("%treeEvolution", l)
@@ -173,23 +173,19 @@ def build_links(current_template):
     link generation, takes the template, returns the altered template
     """
 
-    fs_link = "<br><a href=\"fullscreen-bronchus.html\" target=\"_blank\">view bronchus in fullscreen</a>"
+    fs_link = '<br><a href="fullscreen-bronchus.html" target="_blank">view bronchus in fullscreen</a>'
     current_template = current_template.replace("%fullBronchusLink", fs_link)
 
-    obj_archive, obj_size = create_object_archive(
-        str(target_path) + "/" + pat_id + "-objects",
-        obj_path
-    )
-    graph_archive, graph_size = create_object_archive(
-        str(target_path) + "/" + pat_id + "-graphml-trees",
-        tree_path
+    obj_archive, obj_size = create_object_archive(str(target_path) + "/" + pat_id + "-objects", obj_path)
+    graph_archive, graph_size = create_object_archive(str(target_path) + "/" + pat_id + "-graphml-trees", tree_path)
+
+    obj_link = '<a href="{}">download 3D-object files (zip {} MiB)</a>'.format(
+        Path(obj_archive).name, round(obj_size / 1024 / 1024, 2)
     )
 
-    obj_link = "<a href=\"{}\">download 3D-object files (zip {} MiB)</a>".format(
-        Path(obj_archive).name, round(obj_size / 1024 / 1024, 2))
-
-    graph_link = "<a href=\"{}\">download all trees (zipped graphml {} KiB)</a>".format(
-        Path(graph_archive).name, round(graph_size / 1024, 1))
+    graph_link = '<a href="{}">download all trees (zipped graphml {} KiB)</a>'.format(
+        Path(graph_archive).name, round(graph_size / 1024, 1)
+    )
 
     current_template = current_template.replace("%objectDownload", obj_link)
     current_template = current_template.replace("%graphDownload", graph_link)
@@ -213,7 +209,7 @@ def save_website(website, website_path):
     write the final website to disk, should be the last step
     """
 
-    with open(website_path, 'w') as website_file:
+    with open(website_path, "w") as website_file:
         website_file.write(website)
 
 
@@ -255,17 +251,17 @@ def simplify_object_files():
             arguments = [
                 str(objs_path),
                 "-no-duplicates",
-                "-in", str(obj),
-                "-out", str(target_path) + "/" + str(obj.name),
-                "-quiet", "-no-progress",
-                "-workers", "4"
+                "-in",
+                str(obj),
+                "-out",
+                str(target_path) + "/" + str(obj.name),
+                "-quiet",
+                "-no-progress",
+                "-workers",
+                "4",
             ]
             try:
-                ret_val = subprocess.run(
-                    arguments,
-                    check=True,
-                    capture_output=True,
-                    encoding="utf-8")
+                ret_val = subprocess.run(arguments, check=True, capture_output=True, encoding="utf-8")
                 print(ret_val.stdout)
                 sys.stderr.write(ret_val.stderr)
             except subprocess.CalledProcessError:

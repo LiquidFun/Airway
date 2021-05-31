@@ -40,24 +40,50 @@ log_path = base_path / "logs" / f"log_{datetime.now().strftime('%Y-%m-%d_%H:%M:%
 
 def parse_args(defaults):
     parser = argparse.ArgumentParser()
-    parser.add_argument("stages", nargs="*", type=str,
-                        help="list of stages to calculate (e.g. 1, 2, 3, tree, vis). "
-                             "If left empty, all stages will be listed with a short description.")
+    parser.add_argument(
+        "stages",
+        nargs="*",
+        type=str,
+        help="list of stages to calculate (e.g. 1, 2, 3, tree, vis). "
+        "If left empty, all stages will be listed with a short description.",
+    )
     parser.add_argument("-P", "--path", default=defaults["path"], help="airway data path")
-    parser.add_argument("-w", "--workers", type=int, default=defaults["workers"],
-                        help="number of parallel workers (threads)")
-    parser.add_argument("-f", "--force", help="force overwriting of previous stages",
-                        default=defaults["force"], action="store_true")
-    parser.add_argument("-1", "--single", help="will do a single patient instead of all patients (useful for testing)",
-                        default=defaults['single'], action="store_true")
-    parser.add_argument("-p", "--patients", type=str, action="append",
-                        help="instead of processing all patients, only these patient ids will be used")
-    parser.add_argument("-l", "--list_patients", action="store_true",
-                        help="only list patients including their index and generated name in the given stages")
-    parser.add_argument("-v", "--verbose", action="store_true", default=defaults['verbose'],
-                        help="print stdout and stderr directly")
-    parser.add_argument("-c", "--clean", action="store_true", default=defaults['clean'],
-                        help="cleans given stage directories before running them")
+    parser.add_argument(
+        "-w", "--workers", type=int, default=defaults["workers"], help="number of parallel workers (threads)"
+    )
+    parser.add_argument(
+        "-f", "--force", help="force overwriting of previous stages", default=defaults["force"], action="store_true"
+    )
+    parser.add_argument(
+        "-1",
+        "--single",
+        help="will do a single patient instead of all patients (useful for testing)",
+        default=defaults["single"],
+        action="store_true",
+    )
+    parser.add_argument(
+        "-p",
+        "--patients",
+        type=str,
+        action="append",
+        help="instead of processing all patients, only these patient ids will be used",
+    )
+    parser.add_argument(
+        "-l",
+        "--list_patients",
+        action="store_true",
+        help="only list patients including their index and generated name in the given stages",
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", default=defaults["verbose"], help="print stdout and stderr directly"
+    )
+    parser.add_argument(
+        "-c",
+        "--clean",
+        action="store_true",
+        default=defaults["clean"],
+        help="cleans given stage directories before running them",
+    )
     # TODO: Possibly implement these:
     # parser.add_argument("--profile", action="store_true", default=defaults["profile"],
     #                    help="profile modules with cProfile to see which parts are taking long")
@@ -67,21 +93,24 @@ def parse_args(defaults):
     # parser.add_argument("-D", "--dependents", help="create all given stages including their dependents")
     # dependency=all predecessor stages to this one, dependant=stages requiring this one (find better names)
     args = parser.parse_args()
-    if args.path in defaults['paths']:
-        args.path = defaults['paths'][args.path]
+    if args.path in defaults["paths"]:
+        args.path = defaults["paths"][args.path]
     return args
 
 
 def validate_args(args):
     assert args.path is not None, "ERROR: Airway data path required!"
     if args.clean:
-        log(f"{col.yellow('WARNING')}: Argument {col.green('--clean')} was given. ",
-            stdout=True, add_time=True)
+        log(f"{col.yellow('WARNING')}: Argument {col.green('--clean')} was given. ", stdout=True, add_time=True)
         log("This will delete and rerun all the supplied stages!", stdout=True, tabs=1)
-        log(f"This might delete data, do you really want to continue ({col.yellow('y')}/{col.yellow('n')}): ",
-            stdout=True, tabs=1, end='')
+        log(
+            f"This might delete data, do you really want to continue ({col.yellow('y')}/{col.yellow('n')}): ",
+            stdout=True,
+            tabs=1,
+            end="",
+        )
         question = input()
-        if question.lower() not in ['yes', 'y']:
+        if question.lower() not in ["yes", "y"]:
             log("User questions their (life-)choices! Aborting!", stdout=True, add_time=True)
             sys.exit(0)
 
@@ -104,16 +133,16 @@ def main():
     # Link keyword (eg. '1', '17', 'tree', 'vis', etc.) to stages (eg. 'raw_airway', 'stage-01', 'stage-31', etc.)
     keyword_to_stages: Dict[str, List[str]] = {"all": []}
     for stage_name, stage_config in stage_configs.items():
-        assert 'stage-' in stage_name, f"ERROR: Cannot handle stage name {stage_name}!"
-        keyword_to_stages['all'].append(stage_name)
+        assert "stage-" in stage_name, f"ERROR: Cannot handle stage name {stage_name}!"
+        keyword_to_stages["all"].append(stage_name)
 
         # Add keyword to generate one or more stages
-        keyword_to_stages[str(int(stage_name.split('-')[1]))] = [stage_name]
-        for group in stage_config['groups']:
+        keyword_to_stages[str(int(stage_name.split("-")[1]))] = [stage_name]
+        for group in stage_config["groups"]:
             if group not in keyword_to_stages:
                 keyword_to_stages[group] = []
             keyword_to_stages[group].append(stage_name)
-        stage_config.pop('groups', None)
+        stage_config.pop("groups", None)
 
     # Go through each stage in args and handle ranges ('5-7' as well as single calls '3',
     # keywords such as 'vis', 'analysis' and '3+' ranges)
@@ -121,13 +150,13 @@ def main():
     for s_arg in args.stages:  # e.g. s_arg in ['1-3', '4', '5-7', 'analysis']
         try:
             to = 1000
-            if '-' in s_arg:
-                fr, to = map(int, s_arg.split('-'))
-            elif '+' in s_arg:
-                fr = int(s_arg.split('+')[0])
+            if "-" in s_arg:
+                fr, to = map(int, s_arg.split("-"))
+            elif "+" in s_arg:
+                fr = int(s_arg.split("+")[0])
             else:
                 fr = to = int(s_arg)
-            keywords = list(map(str, range(fr, to+1)))
+            keywords = list(map(str, range(fr, to + 1)))
         except ValueError:
             keywords = [s_arg]
         for s in keywords:
@@ -140,7 +169,7 @@ def main():
     root_stage = "raw_airway"
 
     def get_dependencies(name):
-        """ This returns all the recursive dependencies of a stage """
+        """This returns all the recursive dependencies of a stage"""
         _dependencies = {name}
         # Add all dependencies for each name in _dependencies until there are no changes anymore
         while True:
@@ -168,10 +197,9 @@ def main():
         else:
             queue.put(curr)
 
-    formatted = ', '.join([
-        col.yellow() + s.replace('stage-', '') + col.reset()
-        for s in stages_to_process_in_dependency_order
-    ])
+    formatted = ", ".join(
+        [col.yellow() + s.replace("stage-", "") + col.reset() for s in stages_to_process_in_dependency_order]
+    )
     log(f"Stage processing order: {formatted}\n", stdout=True, tabs=1)
 
     for curr_stage_name in stages_to_process_in_dependency_order:
@@ -185,31 +213,31 @@ def main():
 def list_all_stages(stage_configs: Dict[str, Any]):
     log(f"Listing all stages", stdout=True, add_time=True)
     for stage_config_name, params in stage_configs.items():
-        if stage_config_name in ['defaults']:
+        if stage_config_name in ["defaults"]:
             continue
-        optional_keyword = f" ({col.cyan(params['groups'][0])})" if len(params.get('groups', [])) > 0 else ''
+        optional_keyword = f" ({col.cyan(params['groups'][0])})" if len(params.get("groups", [])) > 0 else ""
         log(f"{col.green(stage_config_name)}{optional_keyword}: ", stdout=True, tabs=1)
         log(f"- Input stages: [{', '.join(map(col.blue, params.get('inputs', '')))}]", stdout=True, tabs=1)
-        log('- ' + '\n  '.join(textwrap.wrap(params.get('description', ''), width=50)), stdout=True, tabs=1)
-        log('', stdout=True, tabs=1)
+        log("- " + "\n  ".join(textwrap.wrap(params.get("description", ""), width=50)), stdout=True, tabs=1)
+        log("", stdout=True, tabs=1)
 
 
 def stage(
-        stage_name: str,
-        *,  # Arguments below must be keyword args
-        path: str,
-        workers: int,
-        force: bool,
-        script: str,
-        inputs: List[str],
-        args: List[str],
-        single: bool,
-        patients: List[str],  # TODO add desc
-        per_patient: bool,
-        list_patients: bool,  # TODO add desc
-        verbose: bool,  # TODO add desc
-        **_,  # Ignore kwargs
-    ):
+    stage_name: str,
+    *,  # Arguments below must be keyword args
+    path: str,
+    workers: int,
+    force: bool,
+    script: str,
+    inputs: List[str],
+    args: List[str],
+    single: bool,
+    patients: List[str],  # TODO add desc
+    per_patient: bool,
+    list_patients: bool,  # TODO add desc
+    verbose: bool,  # TODO add desc
+    **_,  # Ignore kwargs
+):
     """Meta function for calculating most stages in parallel.
 
     args:
@@ -237,7 +265,7 @@ def stage(
 
     args = list(map(str, args))
 
-    script_module = script.replace(".py", "").replace('/', '.')
+    script_module = script.replace(".py", "").replace("/", ".")
     log(f"Running script {col.bold()}{script_module}{col.reset()} as module.\n")
     # assert script_path.exists(), f"ERROR: script {script_path} does not exist!"
 
@@ -252,17 +280,18 @@ def stage(
     else:
         input_stage_path = input_stage_paths[0]
         if input_stage_path.name != "raw_airway":
-            assert input_stage_path.exists(), f"ERROR: {input_stage_path} does not exist. " \
-                                              f"Calculate the predecessor stage first!"
+            assert input_stage_path.exists(), (
+                f"ERROR: {input_stage_path} does not exist. " f"Calculate the predecessor stage first!"
+            )
         output_stage_path.mkdir(exist_ok=True, parents=True)
 
         # build the list of subprocess-arguments for later use with subprocess.run
         subprocess_args = []
 
-        patient_dirs = input_stage_path.glob('*')
+        patient_dirs = input_stage_path.glob("*")
         if patients:
             log("Handling only these patients:", stdout=True, add_time=True)
-            log('\n'.join(map(col.yellow, patients)) + "\n", stdout=True, tabs=1)
+            log("\n".join(map(col.yellow, patients)) + "\n", stdout=True, tabs=1)
             patient_dirs = list(filter(lambda p: p.name in patients, patient_dirs))
 
         # If script should be called for every patient
@@ -273,8 +302,9 @@ def stage(
                 patient_input_stage_paths = [isp / patient_dir.name for isp in input_stage_paths]
                 patient_output_stage_path.mkdir(exist_ok=True, mode=0o777)
 
-                subprocess_args.append(["python3", "-m", script_module, patient_output_stage_path,
-                                        *patient_input_stage_paths, *args])
+                subprocess_args.append(
+                    ["python3", "-m", script_module, patient_output_stage_path, *patient_input_stage_paths, *args]
+                )
                 # Only add a single patient if 'single' given
                 if single:
                     break
@@ -285,8 +315,8 @@ def stage(
         # log("", stdout=True)
 
 
-def log(message: str, stdout=False, add_time=False, tabs=0, end='\n'):
-    """ Logs to a file and optionally to stdout
+def log(message: str, stdout=False, add_time=False, tabs=0, end="\n"):
+    """Logs to a file and optionally to stdout
 
     args:
         message: a string (possibly multiline) which will be logged
@@ -300,20 +330,20 @@ def log(message: str, stdout=False, add_time=False, tabs=0, end='\n'):
     """
     if not log_path.parent.exists():
         log_path.parent.mkdir(exist_ok=True)
-    lines = message.split('\n')
+    lines = message.split("\n")
     time_added = False
     for i in range(len(lines)):
-        add_time_for_this_line = lines[i].strip() != '' and add_time and not time_added
-        tabs_adjusted_to_time = tabs-1 if add_time_for_this_line else tabs
+        add_time_for_this_line = lines[i].strip() != "" and add_time and not time_added
+        tabs_adjusted_to_time = tabs - 1 if add_time_for_this_line else tabs
         if tabs_adjusted_to_time >= 1:
-            prefix = ' ' * 11 * tabs_adjusted_to_time
+            prefix = " " * 11 * tabs_adjusted_to_time
             lines[i] = prefix + lines[i]
         if add_time_for_this_line:
             time_fmt = f"{col.reset()}[{col.green()}{datetime.now().strftime('%H:%M:%S')}{col.reset()}] "
             lines[i] = time_fmt + lines[i]
             time_added = True
-    message = '\n'.join(lines)
-    with open(log_path, 'a+') as log_file:
+    message = "\n".join(lines)
+    with open(log_path, "a+") as log_file:
         if stdout:
             print(message, end=end)
         filtered_message = col.filter_color_codes(message)
@@ -322,7 +352,7 @@ def log(message: str, stdout=False, add_time=False, tabs=0, end='\n'):
 
 
 def subprocess_executor(args):
-    """ Run a single script with args """
+    """Run a single script with args"""
     # return subprocess.run(argument, capture_output=True, encoding="utf-8")
     # Above is Python 3.7, so PIPE instead of capture_output=True
 
@@ -333,12 +363,14 @@ def subprocess_executor(args):
 
 
 def concurrent_executor(subprocess_args, worker, tqdm_prefix="", verbose=False):
-    """ Executes multiple scripts as their own modules, logging their STDOUT and STDERR """
+    """Executes multiple scripts as their own modules, logging their STDOUT and STDERR"""
     global errors
     with ProcessPoolExecutor(max_workers=worker) as executor:
         bar_fmt = "{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_inv_fmt}{postfix}]"
         stage_name = str(Path(subprocess_args[0][3]).parents[0].name)
-        with tqdm(total=len(subprocess_args), unit="run", desc=tqdm_prefix, ncols=80, bar_format=bar_fmt) as progress_bar:
+        with tqdm(
+            total=len(subprocess_args), unit="run", desc=tqdm_prefix, ncols=80, bar_format=bar_fmt
+        ) as progress_bar:
             for count, retVal in enumerate(executor.map(subprocess_executor, subprocess_args), start=1):
 
                 out = f"\nOutput for Process {col.yellow(count)}/{col.yellow(len(subprocess_args))}"
@@ -358,7 +390,7 @@ def concurrent_executor(subprocess_args, worker, tqdm_prefix="", verbose=False):
 
 
 def show_error_statistics():
-    """ Display error statistics for all computed stages using a global dict """
+    """Display error statistics for all computed stages using a global dict"""
     global errors
     if errors:
         log(f"Error Statistics:", stdout=True, add_time=True)
@@ -379,7 +411,7 @@ def run():
     os.chdir(base_path)
 
     # Remove oldest logs if there are too many
-    log_files = sorted(log_path.parent.glob('*'), key=lambda p: p.stat().st_mtime)
+    log_files = sorted(log_path.parent.glob("*"), key=lambda p: p.stat().st_mtime)
     for existing_log_file in log_files[:-9]:
         existing_log_file.unlink()
     main()
@@ -389,7 +421,7 @@ def run():
     if log_link_path.exists():
         os.unlink(log_link_path)
     os.link(log_path, log_link_path)
-    log(f'Saved log file to {col.green()}{log_path}{col.reset()} (linked to ./log)', stdout=True, add_time=True)
+    log(f"Saved log file to {col.green()}{log_path}{col.reset()} (linked to ./log)", stdout=True, add_time=True)
     os.umask(previous_mask)
 
 

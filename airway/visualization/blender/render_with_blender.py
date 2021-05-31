@@ -16,7 +16,7 @@ is_blender279 = bpy.app.version < (2, 80)
 
 # Handle sys args
 argv = sys.argv
-argv = argv[argv.index("--") + 1:]
+argv = argv[argv.index("--") + 1 :]
 print(argv)
 bronchus_path = argv[0]
 skeleton_path = argv[1]
@@ -70,10 +70,10 @@ def make_obj_smooth(obj, iterations=10, factor=2):
     smoothing.factor = factor
 
     # Recalculate normals
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action="DESELECT")
     select(obj, True)
-    bpy.ops.object.mode_set(mode='EDIT')
-    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
     bpy.ops.mesh.normals_make_consistent(inside=False)
     bpy.ops.object.editmode_toggle()
 
@@ -96,7 +96,7 @@ for object_name in ["Cube", "Lamp", "Light"]:
 
 # Import bronchus
 bpy.ops.import_scene.obj(filepath=bronchus_path)
-bronchus = bpy.data.objects['bronchus']
+bronchus = bpy.data.objects["bronchus"]
 make_obj_smooth(bronchus)  # Smooth before hiding select, as otherwise it doesnt work?
 hide(bronchus, selection=True)
 
@@ -107,7 +107,7 @@ def rad(degrees):
 
 
 # Move camera
-camera = bpy.data.objects['Camera']
+camera = bpy.data.objects["Camera"]
 camera.location = (0, 16, 0)
 camera.rotation_euler = (rad(90), 0, rad(-180))
 if not is_blender279:
@@ -124,7 +124,7 @@ bpy.context.scene.render.resolution_percentage = 100
 
 # Add lighting plane, move it and hide it
 bpy.ops.mesh.primitive_plane_add()
-plane = bpy.data.objects['Plane']
+plane = bpy.data.objects["Plane"]
 hide(plane, viewport=True)
 plane.scale = (22, 80, 1)
 plane.location = (0, 20, 40)
@@ -142,16 +142,16 @@ mat_name = "LightMat"
 mat = bpy.data.materials.new(mat_name)
 mat.use_nodes = True
 mat.node_tree.nodes.new(type="ShaderNodeEmission")
-mat.node_tree.nodes['Emission'].inputs[1].default_value = 5
-inp = mat.node_tree.nodes['Material Output'].inputs['Surface']
-outp = mat.node_tree.nodes['Emission'].outputs['Emission']
+mat.node_tree.nodes["Emission"].inputs[1].default_value = 5
+inp = mat.node_tree.nodes["Material Output"].inputs["Surface"]
+outp = mat.node_tree.nodes["Emission"].outputs["Emission"]
 mat.node_tree.links.new(inp, outp)
 plane.active_material = mat
 
 # Change default screen
 # bpy.context.window.screen = bpy.data.screens['3D View Full']
-if 'Airway' in bpy.data.screens:
-    bpy.context.window.screen = bpy.data.screens['Airway']
+if "Airway" in bpy.data.screens:
+    bpy.context.window.screen = bpy.data.screens["Airway"]
 
 
 def get_areas_by_type(context, type):
@@ -160,7 +160,7 @@ def get_areas_by_type(context, type):
 
 def show_names_in_current_screen():
     if is_blender279:
-        for view3d_area in get_areas_by_type(bpy.context, 'VIEW_3D'):
+        for view3d_area in get_areas_by_type(bpy.context, "VIEW_3D"):
             view_space = view3d_area.spaces[0]
             view_space.show_only_render = False
             view_space.show_floor = False
@@ -189,6 +189,7 @@ previous_reload_all_cubes = False
 
 def load_tree():
     import networkx as nx
+
     gt_tree_path = tree_path.replace("tree.graphml", "tree_gt.graphml")
     return nx.read_graphml(gt_tree_path) if Path(gt_tree_path).exists() else nx.read_graphml(tree_path)
 
@@ -204,9 +205,10 @@ def add_to_group(group_name, objects):
 def normalize(vertices, center=True):
     global np_model
     import numpy as np
+
     vertices = np.array(vertices)
     if np_model is None:
-        np_model = np.load(model_path)['arr_0']
+        np_model = np.load(model_path)["arr_0"]
     reference_shape = np.array(np_model.shape)
     rot_mat = np.array([[0, 0, -1], [0, -1, 0], [-1, 0, 0]])
     # Shift to middle of the space
@@ -243,17 +245,17 @@ def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
     tree = load_tree()
     for parent_id, child_ids in nx.bfs_successors(tree, "0"):
         parent_node = tree.nodes[parent_id]
-        parent_location = normalize([parent_node['x'], parent_node['y'], parent_node['z']])
+        parent_location = normalize([parent_node["x"], parent_node["y"], parent_node["z"]])
         for child_id in child_ids:
             node = tree.nodes[child_id]
             # print("Node coords:", [node['x'], node['y'], node['z']])
-            location = normalize([node['x'], node['y'], node['z']])
-            classification = node['split_classification']
+            location = normalize([node["x"], node["y"], node["z"]])
+            classification = node["split_classification"]
             is_gt_classification = False
-            if 'split_classification_gt' in node:
-                if node['split_classification_gt'] != "":
+            if "split_classification_gt" in node:
+                if node["split_classification_gt"] != "":
                     is_gt_classification = True
-                    classification = node['split_classification_gt']
+                    classification = node["split_classification_gt"]
             if show_all_nodes or not re.match(r"c\d+", classification):
                 if is_blender279:
                     bpy.ops.mesh.primitive_cube_add(radius=0.02, location=tuple(location))
@@ -271,11 +273,11 @@ def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
                         with open(classification_config_path, "r") as file:
                             classification_config = yaml.load(file.read(), yaml.FullLoader)
                     try:
-                        vec = normalize(classification_config[classification]['vector'], False)
+                        vec = normalize(classification_config[classification]["vector"], False)
                         target_location = vec + parent_location
                         # print(parent_location, vec, target_location)
                         for loc in [parent_location, target_location]:
-                            reference_locations.append("v " + ' '.join(map(lambda s: '{:.3f}'.format(s), loc)) + "\n")
+                            reference_locations.append("v " + " ".join(map(lambda s: "{:.3f}".format(s), loc)) + "\n")
                     except KeyError:
                         pass
                 if is_gt_classification or show_reference_nodes:
@@ -287,8 +289,8 @@ def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
             for reference_location in reference_locations:
                 tmpfile.write(reference_location)
             tmpfile.write("\n# Lines\n")
-            for index in range(1, len(reference_locations)+1, 2):
-                tmpfile.write("l {} {}\n".format(index, index+1))
+            for index in range(1, len(reference_locations) + 1, 2):
+                tmpfile.write("l {} {}\n".format(index, index + 1))
             tmpfile.flush()
             if splits_reference is not None:
                 bpy.data.objects.remove(splits_reference)
@@ -296,23 +298,24 @@ def reload_cubes(context, show_all_nodes, show_reference_nodes=False):
             splits_reference.rotation_euler = (0, 0, 0)
             splits_reference.name = "splits_reference"
             if is_blender279:
-                select(bpy.data.objects['splits_reference'])
+                select(bpy.data.objects["splits_reference"])
             group_cubes.append(splits_reference)
     else:
         if splits_reference is not None:
             hide(splits_reference, viewport=True)
         if is_blender279:
-            select(bpy.data.objects['splits'])
+            select(bpy.data.objects["splits"])
 
     if is_blender279:
         for _, cube in cubes:
             select(cube)
     add_to_group("manually_classified", group_cubes)
-    return {'FINISHED'}
+    return {"FINISHED"}
 
 
 class ClassificationReloader(bpy.types.Operator):
     """Tooltip"""
+
     bl_idname = "view3d.airway_reload_classification"
     bl_label = "Airway: reload classification"
 
@@ -323,6 +326,7 @@ class ClassificationReloader(bpy.types.Operator):
 
 class GroundTruthReloader(bpy.types.Operator):
     """Tooltip"""
+
     bl_idname = "view3d.airway_reload_ground_truth"
     bl_label = "Airway: reload ground_truth"
 
@@ -333,6 +337,7 @@ class GroundTruthReloader(bpy.types.Operator):
 
 class FullClassificationReloader(bpy.types.Operator):
     """Tooltip"""
+
     bl_idname = "view3d.airway_reload_full_classification"
     bl_label = "Airway: reload classification and show all nodes"
 
@@ -343,11 +348,13 @@ class FullClassificationReloader(bpy.types.Operator):
 
 class ClassificationSaver(bpy.types.Operator):
     """Tooltip"""
+
     bl_idname = "view3d.airway_save_classification"
     bl_label = "Airway: save classification"
 
     def execute(self, context):
         import networkx as nx
+
         show_names_in_current_screen()
         tree = load_tree()
         for node_id, cube in cubes:
@@ -360,7 +367,7 @@ class ClassificationSaver(bpy.types.Operator):
                 tree.nodes[node_id]["split_classification_gt"] = name
         nx.write_graphml(tree, tree_path.replace("tree.graphml", "tree_gt.graphml"))
         reload_cubes(context, previous_reload_all_cubes)
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 bpy.utils.register_class(ClassificationReloader)

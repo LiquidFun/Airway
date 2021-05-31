@@ -44,8 +44,7 @@ def create_subtrees(graph, patient, target_path):
 
 
 def main():
-    """ Executes all methods given above in the correct order
-    """
+    """Executes all methods given above in the correct order"""
     # |>-<-><-><-><-><-><-><-<|
     # |>- Process arguments -<|
     # |>-<-><-><-><-><-><-><-<|

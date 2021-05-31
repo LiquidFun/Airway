@@ -24,7 +24,7 @@ adjacent_26 = _adjacent(np.array([0, 0, 0]), True)
 
 
 def adjacent(coord, moore_neighborhood=False):
-    """ Returns a numpy array of adjacent coordinates to the given coordinate
+    """Returns a numpy array of adjacent coordinates to the given coordinate
 
     By default von Neumann neighborhood which returns only coordinates sharing a face (6 coordinates)
     Moore neighborhood returns all adjacent coordinates sharing a at least a vertex (26 coordinates)
@@ -33,7 +33,7 @@ def adjacent(coord, moore_neighborhood=False):
 
 
 def get_numpy_sphere(radius, hollow=False):
-    """ Returns a numpy 3D bool array with True where the sphere lies and False elsewhere as well as the centre
+    """Returns a numpy 3D bool array with True where the sphere lies and False elsewhere as well as the centre
 
     If hollow==True then only the outer shell of the sphere will be True
 
@@ -46,14 +46,14 @@ def get_numpy_sphere(radius, hollow=False):
 
     shape = ((math.ceil(radius) * 2) + 1,) * 3
     centre = np.array([round(radius)] * 3)
-    dist_mat = np.full(shape, 0.)
+    dist_mat = np.full(shape, 0.0)
     for x in range(len(dist_mat)):
         for y in range(len(dist_mat[x])):
             for z in range(len(dist_mat[x][y])):
                 dist_mat[x][y][z] = np.linalg.norm(centre - np.array([x, y, z]))
-    sphere = (dist_mat <= radius)
+    sphere = dist_mat <= radius
     if hollow:
-        sphere &= (radius - 1 < dist_mat)
+        sphere &= radius - 1 < dist_mat
     return sphere, centre
 
 
@@ -65,14 +65,14 @@ def get_coords_in_sphere_at_point(radius, point, hollow=False):
 
 
 def find_radius_via_sphere(at_point: Tuple[int, int, int], allowed_types: Set[int], model: np.ndarray):
-    """ Returns the maximum radius of a sphere which fits into the model at the given point
+    """Returns the maximum radius of a sphere which fits into the model at the given point
 
     This only considers voxels in the model which have a value in allowed_types (e.g. 1)
     and views everything else as empty.
     """
     max_radius = 50
     for radius in range(1, max_radius):
-        sphere_around_point = get_coords_in_sphere_at_point(radius + .5, at_point, hollow=True)
+        sphere_around_point = get_coords_in_sphere_at_point(radius + 0.5, at_point, hollow=True)
         for x, y, z in zip(*sphere_around_point):
             try:
                 if model[round(x), round(y), round(z)] not in allowed_types:
@@ -85,17 +85,13 @@ def find_radius_via_sphere(at_point: Tuple[int, int, int], allowed_types: Set[in
 
 
 def adjacent_euclidean(coord, dist=2):
-    """ Returns a numpy array of adjacent coordinates to the given coordinate
-
-    """
-    d = list(range(-math.floor(dist), math.ceil(dist)+1))
+    """Returns a numpy array of adjacent coordinates to the given coordinate"""
+    d = list(range(-math.floor(dist), math.ceil(dist) + 1))
 
     def condition(euclidean_dist):
         return euclidean_dist <= dist
 
     directions = [
-        np.array([x, y, z])
-        for x in d for y in d for z in d
-        if condition(np.sqrt(np.sum(np.power([x, y, z], 2))))
+        np.array([x, y, z]) for x in d for y in d for z in d if condition(np.sqrt(np.sum(np.power([x, y, z], 2))))
     ]
     return [coord + direction for direction in directions]

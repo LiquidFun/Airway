@@ -7,10 +7,10 @@ from airway.util.util import get_data_paths_from_args
 
 output_data_path, input_data_path, stage4 = get_data_paths_from_args(inputs=2)
 
-arr = np.load(input_data_path / "bronchus_coords_outer_shell.npz")['arr_0']
+arr = np.load(input_data_path / "bronchus_coords_outer_shell.npz")["arr_0"]
 
 fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
+ax = fig.add_subplot(111, projection="3d")
 
 patient = input_data_path.parent
 
@@ -39,15 +39,15 @@ max_dist = 0
 # Draw coords
 final_coords_file = stage4 / "final_coords.npz"
 if os.path.isfile(final_coords_file):
-    c = np.load(final_coords_file)['arr_0']
+    c = np.load(final_coords_file)["arr_0"]
     ax.scatter(c[1], c[2], -c[0], s=10, c="red")
 
 # Draw edges
 final_edges_file = stage4 / "final_edges.npz"
 if os.path.isfile(final_edges_file):
-    e = np.load(final_edges_file)['arr_0']
+    e = np.load(final_edges_file)["arr_0"]
     for i in range(len(e[0])):
-        ax.plot(e[1][i], e[2][i], -e[0][i], c='red')
+        ax.plot(e[1][i], e[2][i], -e[0][i], c="red")
 
 ax.set_xlabel("mm")
 ax.set_ylabel("mm")
@@ -74,7 +74,7 @@ ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
 # ax.set_zticks(ticks[2])
 
 ax.grid(False)
-ax.scatter(xs, ys, zs, s=.03, c=colors, alpha=.08)
+ax.scatter(xs, ys, zs, s=0.03, c=colors, alpha=0.08)
 
 # plt.savefig(output_data_path / "bronchus_splits.png")
 plt.show()

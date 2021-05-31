@@ -7,7 +7,7 @@ import networkx as nx
 from airway.util.parsing import parse_map_coord_to_distance
 from airway.util.util import get_data_paths_from_args
 
-plt.rcParams.update({'font.size': 7})
+plt.rcParams.update({"font.size": 7})
 
 # |>--><-><-><-><-><->-<|
 # |>- Parse arguments -<|
@@ -53,10 +53,10 @@ colors_map = {
 # |>--><-><-><-><-><--<|
 
 fig = plt.figure()
-ax1 = fig.add_subplot(221, projection='3d')
-ax2 = fig.add_subplot(222, projection='3d')
-ax3 = fig.add_subplot(223, projection='3d')
-ax4 = fig.add_subplot(224, projection='3d')
+ax1 = fig.add_subplot(221, projection="3d")
+ax2 = fig.add_subplot(222, projection="3d")
+ax3 = fig.add_subplot(223, projection="3d")
+ax4 = fig.add_subplot(224, projection="3d")
 fig.tight_layout()
 nodes_per_axis = []
 
@@ -64,7 +64,7 @@ nodes_per_axis = []
 # |>- Potentially draw bronchus -<|
 # |>-><-><-><-><-><-><-><-><-><--<|
 
-arr = np.load(bronchus_shell_data_path / "bronchus_coords_outer_shell.npz")['arr_0']
+arr = np.load(bronchus_shell_data_path / "bronchus_coords_outer_shell.npz")["arr_0"]
 
 xs = arr[1]
 ys = arr[2]
@@ -88,7 +88,7 @@ if show_bronchus:
         except:
             colors.append(0)
 
-    ax1.scatter(xs, ys, zs, s=.1, alpha=.2, c=colors)
+    ax1.scatter(xs, ys, zs, s=0.1, alpha=0.2, c=colors)
 
 # |>--><-><-><-><-><-><-><-><-><-><-><-><-><--<|
 # |>- Draw split tree before post processing -<|
@@ -97,7 +97,7 @@ if show_bronchus:
 # Draw coords
 final_coords_file = final_coords_data_path / "final_coords.npz"
 if final_coords_file.exists():
-    c = np.load(final_coords_file)['arr_0']
+    c = np.load(final_coords_file)["arr_0"]
     ax1.scatter(c[1], c[2], -c[0], s=1, c="red")
     nodes_per_axis.append(len(c[0]))
 
@@ -105,9 +105,9 @@ if final_coords_file.exists():
 final_edges_file = final_coords_data_path / "final_edges.npz"
 # print(final_edges_file)
 if final_edges_file.exists():
-    e = np.load(final_edges_file)['arr_0']
+    e = np.load(final_edges_file)["arr_0"]
     for i in range(len(e[0])):
-        ax1.plot(e[1][i], e[2][i], -e[0][i], c='red', linewidth=.5)
+        ax1.plot(e[1][i], e[2][i], -e[0][i], c="red", linewidth=0.5)
 
 # |>-><-><-><-><-><-><-><-><-><-><-><-><-><--<|
 # |>- Draw split tree after post processing -<|
@@ -133,10 +133,10 @@ for ax, file in axis_stage_file:
     z = []
     c = []
     for data in graph.nodes.data():
-        x.append(-data[1]['x'])
-        y.append(data[1]['y'])
-        z.append(data[1]['z'])
-        c.append(colors_map[data[1]['lobe']])
+        x.append(-data[1]["x"])
+        y.append(data[1]["y"])
+        z.append(data[1]["z"])
+        c.append(colors_map[data[1]["lobe"]])
     ax.scatter(y, z, x, s=1, c=c)
 
     # Add edges
@@ -147,13 +147,13 @@ for ax, file in axis_stage_file:
     for fr, to in graph.edges():
         f = graph.nodes[fr]
         t = graph.nodes[to]
-        x.append([-f['x'], -t['x']])
-        y.append([f['y'], t['y']])
-        z.append([f['z'], t['z']])
+        x.append([-f["x"], -t["x"]])
+        y.append([f["y"], t["y"]])
+        z.append([f["z"], t["z"]])
         # c.append([colors_map[f['lobe']], colors_map[t['lobe']]])
-        c.append(colors_map[f['lobe']])
+        c.append(colors_map[f["lobe"]])
     for xe, ye, ze, ce in zip(x, y, z, c):
-        ax.plot(ye, ze, xe, c=ce, linewidth=.5)
+        ax.plot(ye, ze, xe, c=ce, linewidth=0.5)
 
 # |>-<-><-><-><-><-<|
 # |>- Format axes -<|
@@ -202,7 +202,7 @@ plt.subplots_adjust(left=0.0, right=1.0, bottom=0.0, top=1.0)
 
 for index, (ax, _) in enumerate(ax_titles):
     extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-    fig.savefig(output_data_path / f'{index}_progression.png', bbox_inches=extent, dpi=300, transparent=True)
+    fig.savefig(output_data_path / f"{index}_progression.png", bbox_inches=extent, dpi=300, transparent=True)
 
 
 # Save as image

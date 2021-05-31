@@ -28,7 +28,7 @@ def read_metadata(path):
 
 
 def write_table(path, data):
-    with open(path / "metadata.csv", 'w') as file:
+    with open(path / "metadata.csv", "w") as file:
         writer = csv.writer(file)
         for patient in data:
             writer.writerow(patient)
@@ -49,10 +49,10 @@ def main():
     data = read_metadata(input_data_path)
     formatted_table = reformat_data(data)
     for formatted_line in formatted_table:
-        print('| ', ' | '.join(formatted_line), ' |', sep='')
+        print("| ", " | ".join(formatted_line), " |", sep="")
         # If is first line print formatting for markdown
-        if formatted_line[0] == '#':
-            print("|:----" * len(formatted_line), end='|\n')
+        if formatted_line[0] == "#":
+            print("|:----" * len(formatted_line), end="|\n")
     write_table(output_data_path, formatted_table)
 
 

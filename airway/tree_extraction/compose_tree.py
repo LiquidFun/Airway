@@ -22,7 +22,7 @@ def check_axis(axis_id, coord_list, direction, reduced_model):
     while coord in range(0, maximum - 1):
         path_len = path_len + 1
 
-        coord += (1 if direction == "positive" else -1)
+        coord += 1 if direction == "positive" else -1
 
         curr_coord_list[axis_id] = coord
 
@@ -92,11 +92,7 @@ def create_nodes(graph, np_coord, np_coord_attributes, reduced_model):
 
 
 def get_weight(coord1, coord2):
-    return math.sqrt(
-        (coord1[0] - coord2[0])**2
-        + (coord1[1] - coord2[1])**2
-        + (coord1[2] - coord2[2])**2
-    )
+    return math.sqrt((coord1[0] - coord2[0]) ** 2 + (coord1[1] - coord2[1]) ** 2 + (coord1[2] - coord2[2]) ** 2)
 
 
 # returns a dict with association edge -> weight
@@ -111,13 +107,8 @@ def create_edges(graph, np_edges, dic_coords, edge_attributes):
         curr_weight = get_weight(coord1, coord2)
         edge = (dic_coords[coord1], dic_coords[coord2])
         dic_edges_to_weight.update({edge: curr_weight})
-        group_sizes = ' '.join([str(attr) for attr in edge_attributes[i]])
-        graph.add_edge(
-            edge[0],
-            edge[1],
-            weight=curr_weight,
-            group_sizes=group_sizes
-        )
+        group_sizes = " ".join([str(attr) for attr in edge_attributes[i]])
+        graph.add_edge(edge[0], edge[1], weight=curr_weight, group_sizes=group_sizes)
         i += 1
 
     return dic_edges_to_weight
@@ -133,13 +124,13 @@ def erase_level_from_graph(graph, max_level):
     graph = graph.copy()
     node_list = list(nx.nodes(graph))
     start_node = min([int(a) for a in node_list])
-    print(f"(startNode={start_node})", end=' -> ')
-    start_level = graph.nodes[str(start_node)]['level']
-    print(f"(level={start_level})", end=' -> ')
+    print(f"(startNode={start_node})", end=" -> ")
+    start_level = graph.nodes[str(start_node)]["level"]
+    print(f"(level={start_level})", end=" -> ")
     max_level = max_level + start_level
 
     for node in node_list:
-        if graph.nodes[node]['level'] >= max_level:
+        if graph.nodes[node]["level"] >= max_level:
             # print("node " + str(node) + " level " + str(graph.nodes[node]['level']))
             graph.remove_node(node)
 
@@ -155,11 +146,11 @@ def set_level(input_graph):
         if node != 0:
             parent = node
             for poss_parent in neighbors:
-                if graph.nodes[parent]['level'] > graph.nodes[poss_parent]['level']:
+                if graph.nodes[parent]["level"] > graph.nodes[poss_parent]["level"]:
                     parent = poss_parent
             # print("parent {} -- level -> {}"
             #        .format(parent,graph.nodes[parent]['level']))
-            graph.nodes[node]['level'] = graph.nodes[parent]['level'] + 1
+            graph.nodes[node]["level"] = graph.nodes[parent]["level"] + 1
     return graph
 
 
@@ -167,13 +158,13 @@ def get_children(graph, node):
     children = []
     neighbors = nx.neighbors(graph, node)
     for poss_child in neighbors:
-        if graph.nodes[poss_child]['level'] > graph.nodes[node]['level']:
+        if graph.nodes[poss_child]["level"] > graph.nodes[node]["level"]:
             children.append(poss_child)
     return children
 
 
 def set_attribute_to_node(graph, filter_by_value_attribute, target):
-    """ 
+    """
     set_attribute_to_node(graph, filter, target) set or update existing attributes to
     a node filtered by filter.
 
@@ -212,16 +203,16 @@ def main():
         print(reduced_model_data_path)
         sys.exit("ERROR: stage-02 needed")
 
-    reduced_model = np.load(reduced_model_data_path / "reduced_model.npz")['arr_0']
+    reduced_model = np.load(reduced_model_data_path / "reduced_model.npz")["arr_0"]
     print(np.unique(reduced_model))
     reduced_model[reduced_model >= 7] = 0
     # Remove all voxels 7, 8 and 9 since these are veins/arteries and not useful in classification
     print(np.unique(reduced_model))
 
-    np_coord = np.load(coord_file_path)['arr_0']
-    np_edges = np.load(edges_file_path)['arr_0']
-    np_coord_attributes = np.load(coord_attributes_file_path, allow_pickle=True)['arr_0']
-    np_edges_attributes = np.load(edge_attributes_file_path, allow_pickle=True)['arr_0']
+    np_coord = np.load(coord_file_path)["arr_0"]
+    np_edges = np.load(edges_file_path)["arr_0"]
+    np_coord_attributes = np.load(coord_attributes_file_path, allow_pickle=True)["arr_0"]
+    np_edges_attributes = np.load(edge_attributes_file_path, allow_pickle=True)["arr_0"]
 
     # create empty graphs
     graph = nx.Graph(patient=patient_id)
@@ -232,7 +223,7 @@ def main():
     # set levels to the graph
     graph = set_level(graph)
     # level 2 does not belong to a lobe
-    graph = set_attribute_to_node(graph, ('level', 2), ('lobe', 0))
+    graph = set_attribute_to_node(graph, ("level", 2), ("lobe", 0))
 
     show_stats(graph, patient_id)
 

@@ -13,7 +13,7 @@ except:
 
 
 def get_image_num(filename):
-    return int(filename.replace('.npz', '').replace("IMG", ''))
+    return int(filename.replace(".npz", "").replace("IMG", ""))
 
 
 model = []
@@ -31,5 +31,5 @@ print(model.shape)
 # Names base on a standing person in front of you
 for axis, name in enumerate(["top-to-bottom", "front-to-back", "right-to-left"]):
     plt.imshow(np.sum(model, axis=axis))
-    plt.savefig(os.path.join(visualizations_dir, name+"-heatmap.png"))
+    plt.savefig(os.path.join(visualizations_dir, name + "-heatmap.png"))
     plt.show()

@@ -13,13 +13,13 @@ def test_existence():
 
 @pytest.fixture
 def stage_configs():
-    with stage_configs_path.open('r') as file:
+    with stage_configs_path.open("r") as file:
         return yaml.load(file.read(), yaml.FullLoader)
 
 
 @pytest.fixture
 def stage_configs_no_defaults(stage_configs) -> Dict[str, Dict[str, Any]]:
-    del stage_configs['defaults']
+    del stage_configs["defaults"]
     return stage_configs
 
 
@@ -33,15 +33,15 @@ def test_all_stages_with_description(stage_configs_no_defaults):
 
 def test_all_script_files_exist(stage_configs_no_defaults):
     for config in stage_configs_no_defaults.values():
-        assert Path(config['script']).exists(), f"File '{config['script']}' does not exist!"
+        assert Path(config["script"]).exists(), f"File '{config['script']}' does not exist!"
 
 
 def test_all_inputs_exist(stage_configs_no_defaults):
     for config in stage_configs_no_defaults.values():
-        for input_stage in config['inputs']:
+        for input_stage in config["inputs"]:
             assert input_stage in stage_configs_no_defaults or input_stage in ["raw_airway"]
 
 
 def test_all_stages_have_groups(stage_configs_no_defaults):
     for config in stage_configs_no_defaults.values():
-        assert len(config.get('groups', [])) != 0
+        assert len(config.get("groups", [])) != 0

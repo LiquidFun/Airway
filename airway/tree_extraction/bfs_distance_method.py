@@ -22,8 +22,7 @@ distance_mask_path = output_data_path / "distance_mask"
 
 
 def find_first_voxel(model):
-    """ Find first (highest) voxel in the lung
-    """
+    """Find first (highest) voxel in the lung"""
     for layer in range(len(model)):
         possible_coords = []
         found = False
@@ -44,7 +43,7 @@ def find_first_voxel(model):
             return list(best)
 
 
-model = np.load(patient_data_file)['arr_0']
+model = np.load(patient_data_file)["arr_0"]
 model[model != 1] = 0
 # import sys
 # print(np.unique(model, return_counts=True))
@@ -103,10 +102,12 @@ def traverse_skeleton():
     np.savez_compressed(distance_to_coords_file, np_dist_to_coords)
     print(f"Writing distance to coords with shape: {np_dist_to_coords.shape}")
 
-    for dictionary, filename in [(visited, coord_to_distance_file),
-                                 (coord_to_previous, coord_to_previous_file),
-                                 (coord_to_next_count, coord_to_next_count_file)]:
-        with open(filename, 'w') as curr_file:
+    for dictionary, filename in [
+        (visited, coord_to_distance_file),
+        (coord_to_previous, coord_to_previous_file),
+        (coord_to_next_count, coord_to_next_count_file),
+    ]:
+        with open(filename, "w") as curr_file:
             for coord, dist in dictionary.items():
                 x, y, z = coord
                 curr_file.write(f"{x}, {y}, {z}: {dist}\n")

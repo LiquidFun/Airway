@@ -34,28 +34,30 @@ FINAL_EDGES_FILE = output_data_path / "final_edges"
 EDGE_ATTRIBUTES_FILE = output_data_path / "edge_attributes"
 COORD_ATTRIBUTES_FILE = output_data_path / "coord_attributes"
 
-model = np.load(REDUCED_MODEL)['arr_0']
+model = np.load(REDUCED_MODEL)["arr_0"]
 print(model.shape)
 
 
 def parse_coord(coord, split_on):
-    text = coord.replace('[', '').replace(']', '').strip().split(split_on)
+    text = coord.replace("[", "").replace("]", "").strip().split(split_on)
     if len(text) == 1:
         return int(text[0])
     else:
-        return tuple([int(a) for a in text if a != ''])
+        return tuple([int(a) for a in text if a != ""])
 
 
 coord_to_previous = {}
 coord_to_next_count = {}
-for dictionary, filename in [(coord_to_previous, MAP_COORD_TO_PREVIOUS_FILE),
-                             (coord_to_next_count, MAP_COORD_TO_NEXT_COUNT_FILE)]:
-    with open(filename, 'r') as dist_file:
-        for line in dist_file.read().split('\n'):
-            if line != '':
-                [first_half, second_half] = line.split(':')
-                coord = parse_coord(first_half, ',')
-                prev = parse_coord(second_half, ' ')
+for dictionary, filename in [
+    (coord_to_previous, MAP_COORD_TO_PREVIOUS_FILE),
+    (coord_to_next_count, MAP_COORD_TO_NEXT_COUNT_FILE),
+]:
+    with open(filename, "r") as dist_file:
+        for line in dist_file.read().split("\n"):
+            if line != "":
+                [first_half, second_half] = line.split(":")
+                coord = parse_coord(first_half, ",")
+                prev = parse_coord(second_half, " ")
                 dictionary[coord] = prev
 
 # Maps group id (1, 0) to group_id (0, 0) to show the predecessor
@@ -69,14 +71,14 @@ group_to_avg_coord = {}
 
 
 def distance(coord1, coord2):
-    return np.linalg.norm(coord1-coord2)
+    return np.linalg.norm(coord1 - coord2)
 
 
 def calc_diameter(area):
-    return math.sqrt(4*area/math.pi)
+    return math.sqrt(4 * area / math.pi)
 
 
-DISTANCE_TO_COORDS = np.load(DISTANCE_TO_COORDS_FILE, allow_pickle=True)['arr_0']
+DISTANCE_TO_COORDS = np.load(DISTANCE_TO_COORDS_FILE, allow_pickle=True)["arr_0"]
 
 group_diameter = {}
 group_area = {}
@@ -84,7 +86,7 @@ group_area = {}
 # Each iteration corresponds to 1 depth level from the start point
 for curr_dist, coords in enumerate(DISTANCE_TO_COORDS):
     coords_set = {tuple(coord) for coord in coords}
-    print("Current manhattan distance: {}".format(curr_dist), end=' -> ')
+    print("Current manhattan distance: {}".format(curr_dist), end=" -> ")
 
     # Groups is a dictionary where each coordinate maps to an integer which stands for it's group
     # number.  A group in this project is regarded as a set of coordinates which have the same
@@ -131,7 +133,7 @@ for curr_dist, coords in enumerate(DISTANCE_TO_COORDS):
 
             # Remember the previous group for each group. Used to build the tree
             if curr_dist != 0:
-                prev_group[group_id] = all_groups[(curr_dist-1)][coord_to_previous[coord]]
+                prev_group[group_id] = all_groups[(curr_dist - 1)][coord_to_previous[coord]]
 
             # Add the information about the group for saving as attribute
             group_area[group_id] = group_size
@@ -151,7 +153,7 @@ for curr_dist, coords in enumerate(DISTANCE_TO_COORDS):
 successor_count = {(0, 0): 0}
 for group, prev_group_index in prev_group.items():
     curr_dist, group_index = group
-    key = (curr_dist-1, prev_group_index)
+    key = (curr_dist - 1, prev_group_index)
     if key not in successor_count:
         successor_count[key] = 0
     successor_count[key] += 1
@@ -169,7 +171,7 @@ not_skip_groups = {(0, 0)}
 
 for group, prev_group_index in prev_group.items():
     curr_dist, group_index = group
-    prev = (curr_dist-1, prev_group_index)
+    prev = (curr_dist - 1, prev_group_index)
 
     # print(f"Prev: {prev}, curr: {group}")
     # Propagates prev until node with succesor_count of not 1 appears, i.e. either 0 (end node),
@@ -217,7 +219,7 @@ for group_id in minimal_tree:
     ys.append(c[1])
     zs.append(c[2])
     group_area[group_id] = find_radius_via_sphere(c, {1}, model) * 2
-    group_diameter[group_id] = (group_area[group_id] / 2)**2 * math.pi
+    group_diameter[group_id] = (group_area[group_id] / 2) ** 2 * math.pi
     group_attr.append(np.array([group_diameter[group_id], group_area[group_id], group_id[0]], dtype=object))
 
 final_coords = np.array([xs, ys, zs])
@@ -242,7 +244,7 @@ for group_id in minimal_tree:
         # Add edge attributes
         area1 = group_diameter[group_id]
         area2 = group_diameter[prev_group_id]
-        curr_edge_areas = [round((area1+area2)/2)] * len(edge_area_per_group_id[group_id])
+        curr_edge_areas = [round((area1 + area2) / 2)] * len(edge_area_per_group_id[group_id])
         print(group_id, curr_edge_areas)
         # avg_area = sum(curr_edge_areas) / len(curr_edge_areas)
         # avg_diameter = sum([calc_diameter(a) for a in curr_edge_areas]) / len(curr_edge_areas)

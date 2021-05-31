@@ -4,11 +4,11 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
 
-groups = np.load("../data/3124983/map_distance_to_coords.npz")['arr_0']
+groups = np.load("../data/3124983/map_distance_to_coords.npz")["arr_0"]
 print(len(groups))
 
 fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
+ax = fig.add_subplot(111, projection="3d")
 
 n = 100
 
@@ -34,7 +34,7 @@ for index, group in enumerate(groups):
         xs.append(t[1])
         ys.append(t[2])
         zs.append(-t[0])
-        curr_colors.append(1.0-index/len(groups))
+        curr_colors.append(1.0 - index / len(groups))
     group_coords.append((xs, ys, zs))
     group_colors.append(curr_colors)
 

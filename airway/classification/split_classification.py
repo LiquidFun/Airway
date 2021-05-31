@@ -26,10 +26,10 @@ def get_inputs():
 
 
 def get_point(node):
-    return np.array([node['x'], node['y'], node['z']])
+    return np.array([node["x"], node["y"], node["z"]])
 
 
-def cost_exponential_diff_function(curr_vec: np.array, target_vec: np.array, exp=2, div=math.pi/3):
+def cost_exponential_diff_function(curr_vec: np.array, target_vec: np.array, exp=2, div=math.pi / 3):
     angle_pre_arccos = (curr_vec @ target_vec) / (np.linalg.norm(curr_vec) * np.linalg.norm(target_vec))
     angle_radians = np.arccos(np.clip(angle_pre_arccos, -1, 1))
     global_angles.append(angle_radians)
@@ -37,11 +37,11 @@ def cost_exponential_diff_function(curr_vec: np.array, target_vec: np.array, exp
 
 
 def classify_tree(
-        starting_tree: nx.Graph,
-        successors: Dict[str, List[str]],
-        classification_config: Dict[str, Dict[str, Any]],
-        starting_node="0",
-        starting_cost=0,
+    starting_tree: nx.Graph,
+    successors: Dict[str, List[str]],
+    classification_config: Dict[str, Dict[str, Any]],
+    starting_node="0",
+    starting_cost=0,
 ):
     """
     Creates every valid classification for a tree based on the rules in classification.yaml
@@ -57,7 +57,7 @@ def classify_tree(
     tree_variations_queue = PriorityQueue()
     tree_variations_queue.put((starting_cost, starting_tree, [starting_node]))
 
-    print(starting_cost, starting_tree, starting_node, starting_tree.nodes[starting_node]['split_classification'])
+    print(starting_cost, starting_tree, starting_node, starting_tree.nodes[starting_node]["split_classification"])
     cost_hack = 0
 
     # While there are any tree variations in queue iterate over them
@@ -79,7 +79,7 @@ def classify_tree(
         # Divide next node list into curr node id, and rest which still need to be checked
         (curr_node_id, *rest_node_ids) = next_node_id_list
         curr_node = curr_tree.nodes[curr_node_id]
-        curr_classification = curr_node['split_classification']
+        curr_classification = curr_node["split_classification"]
         curr_node_point = get_point(curr_node)
 
         # Only handle if current classification (i.e. Bronchus/RB3, etc) is actually in classification config
@@ -87,7 +87,8 @@ def classify_tree(
 
             # If there are more children than in the config then extend list to account for all of them
             children_in_rules: List[Optional[str]] = [
-                child for child in classification_config[curr_classification]['children']
+                child
+                for child in classification_config[curr_classification]["children"]
                 if child not in curr_classifications_used
             ]
             # The ids as strings of nodes which succeed current node
@@ -104,9 +105,14 @@ def classify_tree(
 
                 # Create a list of all descendants for each children, this then can be used to check whether any
                 # of them share descendants when this list has non unique members
-                descendant_list = sum([
-                    list(classification_config.get(p, {}).get('deep_descendants', set())) + ([] if p is None else [p])
-                    for _, p in successors_with_permutations], [])
+                descendant_list = sum(
+                    [
+                        list(classification_config.get(p, {}).get("deep_descendants", set()))
+                        + ([] if p is None else [p])
+                        for _, p in successors_with_permutations
+                    ],
+                    [],
+                )
                 permutation_shares_descendants = len(descendant_list) != len(set(descendant_list))
                 if permutation_shares_descendants:
                     continue
@@ -115,7 +121,7 @@ def classify_tree(
                 perm_cost = curr_cost
                 do_all_classifications_have_vectors = any(
                     classification in classification_config
-                    and 'vector' in classification_config.get(classification, {})
+                    and "vector" in classification_config.get(classification, {})
                     for _, classification in successors_with_permutations
                 )
 
@@ -126,7 +132,7 @@ def classify_tree(
                         child_point = get_point(child_node)
                         vec = child_point - curr_node_point
                         if classification in classification_config:
-                            target_vec = classification_config[classification]['vector']
+                            target_vec = classification_config[classification]["vector"]
                             child_node["cost"] = float(cost_exponential_diff_function(vec, target_vec, 1, 1))
                             perm_cost += child_node["cost"]
                 cost_with_perm.append((perm_cost, successors_with_permutations))
@@ -146,19 +152,21 @@ def classify_tree(
                     perm_tree = curr_tree.copy()
                     for child_id, classification in successors_with_permutations:
                         if classification is not None:
-                            perm_tree.nodes[child_id]['split_classification'] = classification
+                            perm_tree.nodes[child_id]["split_classification"] = classification
                     next_nodes = rest_node_ids.copy() + [
-                        child_id for child_id, classification in successors_with_permutations
+                        child_id
+                        for child_id, classification in successors_with_permutations
                         if classification in classification_config
                     ]
-                    take_best = classification_config[curr_node['split_classification']]['take_best']
+                    take_best = classification_config[curr_node["split_classification"]]["take_best"]
                     if take_best:
                         for child_node_id in successors[curr_node_id]:
-                            perm_cost, perm_tree = classify_tree(perm_tree, successors, classification_config,
-                                                                 child_node_id, perm_cost + cost_hack)[0]
+                            perm_cost, perm_tree = classify_tree(
+                                perm_tree, successors, classification_config, child_node_id, perm_cost + cost_hack
+                            )[0]
                             next_nodes.remove(child_node_id)
                     cost_hack += 0.000001
-                    tree_variations_queue.put((perm_cost+cost_hack, perm_tree, next_nodes))
+                    tree_variations_queue.put((perm_cost + cost_hack, perm_tree, next_nodes))
                     if take_best:
                         break
                     # print("Breaking for node", node['split_classification'], "since it is specified as take_best")
@@ -173,22 +181,22 @@ def merge_tree_into(tree_into, tree_other):
     for node_id in tree_into.nodes:
         node = tree_into.nodes[node_id]
         other_node = tree_other.nodes[node_id]
-        if node["split_classification"][0] == 'c':
+        if node["split_classification"][0] == "c":
             node["split_classification"] = other_node["split_classification"]
 
 
 def is_valid_tree(
-        tree: nx.Graph,
-        classification_config: Dict[str, Dict[str, Any]],
-        successors: Dict[str, List[str]],
-        start_node_id: str = "0"
+    tree: nx.Graph,
+    classification_config: Dict[str, Dict[str, Any]],
+    successors: Dict[str, List[str]],
+    start_node_id: str = "0",
 ):
     required_descendants = set()
     have_appeared = set()
 
     def recursive_is_valid_tree(current_id):
         nonlocal required_descendants, have_appeared, tree
-        classification = tree.nodes[current_id]['split_classification']
+        classification = tree.nodes[current_id]["split_classification"]
 
         # Make sure each classification appears only once
         if classification in have_appeared:
@@ -200,7 +208,7 @@ def is_valid_tree(
         required_descendants.discard(classification)
         curr_descendants = set()
         if classification in classification_config:
-            curr_descendants = set(classification_config[classification].get('descendants', []))
+            curr_descendants = set(classification_config[classification].get("descendants", []))
         required_descendants |= curr_descendants
 
         # Recursively iterate over each node and require each node to be valid
@@ -210,8 +218,10 @@ def is_valid_tree(
 
         # Tree is valid only if all descendants have been removed in the recursive steps above
         if not required_descendants.isdisjoint(curr_descendants):
-            print(f"Invalid because {required_descendants} is required as descendant, but is not available."
-                  f" Descendants: {curr_descendants} for node {classification}")
+            print(
+                f"Invalid because {required_descendants} is required as descendant, but is not available."
+                f" Descendants: {curr_descendants} for node {classification}"
+            )
             return False
         return True
 
@@ -222,7 +232,7 @@ def show_classification_vectors(tree, successors):
     for node_id, children_ids in successors.items():
         node = tree.nodes[node_id]
         node_point = get_point(node)
-        curr_classification = node['split_classification']
+        curr_classification = node["split_classification"]
         print(node_id, children_ids, curr_classification)
         for child_id in children_ids:
             child_node = tree.nodes[child_id]
@@ -234,22 +244,22 @@ def show_classification_vectors(tree, successors):
 
 
 def add_deep_descendants_to_classification_config(classification_config):
-
     def recursive_get(classification):
         if classification not in classification_config:
             return []
         cc = classification_config[classification]
-        dd = cc['deep_descendants']
-        dd += cc.get('descendants', [])
-        for child in cc['children']:
+        dd = cc["deep_descendants"]
+        dd += cc.get("descendants", [])
+        for child in cc["children"]:
             dd += recursive_get(child)
-        cc['deep_descendants'] = list(set(dd))
+        cc["deep_descendants"] = list(set(dd))
         return dd
-    recursive_get('Trachea')
+
+    recursive_get("Trachea")
 
 
 def add_defaults_to_classification_config(classification_config):
-    defaults = {'children': [], 'deep_descendants': [], 'descendants': [], 'take_best': False}
+    defaults = {"children": [], "deep_descendants": [], "descendants": [], "take_best": False}
     for cid in classification_config:
         for key, val in defaults.items():
             classification_config[cid][key] = classification_config[cid].get(key, copy.deepcopy(val))
@@ -260,49 +270,52 @@ def add_defaults_to_classification_config(classification_config):
 
 def add_default_split_classification_id_to_tree(tree: nx.Graph):
     for node in tree.nodes:
-        tree.nodes[node]['split_classification_gt'] = ""
-        tree.nodes[node]['split_classification'] = f"c{node}"
-    tree.nodes['0']['split_classification'] = 'Trachea'
+        tree.nodes[node]["split_classification_gt"] = ""
+        tree.nodes[node]["split_classification"] = f"c{node}"
+    tree.nodes["0"]["split_classification"] = "Trachea"
 
 
 def add_cost_by_level_in_tree(tree, successors):
-    def recursive_add_cost(curr_id='0', cost=1000000.0):
-        tree.nodes[curr_id]['cost'] = float(0.0)
+    def recursive_add_cost(curr_id="0", cost=1000000.0):
+        tree.nodes[curr_id]["cost"] = float(0.0)
         for child_id in successors.get(curr_id, []):
-            recursive_add_cost(child_id, cost/2)
+            recursive_add_cost(child_id, cost / 2)
+
     recursive_add_cost()
-    tree.nodes['0']['cost'] = float(0.0)
+    tree.nodes["0"]["cost"] = float(0.0)
 
 
 def get_total_cost_in_tree(tree, successors):
-    def rec_total(curr_id='0'):
-        return tree.nodes[curr_id]['cost'] + sum(rec_total(child_id) for child_id in successors.get(curr_id, []))
+    def rec_total(curr_id="0"):
+        return tree.nodes[curr_id]["cost"] + sum(rec_total(child_id) for child_id in successors.get(curr_id, []))
+
     return rec_total()
 
 
 def get_all_classifications_in_tree(tree, successors):
     def rec(curr_id):
-        return [tree.nodes[curr_id]['split_classification']] + sum([rec(i) for i in successors.get(curr_id, [])], [])
-    return rec('0')
+        return [tree.nodes[curr_id]["split_classification"]] + sum([rec(i) for i in successors.get(curr_id, [])], [])
+
+    return rec("0")
 
 
 def add_colors_in_tree(tree, classification_config):
     for node_id in tree.nodes:
         node = tree.nodes[node_id]
         try:
-            node['color'] = classification_config[node['split_classification']]['color']
+            node["color"] = classification_config[node["split_classification"]]["color"]
         except KeyError:
             pass
 
 
 def main():
     output_path, tree, classification_config = get_inputs()
-    successors = dict(nx.bfs_successors(tree, '0'))
+    successors = dict(nx.bfs_successors(tree, "0"))
     add_defaults_to_classification_config(classification_config)
     add_default_split_classification_id_to_tree(tree)
     add_deep_descendants_to_classification_config(classification_config)
     add_cost_by_level_in_tree(tree, successors)
-    print('\n'.join(map(str, classification_config.items())))
+    print("\n".join(map(str, classification_config.items())))
     all_trees = classify_tree(tree, successors, classification_config)
     # print(f"All trees: {len(all_trees)}")
     all_trees.sort(key=lambda x: x[0])

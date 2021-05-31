@@ -56,15 +56,10 @@ def calc_diameter(area):
 
 
 def distance(graph, node_a, node_b):
-    """ Calculates Pythagorean distance between 2 points in graph
-    """
+    """Calculates Pythagorean distance between 2 points in graph"""
     fr = graph.nodes[node_a]
     to = graph.nodes[node_b]
-    return math.sqrt(
-        (fr["x"] - to["x"]) ** 2
-        + (fr["y"] - to["y"]) ** 2
-        + (fr["z"] - to["z"]) ** 2
-    )
+    return math.sqrt((fr["x"] - to["x"]) ** 2 + (fr["y"] - to["y"]) ** 2 + (fr["z"] - to["z"]) ** 2)
 
 
 # ============================================================================
@@ -73,14 +68,12 @@ def distance(graph, node_a, node_b):
 
 
 def load_graph(path):
-    """ Loads graph from given path
-    """
+    """Loads graph from given path"""
     return nx.read_graphml(path)
 
 
 def remove_nodes(graph, nodes_to_be_removed):
-    """ Removes given nodes from graph
-    """
+    """Removes given nodes from graph"""
     nodes_removed = len(nodes_to_be_removed)
     nodes_before = nx.number_of_nodes(graph)
     nodes_remaining = nodes_before - nodes_removed
@@ -90,16 +83,14 @@ def remove_nodes(graph, nodes_to_be_removed):
 
 
 def combine_group_sizes(graph, node_pre, node, node_suc):
-    """ Combines 2 group size strings of 2 edges into one and returns it
-    """
+    """Combines 2 group size strings of 2 edges into one and returns it"""
     e1 = graph[node_pre][node]
     e2 = graph[node][node_suc]
     return e1["group_sizes"] + " " + e2["group_sizes"]
 
 
 def merge_edges(graph, predecessor, node, successor):
-    """ Correctly merges 2 edges
-    """
+    """Correctly merges 2 edges"""
     graph.add_edge(
         predecessor,
         successor,
@@ -109,13 +100,12 @@ def merge_edges(graph, predecessor, node, successor):
 
 
 def assign_children_count(graph):
-    """ Assigns each node a number which specifies how many children it has
-    """
+    """Assigns each node a number which specifies how many children it has"""
 
     successors = dict(nx.bfs_successors(graph, "0"))
     all_successors = {}
 
-    def successor_count(curr_node='0'):
+    def successor_count(curr_node="0"):
         if curr_node in successors:
             count = sum([successor_count(succ) for succ in successors[curr_node]])
         else:
@@ -129,20 +119,19 @@ def assign_children_count(graph):
 
 
 def get_successor_lobes(graph, return_count=False):
-    """ Returns a dict with each node and a set with all it's successors lobes
-    """
+    """Returns a dict with each node and a set with all it's successors lobes"""
 
     successors = dict(nx.bfs_successors(graph, "0"))
     all_successors = {}
 
-    def successor_lobes(curr_node='0'):
+    def successor_lobes(curr_node="0"):
         lobes = {}
         if curr_node in successors:
             for succ in successors[curr_node]:
                 for key, occ in successor_lobes(succ).items():
                     lobes[key] = lobes.get(key, 0) + occ
         all_successors[curr_node] = lobes
-        curr_lobe = graph.nodes[curr_node]['lobe']
+        curr_lobe = graph.nodes[curr_node]["lobe"]
         if curr_lobe != 0:
             lobes[curr_lobe] = lobes.get(curr_lobe, 0) + 1
         return lobes
@@ -155,10 +144,10 @@ def get_successor_lobes(graph, return_count=False):
 
 
 def set_attribute_recursively(graph, node, attribute_name, value):
-    """ Traverses the tree from the root node and starting at `node`
+    """Traverses the tree from the root node and starting at `node`
     sets all `attribute_name` to `value`
     """
-    successors = dict(nx.bfs_successors(graph, '0'))
+    successors = dict(nx.bfs_successors(graph, "0"))
 
     def rec_traverse(curr_node):
         graph.nodes[curr_node][attribute_name] = value
@@ -175,8 +164,7 @@ def set_attribute_recursively(graph, node, attribute_name, value):
 
 
 def remove_minor_edges(graph):
-    """ Removes edges which have no children and are very short (see constant)
-    """
+    """Removes edges which have no children and are very short (see constant)"""
     has_successors = {s[0] for s in nx.bfs_successors(graph, "0")}
     nodes_to_be_removed = []
     for fr, to in nx.bfs_edges(graph, "0"):
@@ -186,20 +174,17 @@ def remove_minor_edges(graph):
             # if graph[fr][to]['group_sizes'].count(' ') < REMOVE_IF_GROUP_SIZE_LESS_THAN:
 
             # Alternative way of checking, compares the current diameter with edge length
-            node_diameter = graph.nodes.data()[fr]['group_size']
-            avg_edge_length = graph[fr][to]['group_sizes'].count(' ')
+            node_diameter = graph.nodes.data()[fr]["group_size"]
+            avg_edge_length = graph[fr][to]["group_sizes"].count(" ")
             if avg_edge_length - node_diameter < REMOVE_IF_GROUP_SIZE_LESS_THAN:
                 nodes_to_be_removed.append(to)
     remove_nodes(graph, nodes_to_be_removed)
 
 
 def straighten_edges(graph):
-    """ Merges all nodes which only have 1 child with their parent
-    """
+    """Merges all nodes which only have 1 child with their parent"""
     predecessors = dict(nx.bfs_predecessors(graph, "0"))
-    only_single_successor = [
-        (n, *s) for n, s in nx.bfs_successors(graph, "0") if len(s) == 1
-    ]
+    only_single_successor = [(n, *s) for n, s in nx.bfs_successors(graph, "0") if len(s) == 1]
     nodes_to_be_removed = []
     cant_be_removed = {"0"}
     for node, successor in only_single_successor:
@@ -212,8 +197,7 @@ def straighten_edges(graph):
 
 
 def merge_close_nodes(graph):
-    """ Merges nodes when they are really close to each other
-    """
+    """Merges nodes when they are really close to each other"""
     has_successors = dict(nx.bfs_successors(graph, "0"))
     nodes_to_be_removed = []
     edges_to_be_merged = []
@@ -222,7 +206,7 @@ def merge_close_nodes(graph):
         if node not in cant_be_removed:
             curr = graph[predecessor][node]
             nums = list(map(int, curr["group_sizes"].split()))
-            weight = curr['weight']
+            weight = curr["weight"]
             diameter = calc_diameter(sum(nums) / len(nums))
             if weight < diameter * DIAMETER_TO_WEIGHT_RATIO:
                 if node in has_successors:
@@ -230,7 +214,7 @@ def merge_close_nodes(graph):
                         cant_be_removed.add(successor)
                         edges_to_be_merged.append((graph, predecessor, node, successor))
                 nodes_to_be_removed.append(node)
-                print(f"Merging: weight: {weight:.2f}, average: {diameter:.2f}", end=' -> ')
+                print(f"Merging: weight: {weight:.2f}, average: {diameter:.2f}", end=" -> ")
                 print(curr)
     for edge_merge in edges_to_be_merged:
         merge_edges(*edge_merge)
@@ -238,10 +222,9 @@ def merge_close_nodes(graph):
 
 
 def remove_children_without_children(graph):
-    """ Remove all nodes which don't have any children in the first 4 layers
-    """
-    successors = dict(nx.bfs_successors(graph, '0'))
-    nodes_to_check = set('0')
+    """Remove all nodes which don't have any children in the first 4 layers"""
+    successors = dict(nx.bfs_successors(graph, "0"))
+    nodes_to_check = set("0")
     for _ in range(3):
         new_nodes = set()
         for node in nodes_to_check:
@@ -266,80 +249,75 @@ def remove_children_without_children(graph):
 # -------------------------------- Recoloring --------------------------------
 # ============================================================================
 
+
 def recolor_if_all_adjacent_have_different_color(graph):
-    """ Iterates over each node and recolors if _all_ adjacent nodes have a
+    """Iterates over each node and recolors if _all_ adjacent nodes have a
     different color
     """
-    root_successors = get_successor_lobes(graph, return_count=True)['0']
+    root_successors = get_successor_lobes(graph, return_count=True)["0"]
     for node in graph.nodes():
         n = graph.nodes
-        if n[node]['lobe'] != 0:
-            adjacent_lobes = {
-                n[adj]['lobe'] for adj in graph[node] if n[adj]['lobe'] != 0
-            }
+        if n[node]["lobe"] != 0:
+            adjacent_lobes = {n[adj]["lobe"] for adj in graph[node] if n[adj]["lobe"] != 0}
             if len(adjacent_lobes) == 1:
                 surrounding_lobe = list(adjacent_lobes)[0]
-                if surrounding_lobe != n[node]['lobe']:
-                    if root_successors[n[node]['lobe']] > 1:
+                if surrounding_lobe != n[node]["lobe"]:
+                    if root_successors[n[node]["lobe"]] > 1:
                         print(f"Recoloring node {node} from {n[node]['lobe']} to {surrounding_lobe}")
-                        n[node]['lobe'] = surrounding_lobe
-                        root_successors[n[node]['lobe']] -= 1
+                        n[node]["lobe"] = surrounding_lobe
+                        root_successors[n[node]["lobe"]] -= 1
                         root_successors[surrounding_lobe] += 1
 
 
 def possibly_make_neutral_above_level_4(graph):
-    """ Recolors the highest node which only has right middle lobe
+    """Recolors the highest node which only has right middle lobe
     and right lower lobe nodes below it
     """
     for node, successor_lobes in get_successor_lobes(graph).items():
-        if graph.nodes[node]['level'] <= 4 and graph.nodes[node]['lobe'] != 0:
+        if graph.nodes[node]["level"] <= 4 and graph.nodes[node]["lobe"] != 0:
             if len(successor_lobes) > 1:
                 print(f"Making node {node} neutral since it's successors are: {successor_lobes}")
-                graph.nodes[node]['lobe'] = 0
+                graph.nodes[node]["lobe"] = 0
         # if 4 in successor_lobes and 5 in successor_lobes:
         # print(node, successor_lobes)
 
 
 def recolor_if_successors_all_different_color(graph):
-    """ Iterates over each node and recolor a node of all it's successors
+    """Iterates over each node and recolor a node of all it's successors
     have a different color
     """
     for node, successor_lobes in get_successor_lobes(graph).items():
-        curr_lobe = graph.nodes[node]['lobe']
+        curr_lobe = graph.nodes[node]["lobe"]
         if curr_lobe != 0:
             if len(successor_lobes) == 1 and curr_lobe not in successor_lobes:
                 c = list(successor_lobes)[0]
-                graph.nodes[node]['lobe'] = c
+                graph.nodes[node]["lobe"] = c
                 print(f"Recoloring node {node} from {curr_lobe} to {c}")
 
 
 def add_new_parent_for_lobe(graph):
-    """ Recolors a neutral node if it would connect several subtrees of the same color
-    """
-    successors = dict(nx.bfs_successors(graph, '0'))
+    """Recolors a neutral node if it would connect several subtrees of the same color"""
+    successors = dict(nx.bfs_successors(graph, "0"))
     for node in graph.nodes():
-        curr_lobe = graph.nodes[node]['lobe']
+        curr_lobe = graph.nodes[node]["lobe"]
         if curr_lobe == 0:
             if node in successors:
-                lobes = [graph.nodes[succ]['lobe'] for succ in successors[node]]
+                lobes = [graph.nodes[succ]["lobe"] for succ in successors[node]]
                 occ = {lobe: lobes.count(lobe) for lobe in lobes}
-                new_lobe = [
-                    lobe for lobe, count in occ.items()
-                    if 1 < count == max(occ.values())
-                ]
+                new_lobe = [lobe for lobe, count in occ.items() if 1 < count == max(occ.values())]
                 if new_lobe:
                     if new_lobe[0] != curr_lobe:
-                        graph.nodes[node]['lobe'] = new_lobe[0]
+                        graph.nodes[node]["lobe"] = new_lobe[0]
                         print(f"Adding new parent node {node} from {curr_lobe} to {new_lobe[0]}")
 
 
 def recolor_entire_subtree_to_majority_at_level_4_or_5(graph):
-    """ Very drastic measure, recolors subtree at depth at 4 or 5 to the majority
+    """Very drastic measure, recolors subtree at depth at 4 or 5 to the majority
     of its successors. Note that level 5 will be used instead of 4 if its successors
     are of type 4 or 5 (right middle lobe and right upper lobe)
     """
     all_successor_lobes = get_successor_lobes(graph, return_count=True)
-    root_successors = all_successor_lobes['0']
+    root_successors = all_successor_lobes["0"]
     print(root_successors)
     for node, successor_lobes in all_successor_lobes.items():
         if 1 < len(successor_lobes):
@@ -350,7 +328,7 @@ def recolor_entire_subtree_to_majority_at_level_4_or_5(graph):
 
             # This if checks whether the current node is on level 4,
             # or if it is on level 5 if below it are only lobe of type 4 and 5
-            if (n['level'] == 4 and not any(exc)) or (n['level'] == 5 and all(exc)):
+            if (n["level"] == 4 and not any(exc)) or (n["level"] == 5 and all(exc)):
                 print(successor_lobes)
                 new_lobe_max = max(successor_lobes, key=lambda key: successor_lobes[key])
 
@@ -369,7 +347,7 @@ def recolor_entire_subtree_to_majority_at_level_4_or_5(graph):
                     ]
                     # print(difference_per_lobe_root_and_curr_node)
                     if all(difference_per_lobe_root_and_curr_node):
-                        set_attribute_recursively(graph, node, 'lobe', new_lobe)
+                        set_attribute_recursively(graph, node, "lobe", new_lobe)
                         print(f"Reassigning all nodes below {node} to {new_lobe}")
                         break
 
@@ -380,8 +358,7 @@ def recolor_entire_subtree_to_majority_at_level_4_or_5(graph):
 
 
 def main():
-    """ Executes all methods given above in the correct order
-    """
+    """Executes all methods given above in the correct order"""
     # |>-<-><-><-><-><-><-><-<|
     # |>- Process arguments -<|
     # |>-<-><-><-><-><-><-><-<|
@@ -425,8 +402,8 @@ def main():
     assign_children_count(graph)
 
     graph = set_level(graph)
-    graph = set_attribute_to_node(graph, ('level', 2), ('lobe', 0))
-    graph = set_attribute_to_node(graph, ('level', 3), ('lobe', 0))
+    graph = set_attribute_to_node(graph, ("level", 2), ("lobe", 0))
+    graph = set_attribute_to_node(graph, ("level", 3), ("lobe", 0))
 
     assert nx.is_tree(graph), "ERROR: Graph is no longer a tree!"
 

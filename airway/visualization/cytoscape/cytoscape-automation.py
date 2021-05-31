@@ -8,11 +8,11 @@ from pathlib import Path
 cy = CyRestClient()
 cy.session.delete()
 
-pathsToGraphs = sorted(Path(sys.argv[1]).glob('3183090/*.graphml'))
+pathsToGraphs = sorted(Path(sys.argv[1]).glob("3183090/*.graphml"))
 
 cyNets = []
 i = 0
 for path in pathsToGraphs:
-    cyNets.append(cy.network.create_from(str(path), collection='net-' + str(i)))
-    i = i+1
+    cyNets.append(cy.network.create_from(str(path), collection="net-" + str(i)))
+    i = i + 1
     time.sleep(0.2)

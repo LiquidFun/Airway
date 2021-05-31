@@ -8,7 +8,7 @@ from airway.util.helper_functions import adjacent
 
 
 def dist_point_to_segment(p: np.ndarray, segment_p1: np.ndarray, segment_p2: np.ndarray):
-    """ Return distance from point to finite line segment
+    """Return distance from point to finite line segment
 
     >>> def a(a1, a2, a3): return np.array([a1, a2, a3])
     >>> dist_point_to_segment(a(0, 0, 0), a(1, 1, 1), a(10, 10, 10))
@@ -51,19 +51,19 @@ def fill_line(model: np.ndarray, line_p1: np.ndarray, line_p2: np.ndarray, dist:
 
 
 def get_point(node):
-    return np.array([int(a) for a in [node['x'], node['y'], node['z']]])
+    return np.array([int(a) for a in [node["x"], node["y"], node["z"]]])
 
 
 def main():
     output_data_path, reduced_model_data_path, tree_data_path = get_data_paths_from_args(inputs=2)
-    model = np.zeros(np.load(reduced_model_data_path / 'reduced_model.npz')['arr_0'].shape)
+    model = np.zeros(np.load(reduced_model_data_path / "reduced_model.npz")["arr_0"].shape)
     tree = nx.read_graphml(tree_data_path / "tree.graphml")
-    for parent_id, child_ids in nx.bfs_successors(tree, '0'):
+    for parent_id, child_ids in nx.bfs_successors(tree, "0"):
         parent_node = tree.nodes[parent_id]
         parent_point = get_point(parent_node)
         for child_id in child_ids:
             child_point = get_point(tree.nodes[child_id])
-            fill_line(model, parent_point, child_point, max(2, parent_node['group_size']/2))
+            fill_line(model, parent_point, child_point, max(2, parent_node["group_size"] / 2))
 
     print(*zip(*np.unique(model, return_counts=True)))
     np.savez_compressed(output_data_path / "model.npz", model)
