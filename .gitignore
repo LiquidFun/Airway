@@ -1,4 +1,4 @@
-defaults.yaml
+configs/defaults.yaml
 __pycache__
 *.obj
 *.csv
@@ -10,3 +10,4 @@ log
 manual_classification
 *.swp
 *.swo
+airway.egg-info

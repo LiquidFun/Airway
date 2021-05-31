@@ -138,17 +138,17 @@ Note that currently NIFTI images are not supported, all `IMG\d` files are DICOM 
 
 At least Python 3.6 is required for this project.
 
-After cloning install the required pip packages:
+```
+pip3 install airway
+```
 
-```pip3 install -r requirements.txt```
+The open source 3D visualisation software [Blender](https://www.blender.org/) is required for visualisation. This dependency is optional if you do not need the visualisation part. Install from the website above or via a package manager like this (pip does not have blender): 
 
-These are required for most visualisation stages (although most stuff will work without):
+```apt install blender```
 
-```apt install blender python3-igraph```
+Tested with Blender versions 2.76, 2.79, 2.82 and 2.92. It should also work in newer versions as the major API change was in 2.80.
 
-Tested with Blender versions 2.76, 2.79 and 2.82. It should also work in newer versions as the major API change was in 2.80.
-
-Now configure the defaults, copy and rename `example_defaults.yaml` to `defaults.yaml` 
+Now configure the defaults, copy and rename `configs/example_defaults.yaml` to `configs/defaults.yaml` 
 (in the root folder of the project) and change the path in the file to where you have put the data.
 You may ignore the other parameters for now, although feel free to read the comments there and adjust
 them as needed (especially number of workers/threads).

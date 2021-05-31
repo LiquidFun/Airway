@@ -34,7 +34,7 @@ workers: 8
 # False is used as default
 force: True
 
-# Whether only a single patient should computed all
+# Whether only a single patient should be computed all
 # the time. Generally no reason to change this.
 single: False
 
