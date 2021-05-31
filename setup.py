@@ -4,13 +4,14 @@ from setuptools import setup
 
 setup(
     name="airway",
-    version="0.1.0",
+    version="0.1.1",
     description="Automatic classification of tertiary bronchi based on bronchus masks using a rule-based approach.",
     long_description=open(Path(__file__).parent / "README.md", "r").read(),
+    long_description_content_type="text/markdown",
     license="GPL-3.0",
     author="Brutenis Gliwa",
     url="https://github.com/LiquidFun/Airway",
-    python_requires=">=3.6.0",
+    python_requires=">=3.6",
     entry_points={
         "console_scripts": [
             "airway=airway_pipeline:run",

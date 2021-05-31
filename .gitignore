@@ -13,3 +13,4 @@ manual_classification
 *.swp
 *.swo
 airway.egg-info
+dist

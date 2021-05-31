@@ -26,9 +26,9 @@ This project is work in progress and is being actively developed! Be aware that 
 An example can be seen below, the 18 segments of the lung are automatically annotated in 
 the voxel model (the labels are added manually though).
 
-![](./media/images/AnnotatedLung2.png)
+![](https://raw.githubusercontent.com/LiquidFun/Airway/master/media/images/AnnotatedLung2.png)
 
-![](./media/images/bronchus0.png)
+![](https://raw.githubusercontent.com/LiquidFun/Airway/master/media/images/bronchus0.png)
 
 Example visualisation of split detection, rendered with Blender.
 
@@ -232,20 +232,20 @@ You can also see the various files created by the stages:
 
 # More images
 
-![](./media/images/distance-to-top.png)
+![](https://raw.githubusercontent.com/LiquidFun/Airway/master/media/images/distance-to-top.png)
 
-![](./media/images/tree-only.png)
+![](https://raw.githubusercontent.com/LiquidFun/Airway/master/media/images/tree-only.png)
 
-![](./media/images/lobe-visualization2.png)
+![](https://raw.githubusercontent.com/LiquidFun/Airway/master/media/images/lobe-visualization2.png)
 
 ## Example trees for patient 3183090
 
-![](./media/images/3183090-tree.png)
-![](./media/images/lobe-2-3183090.graphml.png)
-![](./media/images/lobe-3-3183090.graphml.png)
-![](./media/images/lobe-4-3183090.graphml.png)
-![](./media/images/lobe-5-3183090.graphml.png)
-![](./media/images/lobe-6-3183090.graphml.png)
+![](https://raw.githubusercontent.com/LiquidFun/Airway/master/media/images/3183090-tree.png)
+![](https://raw.githubusercontent.com/LiquidFun/Airway/master/media/images/lobe-2-3183090.graphml.png)
+![](https://raw.githubusercontent.com/LiquidFun/Airway/master/media/images/lobe-3-3183090.graphml.png)
+![](https://raw.githubusercontent.com/LiquidFun/Airway/master/media/images/lobe-4-3183090.graphml.png)
+![](https://raw.githubusercontent.com/LiquidFun/Airway/master/media/images/lobe-5-3183090.graphml.png)
+![](https://raw.githubusercontent.com/LiquidFun/Airway/master/media/images/lobe-6-3183090.graphml.png)
 
 # Credits & Thanks to
 
