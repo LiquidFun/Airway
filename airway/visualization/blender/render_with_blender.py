@@ -4,7 +4,9 @@ import tempfile
 from pathlib import Path
 import re
 
-# Internal import to access blender functionalities
+# Internal import to access blender functionalities, an editor
+# will not know this command, so ignore it:
+# noinspection PyUnresolvedReferences,PyPackageRequirements
 import bpy
 
 # Careful python version is 3.5 here, no f-strings!

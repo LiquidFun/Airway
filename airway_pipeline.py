@@ -22,7 +22,7 @@ import yaml
 from tqdm import tqdm
 
 from airway.util.color import Color
-from airway.util.config_parsers import parse_defaults
+from airway.util.config_parsers import parse_defaults, parse_stage_configs
 from airway.util.util import get_patient_name
 
 col = Color()
@@ -97,95 +97,86 @@ def main():
     log(f"Using up to {col.green(args.workers)} workers", stdout=True, tabs=1)
     log(f"Using {col.green(args.path)} as data path", stdout=True, tabs=1)
 
-    stage_configs_path = base_path / "configs" / "stage_configs.yaml"
-    assert stage_configs_path.exists(), "ERROR: Stage configs path does not exist!"
-    with open(stage_configs_path) as stage_configs_file:
-        stage_configs: Dict = yaml.load(stage_configs_file, yaml.FullLoader)
-        if not args.stages:
-            list_all_stages(stage_configs)
-            sys.exit(0)
-        # Link keyword (eg. '1', '17', 'tree', 'vis', etc.) to stages (eg. 'raw_airway', 'stage-01', 'stage-31', etc.)
-        keyword_to_stages: Dict[str, List[str]] = {"all": []}
-        for stage_name, stage_config in stage_configs.items():
-            if stage_name != "defaults":
-                assert 'stage-' in stage_name, f"ERROR: Cannot handle stage name {stage_name}!"
-                keyword_to_stages['all'].append(stage_name)
+    stage_configs: Dict = parse_stage_configs()
+    if not args.stages:
+        list_all_stages(stage_configs)
+        sys.exit(0)
+    # Link keyword (eg. '1', '17', 'tree', 'vis', etc.) to stages (eg. 'raw_airway', 'stage-01', 'stage-31', etc.)
+    keyword_to_stages: Dict[str, List[str]] = {"all": []}
+    for stage_name, stage_config in stage_configs.items():
+        assert 'stage-' in stage_name, f"ERROR: Cannot handle stage name {stage_name}!"
+        keyword_to_stages['all'].append(stage_name)
 
-                # Update with defaults without overwriting
-                for key, val in stage_configs['defaults'].items():
-                    if key not in stage_config:
-                        stage_config[key] = val
+        # Add keyword to generate one or more stages
+        keyword_to_stages[str(int(stage_name.split('-')[1]))] = [stage_name]
+        for group in stage_config['groups']:
+            if group not in keyword_to_stages:
+                keyword_to_stages[group] = []
+            keyword_to_stages[group].append(stage_name)
+        stage_config.pop('groups', None)
 
-                # Add keyword to generate one or more stages
-                keyword_to_stages[str(int(stage_name.split('-')[1]))] = [stage_name]
-                for group in stage_config['groups']:
-                    if group not in keyword_to_stages:
-                        keyword_to_stages[group] = []
-                    keyword_to_stages[group].append(stage_name)
-                stage_config.pop('groups', None)
-
-        # Go through each stage in args and handle ranges ('5-7' as well as single calls '3',
-        # keywords such as 'vis', 'analysis' and '3+' ranges)
-        stages_to_process = set()
-        for s_arg in args.stages:  # e.g. s_arg in ['1-3', '4', '5-7', 'analysis']
-            try:
-                to = 1000
-                if '-' in s_arg:
-                    fr, to = map(int, s_arg.split('-'))
-                elif '+' in s_arg:
-                    fr = int(s_arg.split('+')[0])
-                else:
-                    fr = to = int(s_arg)
-                keywords = list(map(str, range(fr, to+1)))
-            except ValueError:
-                keywords = [s_arg]
-            for s in keywords:
-                if s in keyword_to_stages:
-                    stages_to_process |= {keyword for keyword in keyword_to_stages[s]}
-
-        assert all(isinstance(a, str) for a in stages_to_process), "ERROR: Not all keywords are strings"
-
-        # Root stage has no entry in configs, so ignore it
-        root_stage = "raw_airway"
-
-        def get_dependencies(name):
-            """ This returns all the recursive dependencies of a stage """
-            _dependencies = {name}
-            # Add all dependencies for each name in _dependencies until there are no changes anymore
-            while True:
-                copy = _dependencies.copy()
-                for dependency in copy:
-                    if dependency != root_stage:
-                        _dependencies |= set(stage_configs[dependency]["inputs"])
-                if len(_dependencies) == len(copy):
-                    return _dependencies
-
-        stages_to_process_in_dependency_order = []
-        queue = Queue()
-        for curr in sorted(stages_to_process):
-            queue.put(curr)
-        # Iterate over queue of stages and only insert a stage once all its dependencies have been inserted
-        while not queue.empty():
-            curr = queue.get()
-
-            # Only keep dependencies which are in the list of stages to process without the
-            # root_stage (raw_airway) and the current stage since these cannot be actual
-            # dependencies of it.
-            dependencies = get_dependencies(curr) & stages_to_process - {root_stage, curr}
-            if all(dep in stages_to_process_in_dependency_order for dep in dependencies):
-                stages_to_process_in_dependency_order.append(curr)
+    # Go through each stage in args and handle ranges ('5-7' as well as single calls '3',
+    # keywords such as 'vis', 'analysis' and '3+' ranges)
+    stages_to_process = set()
+    for s_arg in args.stages:  # e.g. s_arg in ['1-3', '4', '5-7', 'analysis']
+        try:
+            to = 1000
+            if '-' in s_arg:
+                fr, to = map(int, s_arg.split('-'))
+            elif '+' in s_arg:
+                fr = int(s_arg.split('+')[0])
             else:
-                queue.put(curr)
+                fr = to = int(s_arg)
+            keywords = list(map(str, range(fr, to+1)))
+        except ValueError:
+            keywords = [s_arg]
+        for s in keywords:
+            if s in keyword_to_stages:
+                stages_to_process |= {keyword for keyword in keyword_to_stages[s]}
 
-        formatted = ', '.join([
-            col.yellow() + s.replace('stage-', '') + col.reset()
-            for s in stages_to_process_in_dependency_order
-        ])
-        log(f"Stage processing order: {formatted}\n", stdout=True, tabs=1)
+    assert all(isinstance(a, str) for a in stages_to_process), "ERROR: Not all keywords are strings"
 
-        for curr_stage_name in stages_to_process_in_dependency_order:
-            assert curr_stage_name in stage_configs, f"ERROR: Unknown stage name {curr_stage_name}!"
-            stage(curr_stage_name, **stage_configs[curr_stage_name], **vars(args))
+    # Root stage has no entry in configs, so ignore it
+    root_stage = "raw_airway"
+
+    def get_dependencies(name):
+        """ This returns all the recursive dependencies of a stage """
+        _dependencies = {name}
+        # Add all dependencies for each name in _dependencies until there are no changes anymore
+        while True:
+            copy = _dependencies.copy()
+            for dependency in copy:
+                if dependency != root_stage:
+                    _dependencies |= set(stage_configs[dependency]["inputs"])
+            if len(_dependencies) == len(copy):
+                return _dependencies
+
+    stages_to_process_in_dependency_order = []
+    queue = Queue()
+    for curr in sorted(stages_to_process):
+        queue.put(curr)
+    # Iterate over queue of stages and only insert a stage once all its dependencies have been inserted
+    while not queue.empty():
+        curr = queue.get()
+
+        # Only keep dependencies which are in the list of stages to process without the
+        # root_stage (raw_airway) and the current stage since these cannot be actual
+        # dependencies of it.
+        dependencies = get_dependencies(curr) & stages_to_process - {root_stage, curr}
+        if all(dep in stages_to_process_in_dependency_order for dep in dependencies):
+            stages_to_process_in_dependency_order.append(curr)
+        else:
+            queue.put(curr)
+
+    formatted = ', '.join([
+        col.yellow() + s.replace('stage-', '') + col.reset()
+        for s in stages_to_process_in_dependency_order
+    ])
+    log(f"Stage processing order: {formatted}\n", stdout=True, tabs=1)
+
+    for curr_stage_name in stages_to_process_in_dependency_order:
+        assert curr_stage_name in stage_configs, f"ERROR: Unknown stage name {curr_stage_name}!"
+        stage(curr_stage_name, **stage_configs[curr_stage_name], **vars(args))
 
     show_error_statistics()
     log(f"Finished in {col.green(str(datetime.now() - start_time))}", stdout=True, add_time=True)
@@ -383,6 +374,7 @@ def show_error_statistics():
 
 
 def run():
+    print(Path.cwd())
     previous_mask = os.umask(0o002)
     os.chdir(base_path)
 

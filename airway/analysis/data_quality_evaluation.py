@@ -4,9 +4,9 @@ from pathlib import Path
 from typing import List
 
 import networkx as nx
-import yaml
 
 from airway.classification.split_classification import is_valid_tree
+from airway.util.config_parsers import parse_classification_config
 from airway.util.util import get_data_paths_from_args, generate_pdf_report, get_ignored_patients
 
 file_name = "data_quality_evaluation"
@@ -14,9 +14,7 @@ file_name = "data_quality_evaluation"
 
 def get_input():
     output_data_path, tree_input_path, render_path = get_data_paths_from_args(inputs=2)
-    config_path = Path("configs") / "classification.yaml"
-    with open(config_path) as config_file:
-        classification_config = yaml.load(config_file, yaml.FullLoader)
+    classification_config = parse_classification_config()
     trees: List[nx.Graph] = []
     for tree_path in Path(tree_input_path).glob('*/tree.graphml'):
         trees.append(nx.read_graphml(tree_path))

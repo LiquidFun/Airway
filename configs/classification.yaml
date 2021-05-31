@@ -87,7 +87,6 @@ LB5:
 
 
 # --- Left lower lobe --- #
-
 LLowerLobe:
     vector: [19.0, 8.5, 13.5]
     children: [LB6, LB7+8+9+10]

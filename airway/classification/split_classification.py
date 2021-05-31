@@ -4,14 +4,13 @@ import copy
 import itertools
 import math
 import sys
-from pathlib import Path
 from queue import PriorityQueue
 from typing import Any, Dict, List, Tuple, Optional
 
-import yaml
 import numpy as np
 import networkx as nx
 
+from airway.util.config_parsers import parse_classification_config
 from airway.util.util import get_data_paths_from_args
 
 trees_thrown_out = 0
@@ -20,9 +19,7 @@ global_angles = []
 
 def get_inputs():
     output_data_path, tree_input_path = get_data_paths_from_args(inputs=1)
-    config_path = Path("configs") / "classification.yaml"
-    with open(config_path) as config_file:
-        classification_config = yaml.load(config_file, yaml.FullLoader)
+    classification_config = parse_classification_config()
     tree = nx.read_graphml(tree_input_path / "tree.graphml")
     output_path = output_data_path / "tree.graphml"
     return output_path, tree, classification_config

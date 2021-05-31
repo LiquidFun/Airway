@@ -8,6 +8,7 @@ import re
 import networkx as nx
 import yaml
 
+from airway.util.config_parsers import parse_classification_config
 from airway.util.util import get_data_paths_from_args, generate_pdf_report, get_ignored_patients
 
 classify_for = ["LLowerLobe", "LUpperLobe", "RMiddleLobe", "RUpperLobe", "RLowerLobe"]
@@ -17,12 +18,10 @@ assert all(lobe in classify_for for lobe in latex_tables_for)
 
 def get_input():
     output_data_path, tree_input_path, render_path = get_data_paths_from_args(inputs=2)
-    config_path = Path("configs") / "classification.yaml"
-    with open(config_path) as config_file:
-        classification_config = yaml.load(config_file, yaml.FullLoader)
-        for cc_dict in classification_config.values():
-            if "clustering_endnode" not in cc_dict:
-                cc_dict["clustering_endnode"] = False
+    classification_config = parse_classification_config()
+    for cc_dict in classification_config.values():
+        if "clustering_endnode" not in cc_dict:
+            cc_dict["clustering_endnode"] = False
     trees: List[nx.Graph] = []
     ignored_patients = get_ignored_patients()
     for tree_path in Path(tree_input_path).glob('*/tree.graphml'):

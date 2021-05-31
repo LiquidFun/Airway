@@ -7,6 +7,7 @@ import yaml
 import numpy as np
 
 from airway.classification.split_classification import cost_exponential_diff_function
+from airway.util.config_parsers import parse_classification_config
 from airway.util.util import get_data_paths_from_args, get_ignored_patients
 from airway.util.color import Color
 
@@ -15,9 +16,7 @@ col = Color()
 
 def get_input():
     output_data_path, tree_input_path = get_data_paths_from_args(inputs=1)
-    config_path = Path("configs") / "classification.yaml"
-    with open(config_path) as config_file:
-        classification_config = yaml.load(config_file, yaml.FullLoader)
+    classification_config = parse_classification_config()
     trees: List[nx.Graph] = []
     ignored_patients = get_ignored_patients()
     print(ignored_patients)

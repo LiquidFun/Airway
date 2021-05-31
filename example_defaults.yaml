@@ -25,7 +25,7 @@ paths:
 
 
 # Number of threads to be used, note that each patient
-# only ever gets 1 thread, so all paralelization is per
+# only ever gets 1 thread, so all parallelization is per
 # patient. Increase this if you have more threads.
 workers: 8
 
@@ -44,3 +44,14 @@ single: False
 # doesn't you may specify a different executable here.
 # Will not be needed if you never use blender in this project.
 blender: /usr/bin/blender
+
+# Whether STDOUT and STDERR should always be printed when running airway
+verbose: False
+
+# Whether stages should be removed before running them,
+# WARNING: setting this to True can delete important data!
+clean: False
+
+# Whether a profiler should be run when running airway to find out
+# where the most time is spent. (Currently WIP)
+profile: False

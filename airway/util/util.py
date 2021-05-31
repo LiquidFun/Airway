@@ -8,6 +8,8 @@ import markdown
 import yaml
 from weasyprint import HTML
 
+from airway.util.config_parsers import parse_defaults
+
 
 def get_data_paths_from_args(outputs=1, inputs=1):
     """ Returns output and input data paths from sys.argv
@@ -56,6 +58,4 @@ def generate_pdf_report(folder_path: Path, file_name_without_ending: str, conten
 
 
 def get_ignored_patients() -> Set[str]:
-    with open(Path().cwd() / 'defaults.yaml', 'r') as file:
-        defaults = yaml.load(file.read(), Loader=yaml.FullLoader)
-    return set(map(str, defaults.get('ignore_patients', [])))
+    return set(map(str, parse_defaults().get('ignore_patients', [])))

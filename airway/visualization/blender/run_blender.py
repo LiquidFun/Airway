@@ -2,8 +2,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-import yaml
-
+from airway.util.config_parsers import parse_defaults
 from airway.util.util import get_data_paths_from_args
 
 print('\n'.join(sys.argv))
@@ -23,8 +22,7 @@ try:
 except IndexError:
     run_in_background = True
 
-with open(Path(sys.path[0]) / "defaults.yaml", 'r') as file:
-    defaults = yaml.load(file, yaml.FullLoader)
+defaults = parse_defaults()
 
 # Specify blender script to run
 command = [

@@ -1,37 +1,28 @@
 #!/usr/bin/env python3
 
 import sys
-import os
 import argparse
 import subprocess
 from pathlib import Path
 from typing import Dict
 
-import yaml
-
+from airway.util.config_parsers import parse_defaults, parse_stage_configs
 from airway.util.util import get_patient_name
 
 
 def run():
-    base_path = Path(sys.argv[0]).parent
-    os.chdir(base_path)
-    stage_configs_path = base_path / "configs" / "stage_configs.yaml"
     vis_name_to_config: Dict[str, Dict] = {}
-    with open(stage_configs_path) as stage_configs_file:
-        stage_configs: Dict = yaml.load(stage_configs_file, yaml.FullLoader)
-        for stage_name, configs in stage_configs.items():
-            for name, args in configs.get('interactive_args', {}).items():
-                if name in vis_name_to_config:
-                    sys.exit(f"ERROR: Interactive name {name} already exists!")
-                vis_name_to_config[name] = {
-                    'script': configs['script'], 'args': args, 'per_patient': configs.get("per_patient", True),
-                    'inputs': configs['inputs'], 'output': stage_name,
-                }
+    stage_configs: Dict = parse_stage_configs()
+    for stage_name, configs in stage_configs.items():
+        for name, args in configs.get('interactive_args', {}).items():
+            if name in vis_name_to_config:
+                sys.exit(f"ERROR: Interactive name {name} already exists!")
+            vis_name_to_config[name] = {
+                'script': configs['script'], 'args': args, 'per_patient': configs.get("per_patient", True),
+                'inputs': configs['inputs'], 'output': stage_name,
+            }
 
-    defaults_path = base_path / "defaults.yaml"
-    if defaults_path.exists():
-        with open(defaults_path) as config_file:
-            defaults = yaml.load(config_file, yaml.FullLoader)
+    defaults = parse_defaults()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("id", nargs='?', default="1", help="patient id (can be index, name, or id)")

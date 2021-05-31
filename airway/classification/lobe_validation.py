@@ -3,17 +3,14 @@ from pathlib import Path
 from typing import List
 
 import networkx as nx
-import yaml
 
-from airway.util.config_parsers import parse_array_encoding
+from airway.util.config_parsers import parse_array_encoding, parse_classification_config
 from airway.util.util import get_data_paths_from_args, get_ignored_patients
 
 
 def get_input():
     output_data_path, tree_input_path = get_data_paths_from_args()
-    config_path = Path("configs") / "classification.yaml"
-    with open(config_path) as config_file:
-        classification_config = yaml.load(config_file, yaml.FullLoader)
+    classification_config = parse_classification_config()
     trees: List[nx.Graph] = []
     for tree_path in Path(tree_input_path).glob('*/tree.graphml'):
         trees.append(nx.read_graphml(tree_path))
