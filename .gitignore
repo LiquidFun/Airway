@@ -1,5 +1,7 @@
 configs/defaults.yaml
+defaults.yaml
 __pycache__
+.pytest_cache
 *.obj
 *.csv
 *.pyc

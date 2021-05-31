@@ -81,7 +81,6 @@ def classify_tree(
         curr_node = curr_tree.nodes[curr_node_id]
         curr_classification = curr_node['split_classification']
         curr_node_point = get_point(curr_node)
-        # print(f"In 'while' cost={curr_cost}, current_node_id={curr_node_id}, classification={curr_classification}, rest={rest_node_ids}")
 
         # Only handle if current classification (i.e. Bronchus/RB3, etc) is actually in classification config
         if curr_classification in classification_config:

@@ -172,8 +172,9 @@ def main():
     print(f"Loaded color mask with shape {distance_mask.shape}")
 
     try:
-        bronchus_color_mask = np.load(color_mask_path / "bronchus_color_mask.npz")['color_mask']
-        bronchus_color_codes = np.load(color_mask_path / "bronchus_color_mask.npz")['color_codes']
+        color_mask_npz = np.load(color_mask_path / "bronchus_color_mask.npz")
+        bronchus_color_mask = color_mask_npz['color_mask']
+        bronchus_color_codes = color_mask_npz['color_codes']
         print(bronchus_color_codes)
         print(f"Loaded color mask with shape {bronchus_color_mask.shape}")
         color_codes = {i: code for i, code in enumerate(bronchus_color_codes)}

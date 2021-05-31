@@ -15,5 +15,5 @@ def test_stages():
         shutil.copy(example_patient, stage01_path)
         ret = subprocess.run(["python3", "airway_pipeline.py", "-1", "-v", "-P", temp_dir, "2-10", "color_mask", "3d"],
                              stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
-        assert b"STDERR" not in ret.stdout, ret.stdout
         print(ret)
+        assert b"STDERR" not in ret.stdout, ret.stdout
