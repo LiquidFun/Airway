@@ -10,7 +10,7 @@
     <img src="https://github.com/LiquidFun/Airway/actions/workflows/python-package.yml/badge.svg">
   </a>
 
-  <a href="https://github.com/LiquidFun/Airway/actions/workflows/python-publish.yml" title="Upload to PyPI">
+  <a href="https://pypi.org/project/airway/" title="PyPI upload">
     <img src="https://github.com/LiquidFun/Airway/actions/workflows/python-publish.yml/badge.svg">
   </a>
 

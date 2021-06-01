@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-""" Airway-pipeline.py is the glue for all airway scripts. It tries to do all the work
+""" Airway-stages.py is the glue for all airway scripts. It tries to do all the work
     in parallel. Therefore airway-pipeline comes with a bunch of parameters for
     selecting a stage to calculate, path management and how much parallel processes
     will be used for calculation.

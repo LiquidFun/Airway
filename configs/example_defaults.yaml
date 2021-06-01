@@ -55,3 +55,6 @@ clean: False
 # Whether a profiler should be run when running airway to find out
 # where the most time is spent. (Currently WIP)
 profile: False
+
+# How many log files should be saved at most in ./logs/
+max_log_files: 10
