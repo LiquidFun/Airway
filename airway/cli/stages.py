@@ -19,7 +19,7 @@ class StagesCLI(BaseCLI):
             nargs="*",
             type=str,
             help="list of stages to calculate (e.g. 1, 2, 3, tree, vis). "
-                 "If left empty, all stages will be listed with a short description.",
+            "If left empty, all stages will be listed with a short description.",
         )
         parser.add_argument("-P", "--path", default=defaults["path"], help="airway data path")
         parser.add_argument(
@@ -71,8 +71,9 @@ class StagesCLI(BaseCLI):
         assert args.path is not None, "ERROR: Airway data path required!"
         col = self.col
         if args.clean:
-            self.log(f"{col.yellow('WARNING')}: Argument {col.green('--clean')} was given. ", stdout=True,
-                     add_time=True)
+            self.log(
+                f"{col.yellow('WARNING')}: Argument {col.green('--clean')} was given. ", stdout=True, add_time=True
+            )
             self.log("This will delete and rerun all the supplied stages!", stdout=True, tabs=1)
             self.log(
                 f"This might delete data, do you really want to continue ({col.yellow('y')}/{col.yellow('n')}): ",
@@ -184,9 +185,7 @@ class StagesCLI(BaseCLI):
 
         stages_to_process_in_dependency_order = self._get_stages_in_dependency_order(args.stages)
 
-        formatted = ", ".join(
-            [col.yellow(s.replace("stage-", "")) for s in stages_to_process_in_dependency_order]
-        )
+        formatted = ", ".join([col.yellow(s.replace("stage-", "")) for s in stages_to_process_in_dependency_order])
         self.log(f"Stage processing order: {formatted}\n", stdout=True, tabs=1)
 
         for curr_stage_name in stages_to_process_in_dependency_order:
@@ -197,21 +196,21 @@ class StagesCLI(BaseCLI):
         self.log(f"Finished in {col.green(str(datetime.now() - start_time))}", stdout=True, add_time=True)
 
     def stage(
-            self,
-            stage_name: str,
-            *,  # Arguments below must be keyword args
-            path: str,
-            workers: int,
-            force: bool,
-            script: str,
-            inputs: List[str],
-            args: List[str],
-            single: bool,
-            patients: List[str],  # TODO add desc
-            per_patient: bool,
-            list_patients: bool,  # TODO add desc
-            verbose: bool,  # TODO add desc
-            **_,  # Ignore kwargs
+        self,
+        stage_name: str,
+        *,  # Arguments below must be keyword args
+        path: str,
+        workers: int,
+        force: bool,
+        script: str,
+        inputs: List[str],
+        args: List[str],
+        single: bool,
+        patients: List[str],  # TODO add desc
+        per_patient: bool,
+        list_patients: bool,  # TODO add desc
+        verbose: bool,  # TODO add desc
+        **_,  # Ignore kwargs
     ):
         """Meta function for calculating most stages in parallel.
 
@@ -248,11 +247,11 @@ class StagesCLI(BaseCLI):
         else:
             input_stage_path = input_stage_paths[0]
             if input_stage_path.name != "raw_airway" and not input_stage_path.exists():
-                log(f"ERROR: {input_stage_path} does not exist. " 
-                    f"Calculate the predecessor stage first!",
+                log(
+                    f"ERROR: {input_stage_path} does not exist. " f"Calculate the predecessor stage first!",
                     stdout=True,
-                    exit_code=0
-                    )
+                    exit_code=0,
+                )
             output_stage_path.mkdir(exist_ok=True, parents=True)
 
             # build the list of subprocess-arguments for later use with subprocess.run
@@ -279,9 +278,7 @@ class StagesCLI(BaseCLI):
                     patient_input_stage_paths = [isp / patient_dir.name for isp in input_stage_paths]
                     patient_output_stage_path.mkdir(exist_ok=True, mode=0o644)
 
-                    subprocess_args.append(
-                        [patient_output_stage_path, *patient_input_stage_paths, *stage_args]
-                    )
+                    subprocess_args.append([patient_output_stage_path, *patient_input_stage_paths, *stage_args])
                     # Only add a single patient if 'single' given
                     if single:
                         break

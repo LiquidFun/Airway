@@ -12,7 +12,9 @@ def handle_args():
     ]
     argparser = ArgumentParser()
     subparser = argparser.add_subparsers(
-        required=True, dest="command", title="command",
+        required=True,
+        dest="command",
+        title="command",
         description="commands for ",
         help="help",
     )

@@ -43,7 +43,7 @@ class BaseCLI:
 
     def _remove_oldest_log_files(self):
         log_files = sorted(self.log_path.parent.glob("*"), key=lambda p: p.stat().st_mtime)
-        for existing_log_file in log_files[:-self.defaults["max_log_files"]]:
+        for existing_log_file in log_files[: -self.defaults["max_log_files"]]:
             existing_log_file.unlink()
 
     def _link_last_log_file(self):
