@@ -12,3 +12,6 @@ STAGE_CONFIGS_PATH = CONFIGS_PATH / "stage_configs.yaml"
 CLASSIFICATION_CONFIG_PATH = CONFIGS_PATH / "classification.yaml"
 ARRAY_ENCODING_PATH = CONFIGS_PATH / "array_encoding.yaml"
 LOG_LN_PATH = PACKAGE_PATH / "log"
+
+# Stages
+ROOT_STAGE = "raw_airway"
