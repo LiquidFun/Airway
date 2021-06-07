@@ -1,7 +1,6 @@
 import sys
 import textwrap
 from datetime import datetime
-from argparse import ArgumentParser
 from pathlib import Path
 from queue import Queue
 from typing import Dict, List, Set
@@ -12,8 +11,9 @@ from airway.util.util import get_patient_name
 
 
 class StagesCLI(BaseCLI):
-    def add_subparser_args(self, parser: ArgumentParser):
+    def add_subparser_args(self):
         defaults = self.defaults
+        parser = self.add_subparser(["stages", "s"], help_="Create stages in parallel")
         parser.add_argument(
             "stages",
             nargs="*",
@@ -62,13 +62,11 @@ class StagesCLI(BaseCLI):
         # parser.add_argument("--profile", action="store_true", default=defaults["profile"],
         #                    help="profile modules with cProfile to see which parts are taking long")
         # parser.add_argument("-i", "--interactive", help="run script for single patient without creating subprocess")
-        # parser.add_argument("-s", "--stages", help="print a detailed description for each stage and exit")
         # parser.add_argument("-d", "--dependencies", help="create all given stages including their dependencies")
         # parser.add_argument("-D", "--dependents", help="create all given stages including their dependents")
         # dependency=all predecessor stages to this one, dependant=stages requiring this one (find better names)
 
     def _validate_args(self, args):
-        assert args.path is not None, "ERROR: Airway data path required!"
         col = self.col
         if args.clean:
             self.log(
@@ -85,8 +83,7 @@ class StagesCLI(BaseCLI):
             if question.lower() not in ["yes", "y"]:
                 self.log("User questions their (life-)choices! Aborting!", stdout=True, add_time=True)
                 sys.exit(0)
-        if args.path in self.defaults["paths"]:
-            args.path = self.defaults["paths"][args.path]
+        self.insert_path_keyword_as_path(args)
 
     def _list_all_stages(self):
         log, col = self.log, self.col
@@ -103,7 +100,8 @@ class StagesCLI(BaseCLI):
         #              (eg. 'raw_airway', 'stage-01', 'stage-31', etc.)
         keyword_to_stages: Dict[str, List[str]] = {"all": []}
         for stage_name, stage_config in self.stage_configs.items():
-            assert "stage-" in stage_name, f"ERROR: Cannot handle stage name {stage_name}!"
+            if "stage-" not in stage_name:
+                self.exit(f"Cannot handle stage name {self.col.yellow(stage_name)}")
             keyword_to_stages["all"].append(stage_name)
 
             # Add keyword to generate one or more stages
@@ -199,7 +197,7 @@ class StagesCLI(BaseCLI):
         self,
         stage_name: str,
         *,  # Arguments below must be keyword args
-        path: str,
+        path: Path,
         workers: int,
         force: bool,
         script: str,
@@ -227,7 +225,6 @@ class StagesCLI(BaseCLI):
 
         """
         log, col = self.log, self.col
-        path = Path(path)
 
         if list_patients:
             self._list_patients(stage_path=path / stage_name)
@@ -243,15 +240,12 @@ class StagesCLI(BaseCLI):
 
         # check if output directory 'stage-xx' exists
         if output_stage_path.exists() and not force:
-            log(f"ERROR: {output_stage_path} already exists, use the -f flag to overwrite.", stdout=True, exit_code=0)
+            self.exit(f"{col.yellow(output_stage_path)} already exists, use the -f flag to overwrite.")
         else:
             input_stage_path = input_stage_paths[0]
             if input_stage_path.name != "raw_airway" and not input_stage_path.exists():
-                log(
-                    f"ERROR: {input_stage_path} does not exist. " f"Calculate the predecessor stage first!",
-                    stdout=True,
-                    exit_code=0,
-                )
+                self.exit(f"{col.yellow(input_stage_path)} does not exist. " 
+                                     f"Calculate the predecessor stage first!")
             output_stage_path.mkdir(exist_ok=True, parents=True)
 
             # build the list of subprocess-arguments for later use with subprocess.run
@@ -259,14 +253,13 @@ class StagesCLI(BaseCLI):
 
             # If script should be called for every patient
             if per_patient:
-
                 patient_dirs = input_stage_path.glob("*")
                 if patients:
                     keyword_to_patient_id = self.get_keyword_to_patient_id_dict(path)
                     patient_ids = set()
                     for keyword in patients:
                         if keyword not in keyword_to_patient_id:
-                            log(f"ERROR: Patient {keyword} is unknown", stdout=True, exit_code=0)
+                            self.exit(f"Patient {col.blue(keyword)} is unknown!")
                         patient_ids.add(keyword_to_patient_id[keyword])
                     log("Handling only these patients:", stdout=True, add_time=True)
                     log("\n".join(map(col.yellow, patient_ids)) + "\n", stdout=True, tabs=1)

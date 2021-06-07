@@ -16,21 +16,20 @@ from airway.util.util import get_patient_name
 
 
 class BaseCLI:
-    def __init__(self, names: List[str]):
+    def __init__(self):
         self.defaults = parse_defaults()
         self.stage_configs = parse_stage_configs()
         self.log_path = const.LOGS_PATH / f"log_{datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}"
         self.col = Color()
         self.errors = {}
-        self.name = names[0]
-        self.aliases = names[1:]
+        self._subparser_action: _SubParsersAction = None
 
     @abstractmethod
-    def add_subparser_args(self, parser: ArgumentParser):
+    def add_subparser_args(self) -> None:
         pass
 
     @abstractmethod
-    def handle_args(self, args):
+    def handle_args(self, args) -> None:
         pass
 
     def _handle_args_wrapper(self, args):
@@ -52,9 +51,20 @@ class BaseCLI:
         self.log(f"Saved log file to {self.col.green(self.log_path)} (linked to ./log)", stdout=True, add_time=True)
 
     def add_as_subparser(self, subparser_action: _SubParsersAction):
-        subparser = subparser_action.add_parser(self.name, aliases=self.aliases, help="help sub")
-        self.add_subparser_args(subparser)
+        self._subparser_action = subparser_action
+        self.add_subparser_args()
+
+    def add_subparser(self, names: List[str], help_: str) -> ArgumentParser:
+        subparser = self._subparser_action.add_parser(name=names[0], aliases=names[1:], help=help_)
         subparser.set_defaults(handle_args=self._handle_args_wrapper)
+        return subparser
+
+    def insert_path_keyword_as_path(self, args):
+        if args.path in self.defaults["paths"]:
+            args.path = self.defaults["paths"][args.path]
+        if not args.path or not Path(args.path).exists():
+            self.exit(f"{self.col.yellow(args.path)} is invalid path or it does not exist!")
+        args.path = Path(args.path)
 
     @staticmethod
     def subprocess_executor(args):
@@ -67,8 +77,9 @@ class BaseCLI:
         args_as_strings = list(map(str, args))
         return subprocess.run(args_as_strings, encoding="utf-8", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    def concurrent_executor(self, subprocess_args, script_module, workers, tqdm_prefix="", verbose=False):
+    def concurrent_executor(self, subprocess_args: List[List[str]], script_module: str, workers: int = 1, tqdm_prefix="", verbose=False):
         """Executes multiple scripts as their own modules, logging their STDOUT and STDERR"""
+        print(subprocess_args)
         subprocesses = [["python3", "-m", script_module] + args for args in subprocess_args]
 
         def get_progress_bar(process_count: int) -> tqdm:
@@ -98,11 +109,14 @@ class BaseCLI:
         for stage_name, config in self.stage_configs.items():
             if config["per_patient"]:
                 stage_path = data_path / stage_name
-                keyword_to_patient_id |= {pat_dir.name: pat_dir.name for pat_dir in stage_path.glob("*")}
+                keyword_to_patient_id.update({pat_dir.name: pat_dir.name for pat_dir in stage_path.glob("*")})
         for index, patient in enumerate(sorted(keyword_to_patient_id), start=1):
             keyword_to_patient_id[str(index)] = patient
             keyword_to_patient_id[get_patient_name(patient)] = patient
         return keyword_to_patient_id
+
+    def exit(self, message: str):
+        self.log(f"{self.col.red('ERROR')}: {message}", exit_code=1, add_time=True)
 
     def log(self, message: str, stdout=False, add_time=False, tabs=0, end="\n", exit_code=None):
         """Logs to a file and optionally to stdout
@@ -115,8 +129,10 @@ class BaseCLI:
             tabs: padding in front of each line in the message.
                   1 tab will align it with lines which have add_time
             end: same as the end arg in print(), is just passed through
-            exit_code: code to exit on, if None then will continue normally
+            exit_code: code to exit on, implies stdout=True. If None then will continue normally
         """
+        if exit_code is not None:
+            stdout = True
         col = self.col
         self.log_path.parent.mkdir(exist_ok=True)
         lines = message.split("\n")

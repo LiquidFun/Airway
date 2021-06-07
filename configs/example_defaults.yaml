@@ -7,11 +7,9 @@ paths:
 
 # Here path is a keyword which has to be in paths,
 # this allows easy use of multiple paths by using
-# the -P flag in either script to specify
+# the -P flag:
 #
-# ./airway_pipeline.py -P remote
-# or
-# ./airway_vis.py -P remote
+# airway stages -P remote
 #
 # when you want to work on the remote data path
 # without having to write out the entire path.

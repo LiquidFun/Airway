@@ -7,15 +7,15 @@ from airway.cli.visualization import VisCLI
 
 def handle_args():
     cli_modules = [
-        StagesCLI(["stage", "stages", "s"]),
-        VisCLI(["vis", "visualization", "v"]),
+        StagesCLI(),
+        VisCLI(),
     ]
     argparser = ArgumentParser()
     subparser = argparser.add_subparsers(
         required=True,
         dest="command",
-        title="command",
-        description="commands for ",
+        title="Airway command",
+        # description="commands for ",
         help="help",
     )
     for cli_module in cli_modules:
@@ -27,5 +27,9 @@ def handle_args():
         sys.exit("Unknown argument!")
 
 
-if __name__ == "__main__":
+def main():
     handle_args()
+
+
+if __name__ == "__main__":
+    main()

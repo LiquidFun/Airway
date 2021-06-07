@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name="airway",
-    version="0.1.1",
+    version="0.2.0",
     description="Automatic classification of tertiary bronchi based on bronchus masks using a rule-based approach.",
     long_description=open(Path(__file__).parent / "README.md", "r").read(),
     long_description_content_type="text/markdown",
@@ -14,8 +14,7 @@ setup(
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [
-            "airway=airway_pipeline:run",
-            "airway-vis=airway_vis:run",
+            "airway=airway_cli:main",
         ]
     },
     install_requires=[
