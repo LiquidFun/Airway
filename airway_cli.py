@@ -3,6 +3,7 @@ import sys
 from argparse import ArgumentParser
 from airway.cli.stages import StagesCLI
 from airway.cli.visualization import VisCLI
+from airway import __version__
 
 
 def handle_args():
@@ -11,6 +12,7 @@ def handle_args():
         VisCLI(),
     ]
     argparser = ArgumentParser()
+    argparser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     subparser = argparser.add_subparsers(
         required=True,
         dest="command",

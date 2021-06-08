@@ -2,9 +2,11 @@ from pathlib import Path
 
 from setuptools import setup
 
+from airway import __version__
+
 setup(
     name="airway",
-    version="0.2.0",
+    version=__version__,
     description="Automatic classification of tertiary bronchi based on bronchus masks using a rule-based approach.",
     long_description=open(Path(__file__).parent / "README.md", "r").read(),
     long_description_content_type="text/markdown",
