@@ -269,7 +269,7 @@ class StagesCLI(BaseCLI):
                 for patient_dir in sorted(patient_dirs):
                     patient_output_stage_path = output_stage_path / patient_dir.name
                     patient_input_stage_paths = [isp / patient_dir.name for isp in input_stage_paths]
-                    patient_output_stage_path.mkdir(exist_ok=True, mode=0o644)
+                    patient_output_stage_path.mkdir(exist_ok=True, mode=0o744)
 
                     subprocess_args.append([patient_output_stage_path, *patient_input_stage_paths, *stage_args])
                     # Only add a single patient if 'single' given
