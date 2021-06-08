@@ -27,8 +27,9 @@ class VisCLI(BaseCLI):
         parser.add_argument("id", nargs="?", default="1", type=str, help="patient id: (1-based) index, name, or id")
         parser.add_argument("-P", "--path", default=self.defaults["path"], help="working data path")
         for name, config in self.vis_name_to_config.items():
-            parser.add_argument(f"-{name[0]}", f"--{name}", default=False, action="store_true",
-                                help=f"show plot of {name}")
+            parser.add_argument(
+                f"-{name[0]}", f"--{name}", default=False, action="store_true", help=f"show plot of {name}"
+            )
 
     def handle_args(self, args):
         self.insert_path_keyword_as_path(args)

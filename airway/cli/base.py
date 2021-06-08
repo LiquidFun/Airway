@@ -77,7 +77,9 @@ class BaseCLI:
         args_as_strings = list(map(str, args))
         return subprocess.run(args_as_strings, encoding="utf-8", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    def concurrent_executor(self, subprocess_args: List[List[str]], script_module: str, workers: int = 1, tqdm_prefix="", verbose=False):
+    def concurrent_executor(
+        self, subprocess_args: List[List[str]], script_module: str, workers: int = 1, tqdm_prefix="", verbose=False
+    ):
         """Executes multiple scripts as their own modules, logging their STDOUT and STDERR"""
         print(subprocess_args)
         subprocesses = [["python3", "-m", script_module] + args for args in subprocess_args]

@@ -14,7 +14,7 @@ def test_stages():
         print(Path.cwd())
         shutil.copy(example_patient, stage01_path)
         command = ["python3", "airway_cli.py", "stages", "-1", "-v", "-P", temp_dir, "2-10", "color_mask", "3d"]
-        print(' '.join(command))
+        print(" ".join(command))
         ret = subprocess.run(
             command,
             stdout=subprocess.PIPE,

@@ -244,8 +244,7 @@ class StagesCLI(BaseCLI):
         else:
             input_stage_path = input_stage_paths[0]
             if input_stage_path.name != "raw_airway" and not input_stage_path.exists():
-                self.exit(f"{col.yellow(input_stage_path)} does not exist. " 
-                                     f"Calculate the predecessor stage first!")
+                self.exit(f"{col.yellow(input_stage_path)} does not exist. " f"Calculate the predecessor stage first!")
             output_stage_path.mkdir(exist_ok=True, parents=True)
 
             # build the list of subprocess-arguments for later use with subprocess.run
