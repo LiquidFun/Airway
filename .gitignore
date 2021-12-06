@@ -14,3 +14,4 @@ manual_classification
 *.swo
 airway.egg-info
 dist
+/example_data/stages/

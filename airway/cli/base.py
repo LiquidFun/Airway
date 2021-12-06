@@ -81,7 +81,7 @@ class BaseCLI:
         self, subprocess_args: List[List[str]], script_module: str, workers: int = 1, tqdm_prefix="", verbose=False
     ):
         """Executes multiple scripts as their own modules, logging their STDOUT and STDERR"""
-        print(subprocess_args)
+        # print(subprocess_args)
         subprocesses = [["python3", "-m", script_module] + args for args in subprocess_args]
 
         def get_progress_bar(process_count: int) -> tqdm:
@@ -120,7 +120,7 @@ class BaseCLI:
     def exit(self, message: str):
         self.log(f"{self.col.red('ERROR')}: {message}", exit_code=1, add_time=True)
 
-    def log(self, message: str, stdout=False, add_time=False, tabs=0, end="\n", exit_code=None):
+    def log(self, message: str, stdout=False, add_time=False, tabs=0, end="\n", exit_code=None, max_width=None):
         """Logs to a file and optionally to stdout
 
         args:
@@ -138,6 +138,10 @@ class BaseCLI:
         col = self.col
         self.log_path.parent.mkdir(exist_ok=True)
         lines = message.split("\n")
+        if max_width is not None:
+            import textwrap
+            from itertools import chain
+            lines = list(chain(*[textwrap.wrap(line, width=max_width, drop_whitespace=False, replace_whitespace=False) for line in lines]))
         time_added = False
         for i in range(len(lines)):
             add_time_for_this_line = lines[i].strip() != "" and add_time and not time_added
