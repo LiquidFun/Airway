@@ -2,10 +2,9 @@ import sys
 from pathlib import Path
 import random
 import string
-from typing import List, Set
+from typing import Set
 
 import markdown
-import yaml
 from weasyprint import HTML
 
 from airway.util.config_parsers import parse_defaults

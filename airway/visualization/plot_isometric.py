@@ -8,7 +8,7 @@ visualizations_dir = "images/"
 
 try:
     patient_id = sys.argv[1]
-except:
+except IndexError:
     patient_id = "3127679"
 
 

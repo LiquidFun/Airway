@@ -2,7 +2,7 @@
 
 Needs stage-02 (reduced_model.npz) as input.
 
-This file expects the first argument to be a path to the input folder (not including the 
+This file expects the first argument to be a path to the input folder (not including the
 reduced_model.npz). The second argument needs to be a path to the output file.
 
 It does so by going through every bronchus point in the reduced_model.npz and checking

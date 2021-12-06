@@ -27,8 +27,6 @@ to their angle deviations by defined vectors.
 Here, a pipeline is implemented which, given a formatted input data structure, can create the anatomical segmentations, clusters of similar anatomy, and
 the visualisations presented below. 
 
-This project is work in progress and is being actively developed! Be aware that stuff may change.
-
 An example can be seen below, the 18 segments of the lung are automatically annotated in 
 the voxel model (the labels are added manually though).
 

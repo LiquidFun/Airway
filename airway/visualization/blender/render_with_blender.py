@@ -77,7 +77,7 @@ def make_obj_smooth(obj, iterations=10, factor=2):
     bpy.ops.mesh.normals_make_consistent(inside=False)
     bpy.ops.object.editmode_toggle()
 
-    # Since there are no normals in the vertices, add double sided rendering for faces to fix artifacts
+    # Since there are no normals in the vertices, add double-sided rendering for faces to fix artifacts
     # Update: not needed since normals are now calculated
     # bpy.data.meshes[obj.name].show_double_sided = True
 
@@ -97,7 +97,7 @@ for object_name in ["Cube", "Lamp", "Light"]:
 # Import bronchus
 bpy.ops.import_scene.obj(filepath=bronchus_path)
 bronchus = bpy.data.objects["bronchus"]
-make_obj_smooth(bronchus)  # Smooth before hiding select, as otherwise it doesnt work?
+make_obj_smooth(bronchus)  # Smooth before hiding select, as otherwise it doesn't work?
 hide(bronchus, selection=True)
 
 
