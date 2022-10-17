@@ -72,6 +72,7 @@ def get_nodes_visit_order(tree: nx.Graph, distance_mask: np.ndarray, should_colo
     color_hex_codes = [color_hex_to_floats("ffffff")] * 2
     first_node = list(tree.nodes)[0]
     map_node_id_to_color_id: Dict[str, int] = {"0": 1}
+    map_node_id_to_color_id_if_colored: Dict[str, int] = {"0": 1}
     nodes_visit_order = []
     for (parent_index, successors) in nx.bfs_successors(tree, first_node):
         parent_node = tree.nodes[parent_index]
@@ -84,6 +85,7 @@ def get_nodes_visit_order(tree: nx.Graph, distance_mask: np.ndarray, should_colo
             map_node_id_to_color_id[s] = color_id
             nodes_visit_order.append((succ_node, point, color_id, succ_radius, parent_dist))
             if should_color_node(s):
+                map_node_id_to_color_id_if_colored[s] = color_id
                 if "color" in succ_node:
                     color_hex_codes.append(color_hex_to_floats(succ_node["color"]))
                 elif parent_index in map_node_id_to_color_id:
@@ -91,7 +93,7 @@ def get_nodes_visit_order(tree: nx.Graph, distance_mask: np.ndarray, should_colo
                     color_hex_codes.append(get_color_variation(parent_color))
                 else:
                     color_hex_codes.append(color_hex_to_floats("ffffff"))
-    return nodes_visit_order, color_hex_codes
+    return nodes_visit_order, color_hex_codes, map_node_id_to_color_id_if_colored
 
 
 def get_first_matching_ids(tree: nx.Graph, condition: Callable[[nx.Graph, int], bool]):
@@ -127,29 +129,49 @@ def main():
     ) = get_data_paths_from_args(inputs=3)
     model = np.load(reduced_model_path / "reduced_model.npz")["arr_0"]
     distance_mask = np.load(distance_mask_path / "distance_mask.npz")["arr_0"]
-    tree = nx.read_graphml(tree_path / f"tree.graphml")
+    for gt_suffix in ("", "_gt"):
+        tree_graphml_path = tree_path / f"tree{gt_suffix}.graphml"
+        if not tree_graphml_path.exists():
+            continue
+        tree = nx.read_graphml(tree_graphml_path)
 
-    def should_color_func(condition: Callable[[nx.Graph, int], bool]) -> Callable:
-        return lambda s: s in get_first_matching_ids(tree, condition)
+        def should_color_func(condition: Callable[[nx.Graph, int], bool]) -> Callable:
+            return lambda s: s in get_first_matching_ids(tree, condition)
 
-    print(get_first_matching_ids(tree, is_lobe))
-    print(get_first_matching_ids(tree, is_segment))
+        print(get_first_matching_ids(tree, is_lobe))
+        print(get_first_matching_ids(tree, is_segment))
 
-    for func, filename in [
-        (lambda _: True, "bronchus_color_mask.npz"),
-        (should_color_func(is_segment), "segments.npz"),
-        (should_color_func(is_lobe), "lobes.npz"),
-    ]:
-        color_mask = np.full(model.shape, 0)
-        nodes_visit_order, color_hex_codes = get_nodes_visit_order(tree, distance_mask, func)
-        print(color_hex_codes)
+        for func, filename in [
+            (lambda _: True, f"bronchus_color_mask{gt_suffix}.npz"),
+            (should_color_func(is_segment), f"segments{gt_suffix}.npz"),
+            (should_color_func(is_lobe), f"lobes{gt_suffix}.npz"),
+        ]:
+            color_mask = np.full(model.shape, 0)
+            nodes_visit_order, color_hex_codes, map_node_id_to_color_id = get_nodes_visit_order(
+                tree, distance_mask, func
+            )
+            map_color_id_to_node_id = {value: key for key, value in map_node_id_to_color_id.items()}
+            map_color_id_to_classification = {}
+            for c in map_color_id_to_node_id:
+                node = tree.nodes[map_color_id_to_node_id[c]]
+                classification = node.get("split_classification_gt", "")
+                if classification == "":
+                    classification = node.get("split_classification", "")
+                map_color_id_to_classification[c] = classification
+            print(color_hex_codes)
 
-        fill_color_with_priority_queue(nodes_visit_order, model, distance_mask, color_mask)
+            fill_color_with_priority_queue(nodes_visit_order, model, distance_mask, color_mask)
 
-        print("Colors:")
-        for color, occ in zip(*np.unique(color_mask, return_counts=True)):
-            print(f"Color {color} appears {occ:,} times in color mask")
-        np.savez_compressed(output_data_path / filename, color_mask=color_mask, color_codes=np.array(color_hex_codes))
+            print("Colors:")
+            for color, occ in zip(*np.unique(color_mask, return_counts=True)):
+                print(f"Color {color} appears {occ:,} times in color mask")
+            np.savez_compressed(
+                output_data_path / filename,
+                color_mask=color_mask,
+                color_codes=np.array(color_hex_codes),
+                color_id_to_node_id=map_color_id_to_node_id,
+                color_id_to_classification=map_color_id_to_classification,
+            )
 
 
 if __name__ == "__main__":

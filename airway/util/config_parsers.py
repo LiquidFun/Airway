@@ -3,8 +3,13 @@ from typing import Dict, Any
 
 import yaml
 
-from airway.util.const import CONFIGS_PATH, PACKAGE_PATH, CLASSIFICATION_CONFIG_PATH, STAGE_CONFIGS_PATH, \
-    ARRAY_ENCODING_PATH
+from airway.util.const import (
+    CONFIGS_PATH,
+    PACKAGE_PATH,
+    CLASSIFICATION_CONFIG_PATH,
+    STAGE_CONFIGS_PATH,
+    ARRAY_ENCODING_PATH,
+)
 
 
 def get_dict_from_yaml(curr_config_path: Path, ignore_if_does_not_exist=False) -> Dict:
@@ -67,4 +72,3 @@ def update_defaults(new_defaults: Dict[str, Any]):
     with open(filename, "w") as file:
         dump = yaml.dump(old_defaults)
         file.write(dump)
-

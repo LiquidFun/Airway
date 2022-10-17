@@ -9,5 +9,5 @@ tqdm
 Markdown
 WeasyPrint
 pytest
-python-igraph
+# python-igraph fails to build
 py2cytoscape

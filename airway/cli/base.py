@@ -141,7 +141,15 @@ class BaseCLI:
         if max_width is not None:
             import textwrap
             from itertools import chain
-            lines = list(chain(*[textwrap.wrap(line, width=max_width, drop_whitespace=False, replace_whitespace=False) for line in lines]))
+
+            lines = list(
+                chain(
+                    *[
+                        textwrap.wrap(line, width=max_width, drop_whitespace=False, replace_whitespace=False)
+                        for line in lines
+                    ]
+                )
+            )
         time_added = False
         for i in range(len(lines)):
             add_time_for_this_line = lines[i].strip() != "" and add_time and not time_added
@@ -171,6 +179,6 @@ class BaseCLI:
             for key, val in self.errors.items():
                 plural = "errors" if len(val) > 1 else "error"
                 self.log(f"{key}: {len(val):>3} {plural}", stdout=True, tabs=1)
-            self.log(f"Overall errors: {sum(self.errors.values())}\n{self.col.reset()}", stdout=True, tabs=1)
+            self.log(f"Overall errors: {len(self.errors.values())}\n{self.col.reset()}", stdout=True, tabs=1)
         else:
             self.log("No errors occurred", stdout=True, add_time=True)
