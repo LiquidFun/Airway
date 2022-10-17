@@ -171,6 +171,6 @@ class BaseCLI:
             for key, val in self.errors.items():
                 plural = "errors" if len(val) > 1 else "error"
                 self.log(f"{key}: {len(val):>3} {plural}", stdout=True, tabs=1)
-            self.log(f"Overall errors: {sum(self.errors.values())}\n{self.col.reset()}", stdout=True, tabs=1)
+            self.log(f"Overall errors: {len(self.errors.values())}\n{self.col.reset()}", stdout=True, tabs=1)
         else:
             self.log("No errors occurred", stdout=True, add_time=True)

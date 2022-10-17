@@ -25,11 +25,16 @@ class TutorialCLI(BaseCLI):
         keyword = "example"
         flags = {'path': keyword}
 
-        def question(msg: str):
-            self.logvt(f"{msg} [{c.yellow('y')}/{c.yellow('n')}]? ", end=c.yellow())
-            answer = input().strip().lower() in ["yes", "y"]
+        def question(msg: str, default_is_yes=False):
+            self.logvt(f"{msg} [{c.yellow('yY'[default_is_yes])}/{c.yellow('Nn'[default_is_yes])}]? ", end=c.yellow())
+            answer = input().strip().lower() in (["yes", "y"] + ([""] if default_is_yes else []))
             self.logv(c.reset())
             return answer
+
+        def delay(msg: str):
+            self.logvt(f"{msg}", end=c.yellow())
+            input()
+            self.logv(c.reset())
 
         def command(arg, **kwargs):
             flags_ = [f"{c.green('--' + key)} {c.cyan(value)}" for key, value in kwargs.items()]
@@ -39,7 +44,7 @@ class TutorialCLI(BaseCLI):
         self.logv(f"This tutorial will guide you through running the "
                   f"example supplied in \n\t{self.col.cyan(example_model_path)}")
         self.logv(f"It is recommended to have another terminal ready to type commands if necessary")
-        if not question(f"Do you wish to use the default directory for the examples?\n\t{c.green(example_stages_path)}"):
+        if not question(f"Do you wish to use the default directory for the examples?\n\t{c.green(example_stages_path)}", default_is_yes=True):
             self.logv("What directory do you wish to use instead?")
             example_stages_path = Path(input())
         update_defaults({"paths": {keyword: str(example_stages_path.absolute())}})
@@ -52,11 +57,12 @@ class TutorialCLI(BaseCLI):
             self.logv(file.read())
             self.logv(c.reset())
         self.logv(f"To view each parameter including an explanation see {c.green('example_defaults.yaml')}.")
-        if question(f"Do you wish to overwrite the default path to always use the keyword {c.yellow(keyword)}?"):
+        if question(f"Do you wish to overwrite the default path to always use the keyword {c.yellow(keyword)}?"
+                    f"\nIf you don't then you will have to remember to add {c.green('--path')} {c.yellow(keyword)}."):
             update_defaults({"path": keyword})
             self.logv(f"Defaults updated! Now you may use stages/vis without adding {c.green('--path')}")
             # del flags['path']
-        self.logv(f"Let's now get to running the stages!")
+        self.logv(f"Let's get to running the stages now!")
         patient_dir = example_stages_path / "stage-01" / patient_name
         patient_dir.mkdir(exist_ok=True, parents=True)
         shutil.copy(example_model_path, patient_dir)
@@ -64,16 +70,18 @@ class TutorialCLI(BaseCLI):
         self.logv(f"This means the input stage was defined for patient {c.cyan(patient_name)}"
                   f" and most other stages can be calculated using this stage.")
         self.logv(f"To run the next stage type: {command('airway stages 2', **flags)}")
-        question("Continue")
+        delay("Continue?")
         self.logv(f"To see what each stage does you can type: {command('airway stages')}")
+        delay("Continue?")
         self.logv(f"Now to visualise the segments we need to calculate a couple more stages. To do this type: "
-                  f"{command('airway stages 2-10 color_masks 3d')}\nNote that {c.green('2-10')} is a range, "
+                  f"{command('airway stages 2-10 color_masks 3d', **flags)}"
+                  f"\nNote that {c.green('2-10')} is a range, "
                   f"and both {c.green('color_masks')} "
                   f"and {c.green('3d')} are stage names (these are shown in parenthesis in the stage overview).")
-        question("Continue")
+        delay("Continue?")
         self.logv(f"You need to install blender now (e.g. sudo apt install blender)")
         self.logv(f"Now you can visualise it in 3D in Blender by typing: "
-                  f"{command('airway vis -o pat01', **flags)}. "
+                  f"{command('airway vis -o pat01', **flags)}"
                   f"Blender should open with the 3D model of the example patient.")
         self.logv(f"As you may notice, the example data is not a real patient.")
         self.logv(f"It does however have the same structure which might be found in a real patient.")

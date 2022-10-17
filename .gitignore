@@ -15,3 +15,4 @@ manual_classification
 airway.egg-info
 dist
 /example_data/stages/
+/build/
