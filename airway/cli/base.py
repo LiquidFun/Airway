@@ -141,7 +141,15 @@ class BaseCLI:
         if max_width is not None:
             import textwrap
             from itertools import chain
-            lines = list(chain(*[textwrap.wrap(line, width=max_width, drop_whitespace=False, replace_whitespace=False) for line in lines]))
+
+            lines = list(
+                chain(
+                    *[
+                        textwrap.wrap(line, width=max_width, drop_whitespace=False, replace_whitespace=False)
+                        for line in lines
+                    ]
+                )
+            )
         time_added = False
         for i in range(len(lines)):
             add_time_for_this_line = lines[i].strip() != "" and add_time and not time_added

@@ -145,10 +145,13 @@ def main():
             (should_color_func(is_lobe), f"lobes{gt_suffix}.npz"),
         ]:
             color_mask = np.full(model.shape, 0)
-            nodes_visit_order, color_hex_codes, map_node_id_to_color_id = get_nodes_visit_order(tree, distance_mask, func)
+            nodes_visit_order, color_hex_codes, map_node_id_to_color_id = get_nodes_visit_order(
+                tree, distance_mask, func
+            )
             map_color_id_to_node_id = {value: key for key, value in map_node_id_to_color_id.items()}
             map_color_id_to_classification = {
-                c: tree.nodes[map_color_id_to_node_id[c]].get("split_classification", "") for c in map_color_id_to_node_id
+                c: tree.nodes[map_color_id_to_node_id[c]].get("split_classification", "")
+                for c in map_color_id_to_node_id
             }
             print(color_hex_codes)
 
