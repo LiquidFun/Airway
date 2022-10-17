@@ -24,7 +24,9 @@ split_path = argv[2]
 tree_path = argv[3]
 model_path = argv[4]
 
-classification_config_path = Path(sys.argv[0]).parents[0] / "configs" / "classification.yaml"
+# classification_config_path = Path(sys.argv[0]).parents[0] / "configs" / "classification.yaml"
+classification_config_path = Path(__file__).parents[3] / "configs" / "classification.yaml"
+print(classification_config_path)
 classification_config = None
 
 
@@ -190,6 +192,7 @@ previous_reload_all_cubes = False
 def load_tree():
     import networkx as nx
 
+    return nx.read_graphml(tree_path)
     gt_tree_path = tree_path.replace("tree.graphml", "tree_gt.graphml")
     return nx.read_graphml(gt_tree_path) if Path(gt_tree_path).exists() else nx.read_graphml(tree_path)
 
