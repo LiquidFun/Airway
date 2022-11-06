@@ -18,23 +18,23 @@ setup(
     author="Brutenis Gliwa",
     url="https://github.com/LiquidFun/Airway",
     python_requires=">=3.6",
+    package_dir={"airway": "airway"},
     packages=find_packages(),
     package_data={
         "airway": [
             # These need to be put in the airway directory, so that these can be included in the pip package
-            # *[f"../configs/{n}.yaml" for n in ("array_encoding", "classification", "example_defaults", "stage_configs")],
-            # "../scripts/*",
-            # "../example_data/model.npz",
+            *[f"configs/{n}.yaml" for n in ("array_encoding", "classification", "example_defaults", "stage_configs")],
+            "example_data/model.npz",
             "visualization/cytoscape/*.xml",
             "visualization/website",
         ]
     },
     entry_points={
         "console_scripts": [
-            "airway=airway_cli:main",
+            "airway=airway.cli.cli:main",
         ]
     },
-    install_requires=open("requirements.txt").readlines(),
+    install_requires=[req.strip() for req in open("requirements.txt").readlines()],
     tests_require=["pytest"],
     classifiers=[
         # Trove classifiers

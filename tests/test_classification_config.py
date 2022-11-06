@@ -3,7 +3,7 @@ from pathlib import Path
 import yaml
 import pytest
 
-classification_config_path = Path().cwd() / "configs" / "classification.yaml"
+classification_config_path = Path().cwd() / "airway" / "configs" / "classification.yaml"
 
 
 def test_existence():

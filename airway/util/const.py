@@ -4,7 +4,7 @@ from pathlib import Path
 PACKAGE_PATH = Path(__file__).parents[2]
 
 # Configs path
-CONFIGS_PATH = PACKAGE_PATH / "configs"
+CONFIGS_PATH = PACKAGE_PATH / "airway" / "configs"
 LOGS_PATH = PACKAGE_PATH / "logs"
 
 # Actual files

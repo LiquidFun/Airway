@@ -25,7 +25,7 @@ tree_path = argv[3]
 model_path = argv[4]
 
 # classification_config_path = Path(sys.argv[0]).parents[0] / "configs" / "classification.yaml"
-classification_config_path = Path(__file__).parents[3] / "configs" / "classification.yaml"
+classification_config_path = Path(__file__).parents[2] / "configs" / "classification.yaml"
 print(classification_config_path)
 classification_config = None
 

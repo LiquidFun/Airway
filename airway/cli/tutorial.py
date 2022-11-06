@@ -1,4 +1,5 @@
 import shutil
+import tempfile
 from functools import partial
 from pathlib import Path
 
@@ -19,8 +20,8 @@ class TutorialCLI(BaseCLI):
     def handle_args(self, args) -> None:
         c = self.col
 
-        example_model_path = PACKAGE_PATH / "example_data" / "model.npz"
-        example_stages_path = PACKAGE_PATH / "example_data" / "stages"
+        example_model_path = PACKAGE_PATH / "airway" / "example_data" / "model.npz"
+        example_stages_path = Path(tempfile.mkdtemp(prefix="airway-tutorial-"))
         patient_name = "pat01"
         keyword = "example"
         flags = {"path": keyword}

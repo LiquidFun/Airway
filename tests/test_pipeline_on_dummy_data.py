@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 def test_stages():
-    example_patient = Path("example_data") / "model.npz"
+    example_patient = Path("airway") / "example_data" / "model.npz"
     if example_patient.exists():
         temp_dir = tempfile.mkdtemp(prefix="airway-tests-dummy-")
         patient_id = "patient_id"

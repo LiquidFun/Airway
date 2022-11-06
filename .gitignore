@@ -1,4 +1,5 @@
 configs/defaults.yaml
+airway/configs/defaults.yaml
 defaults.yaml
 __pycache__
 .pytest_cache
@@ -14,5 +15,6 @@ manual_classification
 *.swo
 airway.egg-info
 dist
+/airway/example_data/stages/
 /example_data/stages/
 /build/

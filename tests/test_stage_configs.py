@@ -4,7 +4,7 @@ from typing import Dict, Any
 import yaml
 import pytest
 
-stage_configs_path = Path().cwd() / "configs" / "stage_configs.yaml"
+stage_configs_path = Path().cwd() / "airway" / "configs" / "stage_configs.yaml"
 
 
 def test_existence():
