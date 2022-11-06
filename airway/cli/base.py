@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import os
 from abc import abstractmethod
 from argparse import ArgumentParser, _SubParsersAction
 from concurrent.futures import ProcessPoolExecutor
@@ -75,14 +76,15 @@ class BaseCLI:
         # Important as the pycharm debugger expects strings in the flags of subprocess, this causes it to crash
         # as this program puts PosixPaths into the arg list.
         args_as_strings = list(map(str, args))
-        return subprocess.run(args_as_strings, encoding="utf-8", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        current_env = os.environ.copy()
+        return subprocess.run(args_as_strings, encoding="utf-8", stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=current_env)
 
     def concurrent_executor(
         self, subprocess_args: List[List[str]], script_module: str, workers: int = 1, tqdm_prefix="", verbose=False
     ):
         """Executes multiple scripts as their own modules, logging their STDOUT and STDERR"""
         # print(subprocess_args)
-        subprocesses = [["python3", "-m", script_module] + args for args in subprocess_args]
+        subprocesses = [[sys.executable, "-m", script_module] + args for args in subprocess_args]
 
         def get_progress_bar(process_count: int) -> tqdm:
             bar_fmt = "{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_inv_fmt}{postfix}]"
