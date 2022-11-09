@@ -24,6 +24,11 @@ class BaseCLI:
         self.col = Color()
         self.errors = {}
         self._subparser_action: _SubParsersAction = None
+        try:
+            self._logging_file_handle = open(self.log_path, "a+")
+        except OSError:
+            self._logging_file_handle = None
+            self.log(f"Could not write to {self.log_path}! Skipping logging to file.", add_time=True, stdout=True)
 
     @abstractmethod
     def add_subparser_args(self) -> None:
@@ -47,9 +52,10 @@ class BaseCLI:
             existing_log_file.unlink()
 
     def _link_last_log_file(self):
-        const.LOG_LN_PATH.unlink(missing_ok=True)
-        self.log_path.link_to(const.LOG_LN_PATH)
-        self.log(f"Saved log file to {self.col.green(self.log_path)} (linked to ./log)", stdout=True, add_time=True)
+        if self._logging_file_handle is not None:
+            const.LOG_LN_PATH.unlink(missing_ok=True)
+            self.log_path.link_to(const.LOG_LN_PATH)
+            self.log(f"Saved log file to {self.col.green(self.log_path)} (linked to ./log)", stdout=True, add_time=True)
 
     def add_as_subparser(self, subparser_action: _SubParsersAction):
         self._subparser_action = subparser_action
@@ -164,11 +170,11 @@ class BaseCLI:
                 lines[i] = time_fmt + lines[i]
                 time_added = True
         message = "\n".join(lines)
-        with open(self.log_path, "a+") as log_file:
-            if stdout:
-                print(message, end=end)
-            filtered_message = col.filter_color_codes(message)
-            log_file.write(filtered_message + end)
+        if stdout:
+            print(message, end=end)
+        filtered_message = col.filter_color_codes(message)
+        if self._logging_file_handle is not None:
+            self._logging_file_handle.write(filtered_message + end)
         if exit_code is not None:
             sys.exit(exit_code)
         return message

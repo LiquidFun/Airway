@@ -1,4 +1,5 @@
 import re
+import os
 
 
 class Color:
@@ -39,8 +40,12 @@ class Color:
         return full
 
     def _set_color(self, name):
-        self._prev_color = name
-        return f"\033[{self.formatting};3{self.color_names.index(name)}m"
+        # Windows console does not support colors, possibly try colorama for color support on windows (TODO)
+        if os.name == "nt":
+            return ""
+        else:
+            self._prev_color = name
+            return f"\033[{self.formatting};3{self.color_names.index(name)}m"
 
     def bold(self):
         return self._set_formatting(1)
